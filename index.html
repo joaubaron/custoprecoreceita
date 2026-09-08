@@ -1556,7 +1556,7 @@ Rendimento da receita e o custo detalhado de cada pote
 <div class="v leftover-note" id="leftoverWeight"></div>
 <div class="k">Aproveitamento da sobra</div>
 <div class="v" style="color: var(--text-secondary); font-weight: 400;">
-<span id="leftoverStatus">Custo rateado entre os potes</span>
+<span id="leftoverStatus">rateado entre os potes</span>
 </div>
 </div>
 
@@ -2114,7 +2114,7 @@ document.getElementById("leftoverWeight").textContent = num(leftoverWeight, 0) +
 // Atualizar status da sobra
 if (numPots > 0 && leftoverWeight > 0) {
 document.getElementById("leftoverStatus").textContent = 
-`Custo rateado entre os ${numPots} potes`;
+`rateado entre os ${numPots} potes`;
 } else if (numPots > 0) {
 document.getElementById("leftoverStatus").textContent = 
 `Sem sobra (aproveitamento total)`;
