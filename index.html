@@ -90,12 +90,285 @@ margin: 0 auto;
 overflow-x: hidden;
 }
 
+/* ===== ONBOARDING ===== */
+.onboarding-overlay {
+position: fixed;
+inset: 0;
+background: rgba(0, 0, 0, 0.85);
+backdrop-filter: blur(8px);
+z-index: 999;
+display: flex;
+align-items: center;
+justify-content: center;
+padding: 20px;
+transition: opacity 0.4s ease, visibility 0.4s ease;
+opacity: 1;
+visibility: visible;
+}
+
+.onboarding-overlay.hidden {
+opacity: 0;
+visibility: hidden;
+pointer-events: none;
+}
+
+.onboarding-box {
+background: var(--bg-card);
+border: 1px solid var(--gold-border);
+border-radius: var(--radius);
+max-width: 480px;
+width: 100%;
+padding: 32px 28px;
+box-shadow: var(--shadow-lg);
+text-align: center;
+}
+
+.onboarding-box .onboarding-icon {
+font-size: 48px;
+margin-bottom: 12px;
+display: block;
+}
+
+.onboarding-box h2 {
+font-family: var(--font-display);
+font-size: 24px;
+font-weight: 800;
+color: var(--gold);
+margin-bottom: 16px;
+}
+
+.onboarding-box p {
+color: var(--text-secondary);
+font-size: 14px;
+line-height: 1.6;
+margin-bottom: 20px;
+}
+
+.onboarding-steps {
+display: grid;
+grid-template-columns: 1fr 1fr;
+gap: 10px;
+text-align: left;
+margin-bottom: 24px;
+}
+
+.onboarding-steps .step-item {
+background: var(--bg-secondary);
+border: 1px solid var(--border);
+border-radius: var(--radius-sm);
+padding: 12px 14px;
+display: flex;
+align-items: center;
+gap: 10px;
+}
+
+.onboarding-steps .step-item .num {
+background: var(--gold);
+color: #0b0a14;
+font-weight: 800;
+font-size: 12px;
+width: 24px;
+height: 24px;
+border-radius: 50%;
+display: flex;
+align-items: center;
+justify-content: center;
+flex-shrink: 0;
+}
+
+.onboarding-steps .step-item .text {
+font-size: 12px;
+color: var(--text-secondary);
+}
+
+.onboarding-steps .step-item .text strong {
+color: var(--text-primary);
+}
+
+.onboarding-box .onboarding-btn {
+background: var(--gold);
+border: none;
+color: #0b0a14;
+font-family: var(--font-body);
+font-size: 16px;
+font-weight: 700;
+padding: 14px 40px;
+border-radius: 999px;
+cursor: pointer;
+transition: var(--transition);
+min-height: 50px;
+}
+
+.onboarding-box .onboarding-btn:hover {
+transform: scale(1.02);
+box-shadow: 0 4px 20px rgba(255, 216, 77, 0.3);
+}
+
+/* ===== PROGRESS BAR ===== */
+.progress-bar {
+display: flex;
+align-items: center;
+justify-content: space-between;
+gap: 4px;
+margin-bottom: 16px;
+padding: 10px 16px;
+background: var(--bg-secondary);
+border-radius: var(--radius);
+border: 1px solid var(--border);
+position: relative;
+}
+
+.progress-bar .step {
+display: flex;
+align-items: center;
+justify-content: center;
+gap: 6px;
+font-size: 11px;
+font-weight: 600;
+color: var(--text-muted);
+flex: 1;
+padding: 4px 0;
+position: relative;
+transition: var(--transition);
+}
+
+.progress-bar .step .num {
+width: 28px;
+height: 28px;
+border-radius: 50%;
+background: var(--bg-input);
+border: 2px solid var(--border);
+display: flex;
+align-items: center;
+justify-content: center;
+font-size: 12px;
+font-weight: 700;
+color: var(--text-muted);
+transition: var(--transition);
+flex-shrink: 0;
+}
+
+.progress-bar .step .label-text {
+display: none;
+font-size: 10px;
+color: var(--text-muted);
+white-space: nowrap;
+}
+
+.progress-bar .step.active .num {
+background: var(--gold);
+border-color: var(--gold);
+color: #0b0a14;
+}
+
+.progress-bar .step.active .label-text {
+color: var(--gold);
+}
+
+.progress-bar .step.done .num {
+background: var(--green);
+border-color: var(--green);
+color: #0b0a14;
+}
+
+.progress-bar .step.done .label-text {
+color: var(--green);
+}
+
+.progress-bar .step-line {
+flex: 0 0 20px;
+height: 2px;
+background: var(--border);
+border-radius: 2px;
+transition: var(--transition);
+}
+
+.progress-bar .step-line.done {
+background: var(--gold);
+}
+
+/* ===== QUICK SUMMARY CARD ===== */
+.summary-card {
+background: var(--bg-card);
+border: 1px solid var(--gold-border);
+border-radius: var(--radius);
+padding: 16px 20px;
+margin-bottom: 16px;
+box-shadow: var(--shadow-sm);
+display: grid;
+grid-template-columns: 1fr 1fr 1fr;
+gap: 8px;
+}
+
+.summary-card .summary-item {
+text-align: center;
+padding: 4px 0;
+}
+
+.summary-card .summary-item .label {
+font-size: 10px;
+text-transform: uppercase;
+letter-spacing: 0.05em;
+color: var(--text-muted);
+font-weight: 600;
+}
+
+.summary-card .summary-item .value {
+font-family: var(--font-display);
+font-size: 18px;
+font-weight: 800;
+margin-top: 2px;
+}
+
+.summary-card .summary-item .value.gold { color: var(--gold); }
+.summary-card .summary-item .value.green { color: var(--green); }
+.summary-card .summary-item .value.blue { color: var(--blue); }
+
+@media screen and (max-width: 500px) {
+.summary-card {
+grid-template-columns: 1fr;
+gap: 6px;
+padding: 12px 14px;
+}
+.summary-card .summary-item {
+display: flex;
+justify-content: space-between;
+align-items: center;
+padding: 4px 0;
+border-bottom: 1px solid var(--border);
+}
+.summary-card .summary-item:last-child {
+border-bottom: none;
+}
+.summary-card .summary-item .value {
+font-size: 16px;
+}
+.onboarding-steps {
+grid-template-columns: 1fr;
+}
+.onboarding-box {
+padding: 24px 16px;
+}
+.progress-bar .step .label-text {
+display: none !important;
+}
+.progress-bar .step-line {
+flex: 0 0 12px;
+}
+}
+
+@media screen and (min-width: 501px) {
+.progress-bar .step .label-text {
+display: inline;
+}
+}
+
 header {
 display: flex;
 gap: 12px;
 align-items: center;
 justify-content: space-between;
-margin-bottom: 20px;
+margin-bottom: 8px;
 padding: 16px 20px;
 background: var(--bg-secondary);
 border-radius: var(--radius);
@@ -168,7 +441,7 @@ background: var(--red-dim);
 .tabs {
 display: flex;
 gap: 6px;
-margin-bottom: 20px;
+margin-bottom: 16px;
 background: var(--bg-secondary);
 padding: 6px;
 border-radius: var(--radius);
@@ -189,15 +462,15 @@ display: none;
 
 .tab-btn {
 flex: 1;
-min-width: 100px;
+min-width: 80px;
 height: 44px;
-padding: 0 12px;
+padding: 0 10px;
 background: transparent;
 border: 1px solid transparent;
 border-radius: var(--radius-sm);
 color: var(--text-secondary);
 font-family: var(--font-body);
-font-size: 13px;
+font-size: 12px;
 font-weight: 600;
 cursor: pointer;
 transition: var(--transition);
@@ -205,7 +478,7 @@ white-space: nowrap;
 display: flex;
 align-items: center;
 justify-content: center;
-gap: 6px;
+gap: 4px;
 }
 
 .tab-btn:hover:not(.active) {
@@ -221,7 +494,7 @@ box-shadow: 0 4px 12px rgba(255, 216, 77, 0.25);
 }
 
 .tab-btn .emoji {
-font-size: 15px;
+font-size: 14px;
 }
 
 .tab-content {
@@ -944,10 +1217,10 @@ height: 48px;
 padding: 2px;
 flex-direction: column;
 gap: 2px;
-font-size: 10px;
+font-size: 9px;
 }
 
-.tab-btn .emoji { font-size: 16px; }
+.tab-btn .emoji { font-size: 14px; }
 
 table th:nth-child(1), table td:nth-child(1) { width: 38% !important; }
 table th:nth-child(2), table td:nth-child(2) { width: 20% !important; }
@@ -987,7 +1260,38 @@ font-size: 12px !important;
 </style>
 </head>
 <body>
+
+<!-- ===== ONBOARDING OVERLAY ===== -->
+<div class="onboarding-overlay" id="onboardingOverlay">
+<div class="onboarding-box">
+<span class="onboarding-icon">🫙</span>
+<h2>Bem-vindo ao Custo do Pote!</h2>
+<p>Calcule o preço de venda dos seus produtos artesanais em 4 passos:</p>
+<div class="onboarding-steps">
+<div class="step-item">
+<span class="num">1</span>
+<span class="text"><strong>Estoque</strong><br>Cadastre produtos e custos</span>
+</div>
+<div class="step-item">
+<span class="num">2</span>
+<span class="text"><strong>Receita</strong><br>Defina os ingredientes</span>
+</div>
+<div class="step-item">
+<span class="num">3</span>
+<span class="text"><strong>Embalagem</strong><br>Configure custos fixos</span>
+</div>
+<div class="step-item">
+<span class="num">4</span>
+<span class="text"><strong>Preço de Venda</strong><br>Veja o preço sugerido</span>
+</div>
+</div>
+<button class="onboarding-btn" id="onboardingBtn">Entendi, começar! 🚀</button>
+</div>
+</div>
+
 <div class="wrap">
+
+<!-- ===== HEADER ===== -->
 <header>
 <div class="header-left">
 <p class="eyebrow">Calculadora de preço</p>
@@ -997,6 +1301,47 @@ font-size: 12px !important;
 </div>
 <button class="reset-btn" id="resetBtn">↺ Restaurar</button>
 </header>
+
+<!-- ===== PROGRESS BAR ===== -->
+<div class="progress-bar" id="progressBar">
+<div class="step active" data-step="0">
+<span class="num">1</span>
+<span class="label-text">Estoque</span>
+</div>
+<div class="step-line" id="line1"></div>
+<div class="step" data-step="1">
+<span class="num">2</span>
+<span class="label-text">Receita</span>
+</div>
+<div class="step-line" id="line2"></div>
+<div class="step" data-step="2">
+<span class="num">3</span>
+<span class="label-text">Embalagem</span>
+</div>
+<div class="step-line" id="line3"></div>
+<div class="step" data-step="3">
+<span class="num">4</span>
+<span class="label-text">Preço de Venda</span>
+</div>
+</div>
+
+<!-- ===== QUICK SUMMARY CARD ===== -->
+<div class="summary-card" id="summaryCard">
+<div class="summary-item">
+<div class="label">Custo por pote</div>
+<div class="value blue" id="quickCostPot">—</div>
+</div>
+<div class="summary-item">
+<div class="label">Preço sugerido</div>
+<div class="value gold" id="quickPrice">—</div>
+</div>
+<div class="summary-item">
+<div class="label">Lucro por pote</div>
+<div class="value green" id="quickProfit">—</div>
+</div>
+</div>
+
+<!-- ===== TABS ===== -->
 <div class="tabs" id="tabContainer">
 <button class="tab-btn active" data-tab="tab0">
 <span class="emoji">🛒</span> Estoque
@@ -1008,14 +1353,17 @@ font-size: 12px !important;
 <span class="emoji">📦</span> Embalagem
 </button>
 <button class="tab-btn" data-tab="tab3">
-<span class="emoji">💰</span> Preço
+<span class="emoji">💰</span> Preço de Venda
 </button>
 <button class="tab-btn" data-tab="tab4">
-<span class="emoji">💾</span> Salvas
+<span class="emoji">💾</span> Salvar
 </button>
 </div>
+
 <div class="layout">
 <div>
+
+<!-- ===== TAB 0: ESTOQUE ===== -->
 <div class="tab-content active" id="tab0">
 <section class="card">
 <h2>🛒 Estoque</h2>
@@ -1051,6 +1399,8 @@ Cadastre os produtos que você compra e seus valores
 </button>
 </section>
 </div>
+
+<!-- ===== TAB 1: RECEITA ===== -->
 <div class="tab-content" id="tab1">
 <section class="card">
 <h2>🧺 Receita</h2>
@@ -1090,6 +1440,8 @@ Ajusta automático o peso e sinaliza se a receita usa mais que o lote cadastrado
 </button>
 </section>
 </div>
+
+<!-- ===== TAB 2: EMBALAGEM ===== -->
 <div class="tab-content" id="tab2">
 <section class="card">
 <h2>
@@ -1176,115 +1528,119 @@ Inclui mão de obra, energia, água e estrutura
 </div>
 </section>
 </div>
+
+<!-- ===== TAB 3: PREÇO DE VENDA ===== -->
 <div class="tab-content" id="tab3">
-    <section class="card">
-        <h2>🫙 Rendimento e Custo por Pote</h2>
-        <p class="sub">
-            Rendimento da receita e o custo detalhado de cada pote
-        </p>
-        
-        <div class="kv-grid">
-            <div class="k">Peso total da receita</div>
-            <div class="v" id="totalWeight"></div>
-            
-            <div class="k">Tamanho do pote</div>
-            <div class="v editable">
-                <input type="number" id="weightPerPot" min="1" step="1" inputmode="numeric" value="500" />
-                <span class="unit-suffix">g</span>
-            </div>
-            
-            <div class="divider"></div>
-            
-            <div class="k total">Número de potes</div>
-            <div class="v total" id="numPots"></div>
-            
-            <div class="k">Sobra da receita</div>
-            <div class="v leftover-note" id="leftoverWeight"></div>
+<section class="card">
+<h2>🫙 Rendimento e Custo por Pote</h2>
+<p class="sub">
+Rendimento da receita e o custo detalhado de cada pote
+</p>
 
-            <div class="k">Aproveitamento da sobra</div>
-            <div class="v">
-                <select id="leftoverCosting" class="cell-select">
-                    <option value="absorb">Sobra diluída</option>
-                    <option value="proportional">Sobra descartada</option>
-                </select>
-            </div>
-        </div>
-        
-        <div class="warning-message" id="insufficientWarning">
-            ⚠️ A receita não rende um pote completo de <span id="warningPotSize"></span> g.<br />
-            Reduza o tamanho do pote ou aumente a quantidade da receita para obter pelo menos 1 pote completo.
-        </div>
-        
-        <div class="divider" style="margin: 16px 0;"></div>
-        
-        <div class="kv-grid">
-            <div class="k">Ingredientes rateados</div>
-            <div class="v" id="costIngPot"></div>
-            
-            <div class="k">Embalagem</div>
-            <div class="v" id="costPkgPot"></div>
-            
-            <div class="k">Custos operacionais</div>
-            <div class="v" id="costOpPot"></div>
-            
-            <div class="divider"></div>
-            
-            <div class="k total">Custo total por pote</div>
-            <div class="v total" id="costTotalPot"></div>
-        </div>
-    </section>
+<div class="kv-grid">
+<div class="k">Peso total da receita</div>
+<div class="v" id="totalWeight"></div>
 
-    <section class="card">
-        <h2>💰 Precificação</h2>
-        <p class="sub">
-            Defina sua margem de lucro e veja o preço de venda sugerido
-        </p>
-        
-        <div class="price-tag">
-            <div class="lbl">Preço de venda por pote</div>
-            <div class="amt" id="finalPrice">R$ 0,00</div>
-            <div class="per" id="jarPots">— potes</div>
-        </div>
-        
-        <div class="kv-grid">
-            <div class="k">Margem de lucro desejada</div>
-            <div class="v editable">
-                <input type="number" id="profitPct" min="0" max="99.99" step="1" inputmode="numeric" value="35" />
-                <span>%</span>
-            </div>
-            
-            <div class="k">Markup equivalente</div>
-            <div class="v" id="markup"></div>
-        </div>
-        
-        <p class="sub" style="margin-top: 12px; margin-bottom: 0; font-size: 12px;">
-            💡 Margem de lucro calculada sobre o preço de venda
-        </p>
-        
-        <div class="jar-legend" id="jarLegend"></div>
-    </section>
-
-    <section class="card">
-        <h2>⚡ Ações</h2>
-        <p class="sub">
-            Salve a sua receita para acessá-la depois
-        </p>
-        
-        <div class="current-recipe-indicator" style="margin-bottom: 12px;">
-            <span class="label">📌 Receita atual:</span>
-            <span id="priceTabLoadedName" style="color:var(--gold);font-weight:600;">Nenhuma</span>
-        </div>
-        
-        <div class="recipe-actions-bar" style="display: flex; flex-direction: row; gap: 10px;">
-            <button class="action-btn save-btn" id="saveRecipeBtn" style="flex: 1;">
-                💾 Salvar receita
-            </button>
-            <a id="goToRecipesTab" class="action-btn save-btn" style="flex: 1; text-align: center; text-decoration: none; display: inline-flex; align-items: center; justify-content: center;">
-                📋 Receitas salvas
-            </a>
-        </div>
-    </section>
+<div class="k">Tamanho do pote</div>
+<div class="v editable">
+<input type="number" id="weightPerPot" min="1" step="1" inputmode="numeric" value="500" />
+<span class="unit-suffix">g</span>
 </div>
+
+<div class="divider"></div>
+
+<div class="k total">Número de potes</div>
+<div class="v total" id="numPots"></div>
+
+<div class="k">Sobra da receita</div>
+<div class="v leftover-note" id="leftoverWeight"></div>
+
+<div class="k">Aproveitamento da sobra</div>
+<div class="v">
+<select id="leftoverCosting" class="cell-select">
+<option value="absorb">Sobra diluída</option>
+<option value="proportional">Sobra descartada</option>
+</select>
+</div>
+</div>
+
+<div class="warning-message" id="insufficientWarning">
+⚠️ A receita não rende um pote completo de <span id="warningPotSize"></span> g.<br />
+Reduza o tamanho do pote ou aumente a quantidade da receita para obter pelo menos 1 pote completo.
+</div>
+
+<div class="divider" style="margin: 16px 0;"></div>
+
+<div class="kv-grid">
+<div class="k">Ingredientes rateados</div>
+<div class="v" id="costIngPot"></div>
+
+<div class="k">Embalagem</div>
+<div class="v" id="costPkgPot"></div>
+
+<div class="k">Custos operacionais</div>
+<div class="v" id="costOpPot"></div>
+
+<div class="divider"></div>
+
+<div class="k total">Custo total por pote</div>
+<div class="v total" id="costTotalPot"></div>
+</div>
+</section>
+
+<section class="card">
+<h2>💰 Precificação</h2>
+<p class="sub">
+Defina sua margem de lucro e veja o preço de venda sugerido
+</p>
+
+<div class="price-tag">
+<div class="lbl">Preço de venda por pote</div>
+<div class="amt" id="finalPrice">R$ 0,00</div>
+<div class="per" id="jarPots">— potes</div>
+</div>
+
+<div class="kv-grid">
+<div class="k">Margem de lucro desejada</div>
+<div class="v editable">
+<input type="number" id="profitPct" min="0" max="99.99" step="1" inputmode="numeric" value="35" />
+<span>%</span>
+</div>
+
+<div class="k">Markup equivalente</div>
+<div class="v" id="markup"></div>
+</div>
+
+<p class="sub" style="margin-top: 12px; margin-bottom: 0; font-size: 12px;">
+💡 Margem de lucro calculada sobre o preço de venda
+</p>
+
+<div class="jar-legend" id="jarLegend"></div>
+</section>
+
+<section class="card">
+<h2>⚡ Ações</h2>
+<p class="sub">
+Salve a sua receita para acessá-la depois
+</p>
+
+<div class="current-recipe-indicator" style="margin-bottom: 12px;">
+<span class="label">📌 Receita atual:</span>
+<span id="priceTabLoadedName" style="color:var(--gold);font-weight:600;">Nenhuma</span>
+</div>
+
+<div class="recipe-actions-bar" style="display: flex; flex-direction: row; gap: 10px;">
+<button class="action-btn save-btn" id="saveRecipeBtn" style="flex: 1;">
+💾 Salvar receita
+</button>
+<a id="goToRecipesTab" class="action-btn save-btn" style="flex: 1; text-align: center; text-decoration: none; display: inline-flex; align-items: center; justify-content: center;">
+📋 Receitas salvas
+</a>
+</div>
+</section>
+</div>
+
+<!-- ===== TAB 4: SALVAR ===== -->
 <div class="tab-content" id="tab4">
 <section class="card">
 <h2>💾 Minhas Receitas</h2>
@@ -1313,39 +1669,36 @@ Gerencie suas receitas. Clique para carregar e editar
 </div>
 </section>
 </div>
+
 </div>
 </div>
+
 <p class="footer-note">
 ✨ Tudo fica salvo neste dispositivo.<br />
 Funciona para qualquer receita — ajuste como quiser.
 </p>
 </div>
+
+<!-- ===== MODAL ===== -->
 <div class="modal-overlay" id="modalOverlay">
 <div class="modal-box">
-<div class="modal-icon" id="modalIcon">
-⚠️
-</div>
-<p class="modal-title" id="modalTitle">
-Título
-</p>
-<p class="modal-msg" id="modalMsg">
-Mensagem.
-</p>
+<div class="modal-icon" id="modalIcon">⚠️</div>
+<p class="modal-title" id="modalTitle">Título</p>
+<p class="modal-msg" id="modalMsg">Mensagem.</p>
 <div class="modal-actions" id="modalActions">
-<button class="modal-btn" id="modalCancelBtn">
-Cancelar
-</button>
-<button class="modal-btn primary" id="modalConfirmBtn">
-Confirmar
-</button>
+<button class="modal-btn" id="modalCancelBtn">Cancelar</button>
+<button class="modal-btn primary" id="modalConfirmBtn">Confirmar</button>
 </div>
 </div>
 </div>
+
 <script>
 (function() {
 "use strict";
 const STORAGE_KEY = "caponata-calc-v4";
 const RECIPES_STORAGE_KEY = "caponata-recipes-list";
+const ONBOARDING_KEY = "caponata-onboarding-dismissed";
+
 const DEFAULT_STATE = {
 recipeName: "Minha Receita",
 inventory: [
@@ -1392,6 +1745,31 @@ let storageWarned = false;
 let currentRecipeId = null;
 let recipesList = loadRecipesList();
 
+// ===== ONBOARDING =====
+function isOnboardingDismissed() {
+try {
+return localStorage.getItem(ONBOARDING_KEY) === 'true';
+} catch(e) { return false; }
+}
+
+function dismissOnboarding() {
+try {
+localStorage.setItem(ONBOARDING_KEY, 'true');
+} catch(e) {}
+const overlay = document.getElementById('onboardingOverlay');
+overlay.classList.add('hidden');
+}
+
+function showOnboarding() {
+if (!isOnboardingDismissed()) {
+const overlay = document.getElementById('onboardingOverlay');
+overlay.classList.remove('hidden');
+}
+}
+
+document.getElementById('onboardingBtn').addEventListener('click', dismissOnboarding);
+
+// ===== FUNÇÕES AUXILIARES =====
 function getDensityByName(name) {
 const n = String(name || "")
 .toLowerCase()
@@ -1412,12 +1790,8 @@ function toGrams(qty, unit, inv) {
 const q = parseFloat(qty) || 0;
 const u = String(unit || "").trim().toLowerCase();
 if (q < 0) return 0;
-if (u === "g") {
-return q;
-}
-if (u === "kg") {
-return q * 1000;
-}
+if (u === "g") return q;
+if (u === "kg") return q * 1000;
 if (u === "ml") {
 let density = parseFloat(inv && inv.density);
 if (!isFinite(density) || density <= 0) {
@@ -1436,21 +1810,14 @@ return null;
 }
 
 function defaultRecipeUnitFor(inv) {
-const u =
-String(inv ? inv.unit : "")
-.trim()
-.toLowerCase();
-if (u === "ml" || u === "l" || u === "kg") {
-return u;
-}
+const u = String(inv ? inv.unit : "").trim().toLowerCase();
+if (u === "ml" || u === "l" || u === "kg") return u;
 return "g";
 }
 
 function getRecipeWeight(qty, unit, inv) {
 const grams = toGrams(qty, unit, inv);
-return grams === null
-? 0
-: grams;
+return grams === null ? 0 : grams;
 }
 
 function loadState() {
@@ -1458,39 +1825,13 @@ try {
 const raw = localStorage.getItem(STORAGE_KEY);
 if (raw) {
 const parsed = JSON.parse(raw);
-if (
-parsed &&
-Array.isArray(parsed.inventory) &&
-Array.isArray(parsed.recipe) &&
-Array.isArray(parsed.packaging)
-) {
-if (
-!isFinite(parsed.weightPerPot) ||
-parsed.weightPerPot <= 0
-) {
-parsed.weightPerPot = 500;
-}
-if (
-!isFinite(parsed.profitPct) ||
-parsed.profitPct < 0 ||
-parsed.profitPct > 99.99
-) {
-parsed.profitPct = 35;
-}
+if (parsed && Array.isArray(parsed.inventory) && Array.isArray(parsed.recipe) && Array.isArray(parsed.packaging)) {
+if (!isFinite(parsed.weightPerPot) || parsed.weightPerPot <= 0) parsed.weightPerPot = 500;
+if (!isFinite(parsed.profitPct) || parsed.profitPct < 0 || parsed.profitPct > 99.99) parsed.profitPct = 35;
 parsed.inventory.forEach(function(item) {
-if (
-item &&
-(
-String(item.unit || "").trim().toLowerCase() === "ml" ||
-String(item.unit || "").trim().toLowerCase() === "l"
-)
-) {
-const detected =
-getDensityByName(item.name);
-if (
-!isFinite(parseFloat(item.density)) ||
-parseFloat(item.density) <= 0
-) {
+if (item && (String(item.unit || "").trim().toLowerCase() === "ml" || String(item.unit || "").trim().toLowerCase() === "l")) {
+const detected = getDensityByName(item.name);
+if (!isFinite(parseFloat(item.density)) || parseFloat(item.density) <= 0) {
 item.density = detected;
 }
 }
@@ -1501,40 +1842,27 @@ if (!('utilitiesCost' in parsed)) parsed.utilitiesCost = 2;
 if (!('leftoverCosting' in parsed)) parsed.leftoverCosting = "absorb";
 parsed.recipe.forEach(function(r) {
 if (!r) return;
-const ru =
-String(r.unit || "")
-.trim()
-.toLowerCase();
-if (ru === "kg") {
-r.unit = "g";
-} else if (ru === "l") {
-r.unit = "ml";
-}
+const ru = String(r.unit || "").trim().toLowerCase();
+if (ru === "kg") r.unit = "g";
+else if (ru === "l") r.unit = "ml";
 });
 return parsed;
 }
 }
 } catch (e) {}
-return JSON.parse(
-JSON.stringify(DEFAULT_STATE)
-);
+return JSON.parse(JSON.stringify(DEFAULT_STATE));
 }
 
 function saveState() {
 try {
-localStorage.setItem(
-STORAGE_KEY,
-JSON.stringify(state)
-);
+localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
 } catch (e) {
 if (!storageWarned) {
 storageWarned = true;
 showModal({
 icon: "⚠️",
 title: "Não foi possível salvar",
-message:
-"O navegador bloqueou o armazenamento local. " +
-"Suas alterações funcionarão nesta sessão, mas podem se perder ao fechar.",
+message: "O navegador bloqueou o armazenamento local. Suas alterações funcionarão nesta sessão, mas podem se perder ao fechar.",
 confirmText: "Entendi",
 onlyOk: true
 });
@@ -1547,9 +1875,7 @@ try {
 const raw = localStorage.getItem(RECIPES_STORAGE_KEY);
 if (raw) {
 const parsed = JSON.parse(raw);
-if (Array.isArray(parsed)) {
-return parsed;
-}
+if (Array.isArray(parsed)) return parsed;
 }
 } catch (e) {}
 return [];
@@ -1708,986 +2034,160 @@ tab2: document.getElementById("tab2"),
 tab3: document.getElementById("tab3"),
 tab4: document.getElementById("tab4")
 };
-tabBtns.forEach(function(b) {
-b.classList.remove("active");
-});
-Object.values(tabContents).forEach(function(tc) {
-tc.classList.remove("active");
-});
+tabBtns.forEach(function(b) { b.classList.remove("active"); });
+Object.values(tabContents).forEach(function(tc) { tc.classList.remove("active"); });
 const targetBtn = document.querySelector(`.tab-btn[data-tab="${tabId}"]`);
-if (targetBtn) {
-targetBtn.classList.add("active");
-}
+if (targetBtn) targetBtn.classList.add("active");
 const targetContent = document.getElementById(tabId);
-if (targetContent) {
-targetContent.classList.add("active");
-}
+if (targetContent) targetContent.classList.add("active");
+updateProgressBar(tabId);
 }
 
 function brl(n) {
 if (!isFinite(n)) n = 0;
-return "R$ " +
-n.toLocaleString("pt-BR", {
-minimumFractionDigits: 2,
-maximumFractionDigits: 2
-}) + " ";
+return "R$ " + n.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
 function num(n, digits) {
 if (!isFinite(n)) n = 0;
-return n.toLocaleString("pt-BR", {
-minimumFractionDigits: digits || 0,
-maximumFractionDigits: digits || 2
+return n.toLocaleString("pt-BR", { minimumFractionDigits: digits || 0, maximumFractionDigits: digits || 2 });
+}
+
+// ===== PROGRESS BAR =====
+function updateProgressBar(tabId) {
+const stepMap = { 'tab0': 0, 'tab1': 1, 'tab2': 2, 'tab3': 3, 'tab4': 3 };
+const currentStep = stepMap[tabId] !== undefined ? stepMap[tabId] : 0;
+const steps = document.querySelectorAll('.progress-bar .step');
+const lines = document.querySelectorAll('.progress-bar .step-line');
+
+steps.forEach(function(step, index) {
+step.classList.remove('active', 'done');
+if (index < currentStep) step.classList.add('done');
+else if (index === currentStep) step.classList.add('active');
+});
+
+lines.forEach(function(line, index) {
+line.classList.remove('done');
+if (index < currentStep) line.classList.add('done');
 });
 }
 
-const recipeNameEl =
-document.getElementById("recipeName");
-const invBody =
-document.getElementById("invBody");
-const recBody =
-document.getElementById("recBody");
-const pkgBody =
-document.getElementById("pkgBody");
-const weightPerPotEl =
-document.getElementById("weightPerPot");
-const profitPctEl =
-document.getElementById("profitPct");
+// ===== QUICK SUMMARY =====
+function updateQuickSummary(costTotalPot, price, numPots) {
+const costEl = document.getElementById('quickCostPot');
+const priceEl = document.getElementById('quickPrice');
+const profitEl = document.getElementById('quickProfit');
 
-recipeNameEl.value =
-state.recipeName || "Minha Receita";
-weightPerPotEl.value =
-state.weightPerPot > 0
-? state.weightPerPot
-: 500;
-profitPctEl.value =
-state.profitPct;
-
-recipeNameEl.addEventListener(
-"input",
-function() {
-state.recipeName =
-recipeNameEl.value;
-saveState();
-}
-);
-
-weightPerPotEl.addEventListener(
-"input",
-function() {
-const value =
-parseFloat(weightPerPotEl.value);
-state.weightPerPot =
-isFinite(value) && value > 0
-? value
-: 0;
-saveState();
-render();
-}
-);
-
-profitPctEl.addEventListener(
-"input",
-function() {
-let value =
-parseFloat(profitPctEl.value);
-if (!isFinite(value)) {
-value = 0;
-}
-value =
-Math.max(
-0,
-Math.min(value, 99.99)
-);
-state.profitPct = value;
-saveState();
-render();
-}
-);
-
-document.getElementById('leftoverCosting').addEventListener('change', function() {
-state.leftoverCosting = this.value;
-saveState();
-render();
-});
-
-const tabBtns =
-document.querySelectorAll(".tab-btn");
-const tabContents = {
-tab0: document.getElementById("tab0"),
-tab1: document.getElementById("tab1"),
-tab2: document.getElementById("tab2"),
-tab3: document.getElementById("tab3"),
-tab4: document.getElementById("tab4")
-};
-tabBtns.forEach(function(btn) {
-btn.addEventListener(
-"click",
-function(e) {
-e.preventDefault();
-tabBtns.forEach(function(b) {
-b.classList.remove("active");
-});
-this.classList.add("active");
-Object.values(tabContents).forEach(
-function(tc) {
-tc.classList.remove("active");
-}
-);
-const target =
-document.getElementById(
-this.dataset.tab
-);
-if (target) {
-target.classList.add("active");
-}
-}
-);
-});
-
-function invRow(item, idx) {
-const tr =
-document.createElement("tr");
-tr.innerHTML =
-"<td>" +
-"<input class='cell' data-f='name' " +
-"placeholder='Produto' " +
-"inputmode='text'>" +
-"</td>" +
-"<td>" +
-"<input class='cell num' data-f='total' " +
-"type='number' step='any' " +
-"inputmode='decimal' min='0' " +
-"placeholder='5500'>" +
-"</td>" +
-"<td>" +
-"<select class='cell' data-f='unit'>" +
-"<option value='g'>g</option>" +
-"<option value='ml'>ml</option>" +
-"<option value='kg'>kg</option>" +
-"<option value='L'>L</option>" +
-"</select>" +
-"</td>" +
-"<td>" +
-"<input class='cell num' data-f='value' " +
-"type='number' step='any' " +
-"inputmode='decimal' min='0' " +
-"placeholder='0,00'>" +
-"</td>" +
-"<td>" +
-"<button class='rm-btn' title='remover'>✕</button>" +
-"</td>";
-const nameInput =
-tr.querySelector('[data-f="name"]');
-const totalInput =
-tr.querySelector('[data-f="total"]');
-const unitSelect =
-tr.querySelector('[data-f="unit"]');
-const valueInput =
-tr.querySelector('[data-f="value"]');
-const inputs =
-[nameInput, totalInput, unitSelect, valueInput];
-nameInput.value =
-item.name || "";
-totalInput.value =
-item.total ?? "";
-unitSelect.value =
-item.unit || "g";
-valueInput.value =
-item.value ?? "";
-
-inputs.forEach(function(inp) {
-function updateInventoryField() {
-const f =
-inp.dataset.f;
-const v =
-inp.value;
-if (
-f === "total" ||
-f === "value"
-) {
-const numVal =
-parseFloat(v);
-state.inventory[idx][f] =
-isFinite(numVal) &&
-numVal >= 0
-? numVal
-: 0;
+if (numPots > 0 && costTotalPot > 0) {
+costEl.textContent = brl(costTotalPot);
+priceEl.textContent = price > 0 ? brl(price) : '—';
+const profit = price > 0 ? Math.max(0, price - costTotalPot) : 0;
+profitEl.textContent = profit > 0 ? brl(profit) : '—';
 } else {
-state.inventory[idx][f] =
-v;
-}
-if (
-f === "name" ||
-f === "unit"
-) {
-const currentUnit =
-String(
-state.inventory[idx].unit || ""
-)
-.trim()
-.toLowerCase();
-if (
-currentUnit === "ml" ||
-currentUnit === "l"
-) {
-state.inventory[idx].density =
-getDensityByName(
-state.inventory[idx].name
-);
-}
-}
-if (f === "unit") {
-renderRecipe();
-}
-saveState();
-render();
-}
-inp.addEventListener(
-"input",
-updateInventoryField
-);
-inp.addEventListener(
-"keydown",
-function(e) {
-if (e.key === "Enter") {
-e.preventDefault();
-inp.blur();
-}
-}
-);
-inp.addEventListener(
-"blur",
-function() {
-updateInventoryField();
-}
-);
-inp.addEventListener(
-"change",
-function() {
-updateInventoryField();
-}
-);
-});
-tr.querySelector(".rm-btn")
-.addEventListener(
-"click",
-function() {
-state.inventory.splice(idx, 1);
-state.recipe =
-state.recipe.filter(
-r => r.invIndex !== idx
-);
-state.recipe.forEach(function(r) {
-if (r.invIndex > idx) {
-r.invIndex--;
-}
-});
-saveState();
-renderInventory();
-renderRecipe();
-render();
-}
-);
-return tr;
-}
-
-function renderInventory() {
-invBody.innerHTML = "";
-state.inventory.forEach(
-function(item, idx) {
-invBody.appendChild(
-invRow(item, idx)
-);
-}
-);
-let total = 0;
-state.inventory.forEach(
-function(i) {
-total +=
-parseFloat(i.value) || 0;
-}
-);
-document.getElementById(
-"invTotalValue"
-).textContent =
-brl(total);
-}
-
-document.getElementById(
-"addInv"
-).addEventListener(
-"click",
-function() {
-state.inventory.push({
-name: "",
-total: 0,
-unit: "g",
-value: 0,
-density: 1.00
-});
-saveState();
-renderInventory();
-renderRecipe();
-render();
-}
-);
-
-function getIngredientCost(
-invIndex,
-qty,
-recipeUnit
-) {
-const inv =
-state.inventory[invIndex];
-if (!inv) {
-return 0;
-}
-const total =
-parseFloat(inv.total) || 0;
-const value =
-parseFloat(inv.value) || 0;
-const q =
-parseFloat(qty) || 0;
-if (
-total <= 0 ||
-value <= 0 ||
-q <= 0
-) {
-return 0;
-}
-const inventoryUnit =
-String(inv.unit || "")
-.trim()
-.toLowerCase();
-const usedUnit =
-String(
-recipeUnit || inv.unit || ""
-)
-.trim()
-.toLowerCase();
-
-const totalGrams =
-toGrams(
-total,
-inventoryUnit,
-inv
-);
-const usedGrams =
-toGrams(
-q,
-usedUnit,
-inv
-);
-if (
-totalGrams === null ||
-usedGrams === null ||
-totalGrams <= 0 ||
-usedGrams < 0
-) {
-return 0;
-}
-return (
-usedGrams /
-totalGrams
-) * value;
-}
-
-function recRow(item, idx) {
-const tr =
-document.createElement("tr");
-const inv =
-state.inventory[item.invIndex];
-const productName =
-inv
-? (
-inv.name ||
-"Produto " +
-(item.invIndex + 1)
-)
-: "Produto";
-const invUnit =
-String(inv ? inv.unit : "")
-.trim()
-.toLowerCase();
-
-tr.innerHTML =
-"<td>" +
-"<div class='product-display'>" +
-productName +
-"</div>" +
-"</td>" +
-"<td>" +
-"<input class='cell num' data-f='qty' " +
-"type='number' step='any' " +
-"inputmode='decimal' min='0' " +
-"placeholder='5500'>" +
-"</td>" +
-"<td>" +
-"<select class='cell' data-f='unit'>" +
-"<option value='g'>g</option>" +
-"<option value='ml'>ml</option>" +
-"</select>" +
-"</td>" +
-"<td class='num'>" +
-"<div class='cost-display' data-f='cost'>" +
-"0,00" +
-"</div>" +
-"</td>" +
-"<td>" +
-"<button class='rm-btn' title='remover'>✕</button>" +
-"</td>";
-const qtyInput =
-tr.querySelector(
-'input[data-f="qty"]'
-);
-const unitInput =
-tr.querySelector(
-'[data-f="unit"]'
-);
-const costCell =
-tr.querySelector(".cost-display");
-qtyInput.value =
-item.qty ?? "";
-unitInput.value =
-item.unit ?? "";
-
-function currentUnit() {
-return unitInput ? unitInput.value : "";
-}
-
-function updateCostAndWarning() {
-const cost =
-getIngredientCost(
-item.invIndex,
-qtyInput.value,
-currentUnit()
-);
-costCell.textContent =
-cost.toLocaleString("pt-BR", {
-minimumFractionDigits: 2,
-maximumFractionDigits: 2
-});
-
-if (inv) {
-const invTotalGrams = toGrams(inv.total, inv.unit, inv);
-const usedGrams = toGrams(qtyInput.value, currentUnit(), inv);
-if (invTotalGrams > 0 && usedGrams > invTotalGrams) {
-tr.classList.add("excess-warning");
-tr.setAttribute("title", "Atenção: A quantidade informada excede o lote comprado cadastrado no Estoque!");
-} else {
-tr.classList.remove("excess-warning");
-tr.removeAttribute("title");
-}
+costEl.textContent = '—';
+priceEl.textContent = '—';
+profitEl.textContent = '—';
 }
 }
 
-qtyInput.addEventListener(
-"input",
-function() {
-const v =
-parseFloat(
-qtyInput.value
-);
-state.recipe[idx].qty =
-isFinite(v) && v >= 0
-? v
-: 0;
-saveState();
-updateCostAndWarning();
-render();
-}
-);
-unitInput.addEventListener(
-"input",
-function() {
-state.recipe[idx].unit = unitInput.value;
-saveState();
-updateCostAndWarning();
-render();
-}
-);
-unitInput.addEventListener(
-"keydown",
-function(e) {
-if (e.key === "Enter") {
-e.preventDefault();
-unitInput.blur();
-}
-}
-);
-qtyInput.addEventListener(
-"keydown",
-function(e) {
-if (e.key === "Enter") {
-e.preventDefault();
-qtyInput.blur();
-}
-}
-);
-tr.querySelector(".rm-btn")
-.addEventListener(
-"click",
-function() {
-state.recipe.splice(
-idx,
-1
-);
-saveState();
-renderRecipe();
-render();
-}
-);
-updateCostAndWarning();
-return tr;
-}
-
-function renderRecipe() {
-recBody.innerHTML = "";
-if (
-state.inventory.length === 0
-) {
-recBody.innerHTML =
-"<tr>" +
-"<td colspan='5' " +
-"style='text-align:center;" +
-"color:var(--text-muted);" +
-"padding:20px 0;'>" +
-"⚠️ Adicione produtos no estoque primeiro." +
-"</td>" +
-"</tr>";
-return;
-}
-state.recipe =
-state.recipe.filter(
-item =>
-item.invIndex >= 0 &&
-item.invIndex <
-state.inventory.length
-);
-state.recipe.forEach(
-function(item, idx) {
-recBody.appendChild(
-recRow(item, idx)
-);
-}
-);
+// ===== RENDER PRINCIPAL =====
+function render() {
+let recW = 0;
 let recV = 0;
-state.recipe.forEach(
-function(r) {
-recV +=
-getIngredientCost(
-r.invIndex,
-r.qty,
-r.unit
-);
-}
-);
-document.getElementById(
-"recSubV"
-).textContent =
-brl(recV);
-}
+state.recipe.forEach(function(r) {
+const qty = parseFloat(r.qty) || 0;
+const inv = state.inventory[r.invIndex];
+const unit = r.unit || (inv ? inv.unit : "g");
+recW += getRecipeWeight(qty, unit, inv);
+recV += getIngredientCost(r.invIndex, qty, unit);
+});
+document.getElementById("recSubV").textContent = brl(recV);
 
-document.getElementById(
-"addRec"
-).addEventListener(
-"click",
-function() {
-if (
-state.inventory.length === 0
-) {
-showModal({
-icon: "⚠️",
-title: "Estoque vazio",
-message:
-"Adicione produtos no estoque antes de criar a receita.",
-confirmText: "Entendi",
-onlyOk: true
-});
-return;
-}
-const nextIndex =
-state.recipe.length;
-if (
-nextIndex >=
-state.inventory.length
-) {
-showModal({
-icon: "ℹ️",
-title:
-"Todos os produtos já foram adicionados",
-message:
-"A lista da Receita já contém todos os produtos cadastrados no Estoque.",
-confirmText: "Entendi",
-onlyOk: true
-});
-return;
-}
-const defaultInv =
-state.inventory[nextIndex];
-state.recipe.push({
-invIndex: nextIndex,
-qty: 0,
-unit: defaultRecipeUnitFor(defaultInv)
-});
-saveState();
-renderRecipe();
-render();
-}
-);
-
-function pkgRow(item, idx) {
-const tr =
-document.createElement("tr");
-tr.innerHTML =
-"<td>" +
-"<input class='cell' data-f='name' " +
-"placeholder='nome' " +
-"inputmode='text'>" +
-"</td>" +
-"<td>" +
-"<input class='cell num' data-f='qty' " +
-"type='number' step='any' " +
-"inputmode='decimal' min='0'>" +
-"</td>" +
-"<td>" +
-"<input class='cell' data-f='unit' " +
-"placeholder='un' " +
-"inputmode='text'>" +
-"</td>" +
-"<td>" +
-"<input class='cell num' data-f='value' " +
-"type='number' step='any' " +
-"inputmode='decimal' min='0'>" +
-"</td>" +
-"<td>" +
-"<button class='rm-btn' title='remover'>✕</button>" +
-"</td>";
-const inputs =
-tr.querySelectorAll("input");
-inputs[0].value =
-item.name ?? "";
-inputs[1].value =
-item.qty ?? "";
-inputs[2].value =
-item.unit ?? "";
-inputs[3].value =
-item.value ?? "";
-inputs.forEach(function(inp) {
-function updatePackagingField() {
-const f =
-inp.dataset.f;
-const v =
-inp.value;
-if (
-f === "qty" ||
-f === "value"
-) {
-const numVal =
-parseFloat(v);
-state.packaging[idx][f] =
-isFinite(numVal) &&
-numVal >= 0
-? numVal
-: 0;
-} else {
-state.packaging[idx][f] =
-v;
-}
-saveState();
-render();
-}
-inp.addEventListener(
-"input",
-updatePackagingField
-);
-inp.addEventListener(
-"keydown",
-function(e) {
-if (e.key === "Enter") {
-e.preventDefault();
-inp.blur();
-}
-}
-);
-inp.addEventListener(
-"blur",
-function() {
-updatePackagingField();
-}
-);
-});
-tr.querySelector(".rm-btn")
-.addEventListener(
-"click",
-function() {
-state.packaging.splice(
-idx,
-1
-);
-saveState();
-renderPackaging();
-render();
-}
-);
-return tr;
-}
-
-function renderPackaging() {
-pkgBody.innerHTML = "";
-state.packaging.forEach(
-function(item, idx) {
-pkgBody.appendChild(
-pkgRow(item, idx)
-);
-}
-);
 let pkgV = 0;
-state.packaging.forEach(
-function(i) {
-pkgV +=
-(parseFloat(i.qty) || 0) *
-(parseFloat(i.value) || 0);
-}
-);
-document.getElementById(
-"pkgSubV"
-).textContent =
-brl(pkgV);
-}
-
-document.getElementById(
-"addPkg"
-).addEventListener(
-"click",
-function() {
-state.packaging.push({
-name: "",
-qty: 1,
-unit: "un",
-value: 0
+state.packaging.forEach(function(i) {
+pkgV += (parseFloat(i.qty) || 0) * (parseFloat(i.value) || 0);
 });
-saveState();
-renderPackaging();
-render();
-}
-);
+document.getElementById("pkgSubV").textContent = brl(pkgV);
 
-const modalOverlay =
-document.getElementById(
-"modalOverlay"
-);
-const modalIcon =
-document.getElementById(
-"modalIcon"
-);
-const modalTitle =
-document.getElementById(
-"modalTitle"
-);
-const modalMsg =
-document.getElementById(
-"modalMsg"
-);
-const modalCancelBtn =
-document.getElementById(
-"modalCancelBtn"
-);
-const modalConfirmBtn =
-document.getElementById(
-"modalConfirmBtn"
-);
+const weightPerPotVal = parseFloat(state.weightPerPot);
+const weightPerPot = isFinite(weightPerPotVal) && weightPerPotVal > 0 ? weightPerPotVal : 500;
 
-function closeModal() {
-modalOverlay.classList.remove(
-"open"
-);
-}
+const numPots = weightPerPot > 0 ? Math.floor(recW / weightPerPot) : 0;
+const leftoverWeight = Math.max(0, recW - (numPots * weightPerPot));
 
-function showModal(
-options,
-onConfirm
-) {
-modalIcon.textContent =
-options.icon || "⚠️";
-modalTitle.textContent =
-options.title || "";
-modalMsg.textContent =
-options.message || "";
-modalConfirmBtn.textContent =
-options.confirmText || "OK";
-modalConfirmBtn.className =
-"modal-btn primary" +
-(options.danger
-? ""
-: " neutral");
-if (options.onlyOk) {
-modalCancelBtn.style.display =
-"none";
+document.getElementById("totalWeight").textContent = num(recW, 0) + " g";
+document.getElementById("numPots").textContent = numPots + (numPots === 1 ? " pote" : " potes");
+document.getElementById("leftoverWeight").textContent = num(leftoverWeight, 0) + " g";
+
+const warningEl = document.getElementById("insufficientWarning");
+const warningPotSize = document.getElementById("warningPotSize");
+if (numPots === 0 && recW > 0) {
+warningPotSize.textContent = num(weightPerPot, 0);
+warningEl.classList.add("visible");
 } else {
-modalCancelBtn.style.display =
-"";
-modalCancelBtn.textContent =
-options.cancelText ||
-"Cancelar";
-}
-modalOverlay.classList.add(
-"open"
-);
-modalConfirmBtn.onclick =
-function() {
-closeModal();
-if (
-typeof onConfirm ===
-"function"
-) {
-onConfirm();
-}
-};
-modalCancelBtn.onclick =
-function() {
-closeModal();
-};
+warningEl.classList.remove("visible");
 }
 
-modalOverlay.addEventListener(
-"click",
-function(e) {
-if (
-e.target ===
-modalOverlay
-) {
-closeModal();
+let costIngPot = 0;
+if (numPots > 0) {
+if (state.leftoverCosting === "proportional" && recW > 0) {
+costIngPot = (recV / recW) * weightPerPot;
+} else {
+costIngPot = recV / numPots;
 }
-}
-);
-
-document.getElementById(
-"resetBtn"
-).addEventListener(
-"click",
-function() {
-showModal({
-icon: "↺",
-title: "Restaurar exemplo?",
-message:
-"Isso vai substituir os dados atuais pelos dados de exemplo. Essa ação não pode ser desfeita.",
-confirmText: "Restaurar",
-cancelText: "Cancelar",
-danger: true
-}, function() {
-state =
-JSON.parse(
-JSON.stringify(
-DEFAULT_STATE
-)
-);
-currentRecipeId = null;
-recipeNameEl.value =
-state.recipeName;
-weightPerPotEl.value =
-state.weightPerPot;
-profitPctEl.value =
-state.profitPct;
-document.getElementById('leftoverCosting').value = state.leftoverCosting;
-saveState();
-renderAll();
-});
-}
-);
-
-function renderRecipeList() {
-const container = document.getElementById('recipeList');
-const countEl = document.getElementById('recipeCount');
-countEl.textContent = `(${recipesList.length})`;
-if (recipesList.length === 0) {
-container.innerHTML = `<div class="recipe-list-empty">Nenhuma receita salva ainda</div>`;
-return;
-}
-const sorted = [...recipesList].sort((a, b) => b.updatedAt - a.updatedAt);
-container.innerHTML = sorted.map(function(recipe) {
-const isActive = recipe.id === currentRecipeId ? 'active' : '';
-const date = new Date(recipe.updatedAt);
-const dateStr = date.toLocaleDateString('pt-BR') + ' ' + date.toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
-return `
-<div class="recipe-item ${isActive}" data-id="${recipe.id}">
-<div class="recipe-info">
-<div class="recipe-name">${recipe.name}</div>
-<div class="recipe-meta">Atualizado em ${dateStr}</div>
-</div>
-<div class="recipe-actions">
-<button class="load-btn" data-id="${recipe.id}" title="Carregar">📂</button>
-<button class="del-btn" data-id="${recipe.id}" title="Apagar">🗑️</button>
-</div>
-</div>
-`;
-}).join('');
-container.querySelectorAll('.load-btn').forEach(function(btn) {
-btn.addEventListener('click', function(e) {
-e.stopPropagation();
-const id = this.dataset.id;
-loadRecipeFromList(id);
-});
-});
-container.querySelectorAll('.del-btn').forEach(function(btn) {
-btn.addEventListener('click', function(e) {
-e.stopPropagation();
-const id = this.dataset.id;
-const recipe = recipesList.find(function(r) { return r.id === id; });
-if (recipe) {
-showModal({
-icon: "🗑️",
-title: "Apagar receita?",
-message: `Tem certeza que deseja apagar "${recipe.name}"?`,
-confirmText: "Apagar",
-cancelText: "Cancelar",
-danger: true
-}, function() {
-recipesList = recipesList.filter(function(r) { return r.id !== id; });
-if (currentRecipeId === id) {
-currentRecipeId = null;
-}
-saveRecipesList();
-renderRecipeList();
-updateLoadedIndicators();
-});
-}
-});
-});
-container.querySelectorAll('.recipe-item').forEach(function(item) {
-item.addEventListener('click', function() {
-const id = this.dataset.id;
-loadRecipeFromList(id);
-});
-});
 }
 
-function handleSaveRecipe() {
-saveCurrentRecipe();
+const costPkgPot = pkgV;
+const operational = calculateOperationalCost(numPots);
+const costTotalPot = numPots > 0 ? costIngPot + costPkgPot + operational.total : 0;
+
+document.getElementById("costIngPot").textContent = numPots > 0 ? brl(costIngPot) : "—";
+document.getElementById("costPkgPot").textContent = numPots > 0 ? brl(costPkgPot) : "—";
+document.getElementById("costOpPot").textContent = numPots > 0 ? brl(operational.total) : "—";
+document.getElementById("costTotalPot").textContent = numPots > 0 ? brl(costTotalPot) : "—";
+
+const profitPct = Math.max(0, Math.min(parseFloat(state.profitPct) || 0, 99.99));
+const margin = profitPct / 100;
+const price = numPots > 0 && margin < 1 && costTotalPot > 0 ? costTotalPot / (1 - margin) : 0;
+const profitValue = price > 0 ? Math.max(0, price - costTotalPot) : 0;
+const markup = costTotalPot > 0 && price > 0 ? price / costTotalPot : 0;
+
+document.getElementById("markup").textContent = markup > 0 ? "×" + markup.toFixed(2).replace(".", ",") : "—";
+
+const finalPriceEl = document.getElementById("finalPrice");
+if (numPots === 0) {
+finalPriceEl.textContent = recW > 0 ? "Nenhum pote completo" : "Sem receita";
+finalPriceEl.classList.add("no-price");
+document.getElementById("jarPots").textContent = recW > 0 ? "0 potes para vender" : "0 potes";
+} else {
+finalPriceEl.textContent = brl(price);
+finalPriceEl.classList.remove("no-price");
+document.getElementById("jarPots").textContent = numPots + (numPots === 1 ? " pote" : " potes");
 }
 
-function handleDeleteRecipe() {
-deleteCurrentRecipe();
+// Quick Summary
+updateQuickSummary(costTotalPot, price, numPots);
+
+if (price > 0) {
+const segments = [
+{ label: "Ingredientes", value: costIngPot, color: "#6bcb8a" },
+{ label: "Embalagem", value: costPkgPot, color: "#6ab0e8" },
+{ label: "Operacional", value: operational.total, color: "#e86a6a" },
+{ label: "Lucro", value: profitValue, color: "#ffd84d" }
+];
+const total = price;
+document.getElementById("jarLegend").innerHTML = segments.map(function(seg) {
+const pct = total > 0 ? Math.round((seg.value / total) * 100) : 0;
+return "<div><span class='lab'><span class='sw' style='background:" + seg.color + "'></span>" + seg.label + "</span><span class='val'>" + pct + "%</span></div>";
+}).join("");
+} else {
+document.getElementById("jarLegend").innerHTML = "<div><span class='lab'>A composição do preço aparecerá quando houver pelo menos 1 pote completo.</span></div>";
 }
 
-document.getElementById('goToRecipesTab').addEventListener('click', function(e) {
-e.preventDefault();
-switchTab('tab4');
-});
-
-document.getElementById('saveRecipeBtn').addEventListener('click', handleSaveRecipe);
-document.getElementById('saveRecipeBtnTab4').addEventListener('click', handleSaveRecipe);
-document.getElementById('deleteCurrentRecipeBtnTab4').addEventListener('click', handleDeleteRecipe);
-
-const jarLegend =
-document.getElementById(
-"jarLegend"
-);
-const jarPots =
-document.getElementById(
-"jarPots"
-);
+let invTotal = 0;
+state.inventory.forEach(function(i) { invTotal += parseFloat(i.value) || 0; });
+document.getElementById("invTotalValue").textContent = brl(invTotal);
+}
 
 function calculateOperationalCost(numPots) {
 const laborHourly = parseFloat(document.getElementById('laborHourly').value) || 0;
@@ -2708,334 +2208,409 @@ const utilitiesPerPot = utilitiesCost / numPots;
 const totalOperational = laborPerPot + utilitiesPerPot;
 
 document.getElementById('operationalTotal').textContent = brl(totalOperational);
-
-return {
-total: totalOperational,
-labor: laborPerPot,
-utilities: utilitiesPerPot
-};
+return { total: totalOperational, labor: laborPerPot, utilities: utilitiesPerPot };
 }
 
-function render() {
-let recW = 0;
+function getIngredientCost(invIndex, qty, recipeUnit) {
+const inv = state.inventory[invIndex];
+if (!inv) return 0;
+const total = parseFloat(inv.total) || 0;
+const value = parseFloat(inv.value) || 0;
+const q = parseFloat(qty) || 0;
+if (total <= 0 || value <= 0 || q <= 0) return 0;
+const inventoryUnit = String(inv.unit || "").trim().toLowerCase();
+const usedUnit = String(recipeUnit || inv.unit || "").trim().toLowerCase();
+
+const totalGrams = toGrams(total, inventoryUnit, inv);
+const usedGrams = toGrams(q, usedUnit, inv);
+if (totalGrams === null || usedGrams === null || totalGrams <= 0 || usedGrams < 0) return 0;
+return (usedGrams / totalGrams) * value;
+}
+
+// ===== INVENTORY =====
+function invRow(item, idx) {
+const tr = document.createElement("tr");
+tr.innerHTML =
+"<td><input class='cell' data-f='name' placeholder='Produto' inputmode='text'></td>" +
+"<td><input class='cell num' data-f='total' type='number' step='any' inputmode='decimal' min='0' placeholder='5500'></td>" +
+"<td><select class='cell' data-f='unit'><option value='g'>g</option><option value='ml'>ml</option><option value='kg'>kg</option><option value='L'>L</option></select></td>" +
+"<td><input class='cell num' data-f='value' type='number' step='any' inputmode='decimal' min='0' placeholder='0,00'></td>" +
+"<td><button class='rm-btn' title='remover'>✕</button></td>";
+const nameInput = tr.querySelector('[data-f="name"]');
+const totalInput = tr.querySelector('[data-f="total"]');
+const unitSelect = tr.querySelector('[data-f="unit"]');
+const valueInput = tr.querySelector('[data-f="value"]');
+const inputs = [nameInput, totalInput, unitSelect, valueInput];
+nameInput.value = item.name || "";
+totalInput.value = item.total ?? "";
+unitSelect.value = item.unit || "g";
+valueInput.value = item.value ?? "";
+
+inputs.forEach(function(inp) {
+function updateInventoryField() {
+const f = inp.dataset.f;
+const v = inp.value;
+if (f === "total" || f === "value") {
+const numVal = parseFloat(v);
+state.inventory[idx][f] = isFinite(numVal) && numVal >= 0 ? numVal : 0;
+} else {
+state.inventory[idx][f] = v;
+}
+if (f === "name" || f === "unit") {
+const currentUnit = String(state.inventory[idx].unit || "").trim().toLowerCase();
+if (currentUnit === "ml" || currentUnit === "l") {
+state.inventory[idx].density = getDensityByName(state.inventory[idx].name);
+}
+}
+if (f === "unit") renderRecipe();
+saveState();
+render();
+}
+inp.addEventListener("input", updateInventoryField);
+inp.addEventListener("keydown", function(e) { if (e.key === "Enter") { e.preventDefault(); inp.blur(); } });
+inp.addEventListener("blur", updateInventoryField);
+inp.addEventListener("change", updateInventoryField);
+});
+tr.querySelector(".rm-btn").addEventListener("click", function() {
+state.inventory.splice(idx, 1);
+state.recipe = state.recipe.filter(r => r.invIndex !== idx);
+state.recipe.forEach(function(r) { if (r.invIndex > idx) r.invIndex--; });
+saveState();
+renderInventory();
+renderRecipe();
+render();
+});
+return tr;
+}
+
+function renderInventory() {
+invBody.innerHTML = "";
+state.inventory.forEach(function(item, idx) { invBody.appendChild(invRow(item, idx)); });
+let total = 0;
+state.inventory.forEach(function(i) { total += parseFloat(i.value) || 0; });
+document.getElementById("invTotalValue").textContent = brl(total);
+}
+
+document.getElementById("addInv").addEventListener("click", function() {
+state.inventory.push({ name: "", total: 0, unit: "g", value: 0, density: 1.00 });
+saveState();
+renderInventory();
+renderRecipe();
+render();
+});
+
+// ===== RECIPE =====
+function recRow(item, idx) {
+const tr = document.createElement("tr");
+const inv = state.inventory[item.invIndex];
+const productName = inv ? (inv.name || "Produto " + (item.invIndex + 1)) : "Produto";
+const invUnit = String(inv ? inv.unit : "").trim().toLowerCase();
+
+tr.innerHTML =
+"<td><div class='product-display'>" + productName + "</div></td>" +
+"<td><input class='cell num' data-f='qty' type='number' step='any' inputmode='decimal' min='0' placeholder='5500'></td>" +
+"<td><select class='cell' data-f='unit'><option value='g'>g</option><option value='ml'>ml</option></select></td>" +
+"<td class='num'><div class='cost-display' data-f='cost'>0,00</div></td>" +
+"<td><button class='rm-btn' title='remover'>✕</button></td>";
+const qtyInput = tr.querySelector('input[data-f="qty"]');
+const unitInput = tr.querySelector('[data-f="unit"]');
+const costCell = tr.querySelector(".cost-display");
+qtyInput.value = item.qty ?? "";
+unitInput.value = item.unit ?? "";
+
+function currentUnit() { return unitInput ? unitInput.value : ""; }
+
+function updateCostAndWarning() {
+const cost = getIngredientCost(item.invIndex, qtyInput.value, currentUnit());
+costCell.textContent = cost.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+if (inv) {
+const invTotalGrams = toGrams(inv.total, inv.unit, inv);
+const usedGrams = toGrams(qtyInput.value, currentUnit(), inv);
+if (invTotalGrams > 0 && usedGrams > invTotalGrams) {
+tr.classList.add("excess-warning");
+tr.setAttribute("title", "Atenção: A quantidade informada excede o lote comprado cadastrado no Estoque!");
+} else {
+tr.classList.remove("excess-warning");
+tr.removeAttribute("title");
+}
+}
+}
+
+qtyInput.addEventListener("input", function() {
+const v = parseFloat(qtyInput.value);
+state.recipe[idx].qty = isFinite(v) && v >= 0 ? v : 0;
+saveState();
+updateCostAndWarning();
+render();
+});
+unitInput.addEventListener("input", function() {
+state.recipe[idx].unit = unitInput.value;
+saveState();
+updateCostAndWarning();
+render();
+});
+qtyInput.addEventListener("keydown", function(e) { if (e.key === "Enter") { e.preventDefault(); qtyInput.blur(); } });
+unitInput.addEventListener("keydown", function(e) { if (e.key === "Enter") { e.preventDefault(); unitInput.blur(); } });
+tr.querySelector(".rm-btn").addEventListener("click", function() {
+state.recipe.splice(idx, 1);
+saveState();
+renderRecipe();
+render();
+});
+updateCostAndWarning();
+return tr;
+}
+
+function renderRecipe() {
+recBody.innerHTML = "";
+if (state.inventory.length === 0) {
+recBody.innerHTML = "<tr><td colspan='5' style='text-align:center;color:var(--text-muted);padding:20px 0;'>⚠️ Adicione produtos no estoque primeiro.</td></tr>";
+return;
+}
+state.recipe = state.recipe.filter(item => item.invIndex >= 0 && item.invIndex < state.inventory.length);
+state.recipe.forEach(function(item, idx) { recBody.appendChild(recRow(item, idx)); });
 let recV = 0;
-state.recipe.forEach(
-function(r) {
-const qty =
-parseFloat(r.qty) || 0;
-const inv =
-state.inventory[r.invIndex];
-const unit =
-r.unit ||
-(
-inv
-? inv.unit
-: "g"
-);
-recW +=
-getRecipeWeight(
-qty,
-unit,
-inv
-);
-recV +=
-getIngredientCost(
-r.invIndex,
-qty,
-unit
-);
+state.recipe.forEach(function(r) { recV += getIngredientCost(r.invIndex, r.qty, r.unit); });
+document.getElementById("recSubV").textContent = brl(recV);
 }
-);
-document.getElementById(
-"recSubV"
-).textContent =
-brl(recV);
 
+document.getElementById("addRec").addEventListener("click", function() {
+if (state.inventory.length === 0) {
+showModal({ icon: "⚠️", title: "Estoque vazio", message: "Adicione produtos no estoque antes de criar a receita.", confirmText: "Entendi", onlyOk: true });
+return;
+}
+const nextIndex = state.recipe.length;
+if (nextIndex >= state.inventory.length) {
+showModal({ icon: "ℹ️", title: "Todos os produtos já foram adicionados", message: "A lista da Receita já contém todos os produtos cadastrados no Estoque.", confirmText: "Entendi", onlyOk: true });
+return;
+}
+const defaultInv = state.inventory[nextIndex];
+state.recipe.push({ invIndex: nextIndex, qty: 0, unit: defaultRecipeUnitFor(defaultInv) });
+saveState();
+renderRecipe();
+render();
+});
+
+// ===== PACKAGING =====
+function pkgRow(item, idx) {
+const tr = document.createElement("tr");
+tr.innerHTML =
+"<td><input class='cell' data-f='name' placeholder='nome' inputmode='text'></td>" +
+"<td><input class='cell num' data-f='qty' type='number' step='any' inputmode='decimal' min='0'></td>" +
+"<td><input class='cell' data-f='unit' placeholder='un' inputmode='text'></td>" +
+"<td><input class='cell num' data-f='value' type='number' step='any' inputmode='decimal' min='0'></td>" +
+"<td><button class='rm-btn' title='remover'>✕</button></td>";
+const inputs = tr.querySelectorAll("input");
+inputs[0].value = item.name ?? "";
+inputs[1].value = item.qty ?? "";
+inputs[2].value = item.unit ?? "";
+inputs[3].value = item.value ?? "";
+inputs.forEach(function(inp) {
+function updatePackagingField() {
+const f = inp.dataset.f;
+const v = inp.value;
+if (f === "qty" || f === "value") {
+const numVal = parseFloat(v);
+state.packaging[idx][f] = isFinite(numVal) && numVal >= 0 ? numVal : 0;
+} else {
+state.packaging[idx][f] = v;
+}
+saveState();
+render();
+}
+inp.addEventListener("input", updatePackagingField);
+inp.addEventListener("keydown", function(e) { if (e.key === "Enter") { e.preventDefault(); inp.blur(); } });
+inp.addEventListener("blur", updatePackagingField);
+});
+tr.querySelector(".rm-btn").addEventListener("click", function() {
+state.packaging.splice(idx, 1);
+saveState();
+renderPackaging();
+render();
+});
+return tr;
+}
+
+function renderPackaging() {
+pkgBody.innerHTML = "";
+state.packaging.forEach(function(item, idx) { pkgBody.appendChild(pkgRow(item, idx)); });
 let pkgV = 0;
-state.packaging.forEach(
-function(i) {
-pkgV +=
-(parseFloat(i.qty) || 0) *
-(parseFloat(i.value) || 0);
+state.packaging.forEach(function(i) { pkgV += (parseFloat(i.qty) || 0) * (parseFloat(i.value) || 0); });
+document.getElementById("pkgSubV").textContent = brl(pkgV);
 }
-);
-document.getElementById(
-"pkgSubV"
-).textContent =
-brl(pkgV);
 
-const weightPerPotVal =
-parseFloat(
-state.weightPerPot
-);
-const weightPerPot =
-isFinite(weightPerPotVal) &&
-weightPerPotVal > 0
-? weightPerPotVal
-: 500;
+document.getElementById("addPkg").addEventListener("click", function() {
+state.packaging.push({ name: "", qty: 1, unit: "un", value: 0 });
+saveState();
+renderPackaging();
+render();
+});
 
-const numPots =
-weightPerPot > 0
-? Math.floor(
-recW /
-weightPerPot
-)
-: 0;
+// ===== MODAL =====
+const modalOverlay = document.getElementById("modalOverlay");
+const modalIcon = document.getElementById("modalIcon");
+const modalTitle = document.getElementById("modalTitle");
+const modalMsg = document.getElementById("modalMsg");
+const modalCancelBtn = document.getElementById("modalCancelBtn");
+const modalConfirmBtn = document.getElementById("modalConfirmBtn");
 
-const leftoverWeight =
-Math.max(
-0,
-recW -
-(
-numPots *
-weightPerPot
-)
-);
+function closeModal() { modalOverlay.classList.remove("open"); }
 
-document.getElementById(
-"totalWeight"
-).textContent =
-num(recW, 0) +
-" g";
-document.getElementById(
-"numPots"
-).textContent =
-numPots +
-(
-numPots === 1
-? " pote"
-: " potes"
-);
-document.getElementById(
-"leftoverWeight"
-).textContent =
-num(
-leftoverWeight,
-0
-) +
-" g";
-
-const warningEl =
-document.getElementById(
-"insufficientWarning"
-);
-const warningPotSize =
-document.getElementById(
-"warningPotSize"
-);
-if (
-numPots === 0 &&
-recW > 0
-) {
-warningPotSize.textContent =
-num(
-weightPerPot,
-0
-);
-warningEl.classList.add(
-"visible"
-);
+function showModal(options, onConfirm) {
+modalIcon.textContent = options.icon || "⚠️";
+modalTitle.textContent = options.title || "";
+modalMsg.textContent = options.message || "";
+modalConfirmBtn.textContent = options.confirmText || "OK";
+modalConfirmBtn.className = "modal-btn primary" + (options.danger ? "" : " neutral");
+if (options.onlyOk) {
+modalCancelBtn.style.display = "none";
 } else {
-warningEl.classList.remove(
-"visible"
-);
+modalCancelBtn.style.display = "";
+modalCancelBtn.textContent = options.cancelText || "Cancelar";
+}
+modalOverlay.classList.add("open");
+modalConfirmBtn.onclick = function() { closeModal(); if (typeof onConfirm === "function") onConfirm(); };
+modalCancelBtn.onclick = function() { closeModal(); };
 }
 
-let costIngPot = 0;
-if (numPots > 0) {
-if (state.leftoverCosting === "proportional" && recW > 0) {
-costIngPot = (recV / recW) * weightPerPot;
-} else {
-costIngPot = recV / numPots;
+modalOverlay.addEventListener("click", function(e) { if (e.target === modalOverlay) closeModal(); });
+
+// ===== RESET =====
+document.getElementById("resetBtn").addEventListener("click", function() {
+showModal({
+icon: "↺",
+title: "Restaurar exemplo?",
+message: "Isso vai substituir os dados atuais pelos dados de exemplo. Essa ação não pode ser desfeita.",
+confirmText: "Restaurar",
+cancelText: "Cancelar",
+danger: true
+}, function() {
+state = JSON.parse(JSON.stringify(DEFAULT_STATE));
+currentRecipeId = null;
+recipeNameEl.value = state.recipeName;
+weightPerPotEl.value = state.weightPerPot;
+profitPctEl.value = state.profitPct;
+document.getElementById('leftoverCosting').value = state.leftoverCosting;
+saveState();
+renderAll();
+});
+});
+
+// ===== RECIPE LIST =====
+function renderRecipeList() {
+const container = document.getElementById('recipeList');
+const countEl = document.getElementById('recipeCount');
+countEl.textContent = `(${recipesList.length})`;
+if (recipesList.length === 0) {
+container.innerHTML = `<div class="recipe-list-empty">Nenhuma receita salva ainda</div>`;
+return;
 }
+const sorted = [...recipesList].sort((a, b) => b.updatedAt - a.updatedAt);
+container.innerHTML = sorted.map(function(recipe) {
+const isActive = recipe.id === currentRecipeId ? 'active' : '';
+const date = new Date(recipe.updatedAt);
+const dateStr = date.toLocaleDateString('pt-BR') + ' ' + date.toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
+return `<div class="recipe-item ${isActive}" data-id="${recipe.id}">
+<div class="recipe-info"><div class="recipe-name">${recipe.name}</div><div class="recipe-meta">Atualizado em ${dateStr}</div></div>
+<div class="recipe-actions">
+<button class="load-btn" data-id="${recipe.id}" title="Carregar">📂</button>
+<button class="del-btn" data-id="${recipe.id}" title="Apagar">🗑️</button>
+</div>
+</div>`;
+}).join('');
+container.querySelectorAll('.load-btn').forEach(function(btn) {
+btn.addEventListener('click', function(e) { e.stopPropagation(); loadRecipeFromList(this.dataset.id); });
+});
+container.querySelectorAll('.del-btn').forEach(function(btn) {
+btn.addEventListener('click', function(e) {
+e.stopPropagation();
+const id = this.dataset.id;
+const recipe = recipesList.find(function(r) { return r.id === id; });
+if (recipe) {
+showModal({
+icon: "🗑️",
+title: "Apagar receita?",
+message: `Tem certeza que deseja apagar "${recipe.name}"?`,
+confirmText: "Apagar",
+cancelText: "Cancelar",
+danger: true
+}, function() {
+recipesList = recipesList.filter(function(r) { return r.id !== id; });
+if (currentRecipeId === id) currentRecipeId = null;
+saveRecipesList();
+renderRecipeList();
+updateLoadedIndicators();
+});
 }
-
-const costPkgPot = pkgV;
-const operational = calculateOperationalCost(numPots);
-
-const costTotalPot =
-numPots > 0
-? costIngPot + costPkgPot + operational.total
-: 0;
-
-document.getElementById(
-"costIngPot"
-).textContent =
-numPots > 0
-? brl(costIngPot)
-: "—";
-document.getElementById(
-"costPkgPot"
-).textContent =
-numPots > 0
-? brl(costPkgPot)
-: "—";
-document.getElementById(
-"costOpPot"
-).textContent =
-numPots > 0
-? brl(operational.total)
-: "—";
-document.getElementById(
-"costTotalPot"
-).textContent =
-numPots > 0
-? brl(costTotalPot)
-: "—";
-
-const profitPct =
-Math.max(
-0,
-Math.min(
-parseFloat(
-state.profitPct
-) || 0,
-99.99
-)
-);
-const margin =
-profitPct / 100;
-
-const price =
-numPots > 0 &&
-margin < 1 &&
-costTotalPot > 0
-? costTotalPot / (1 - margin)
-: 0;
-
-const profitValue =
-price > 0
-? Math.max(
-0,
-price -
-costTotalPot
-)
-: 0;
-
-const markup =
-costTotalPot > 0 &&
-price > 0
-? price /
-costTotalPot
-: 0;
-
-document.getElementById(
-"markup"
-).textContent =
-markup > 0
-? "×" +
-markup
-.toFixed(2)
-.replace(".", ",")
-: "—";
-
-const finalPriceEl =
-document.getElementById(
-"finalPrice"
-);
-if (numPots === 0) {
-finalPriceEl.textContent =
-recW > 0
-? "Nenhum pote completo"
-: "Sem receita";
-finalPriceEl.classList.add(
-"no-price"
-);
-jarPots.textContent =
-recW > 0
-? "0 potes para vender"
-: "0 potes";
-} else {
-finalPriceEl.textContent =
-brl(price);
-finalPriceEl.classList.remove(
-"no-price"
-);
-jarPots.textContent =
-numPots +
-(
-numPots === 1
-? " pote"
-: " potes"
-);
+});
+});
+container.querySelectorAll('.recipe-item').forEach(function(item) {
+item.addEventListener('click', function() { loadRecipeFromList(this.dataset.id); });
+});
 }
 
-if (price > 0) {
-const segments = [
-{
-label: "Ingredientes",
-value: costIngPot,
-color: "#6bcb8a"
-},
-{
-label: "Embalagem",
-value: costPkgPot,
-color: "#6ab0e8"
-},
-{
-label: "Operacional",
-value: operational.total,
-color: "#e86a6a"
-},
-{
-label: "Lucro",
-value: profitValue,
-color: "#ffd84d"
-}
-];
-const total =
-price;
-jarLegend.innerHTML =
-segments.map(
-function(seg) {
-const pct =
-total > 0
-? Math.round(
-(seg.value /
-total) *
-100
-)
-: 0;
-return (
-"<div>" +
-"<span class='lab'>" +
-"<span class='sw' " +
-"style='background:" +
-seg.color +
-"'></span>" +
-seg.label +
-"</span>" +
-"<span class='val'>" +
-pct +
-"%" +
-"</span>" +
-"</div>"
-);
-}
-).join("");
-} else {
-jarLegend.innerHTML =
-"<div>" +
-"<span class='lab'>" +
-"A composição do preço aparecerá " +
-"quando houver pelo menos 1 pote completo." +
-"</span>" +
-"</div>";
-}
+function handleSaveRecipe() { saveCurrentRecipe(); }
+function handleDeleteRecipe() { deleteCurrentRecipe(); }
 
-let invTotal = 0;
-state.inventory.forEach(
-function(i) {
-invTotal +=
-parseFloat(i.value) || 0;
-}
-);
-document.getElementById(
-"invTotalValue"
-).textContent =
-brl(invTotal);
-}
+document.getElementById('goToRecipesTab').addEventListener('click', function(e) { e.preventDefault(); switchTab('tab4'); });
+document.getElementById('saveRecipeBtn').addEventListener('click', handleSaveRecipe);
+document.getElementById('saveRecipeBtnTab4').addEventListener('click', handleSaveRecipe);
+document.getElementById('deleteCurrentRecipeBtnTab4').addEventListener('click', handleDeleteRecipe);
 
+// ===== ELEMENTOS =====
+const recipeNameEl = document.getElementById("recipeName");
+const invBody = document.getElementById("invBody");
+const recBody = document.getElementById("recBody");
+const pkgBody = document.getElementById("pkgBody");
+const weightPerPotEl = document.getElementById("weightPerPot");
+const profitPctEl = document.getElementById("profitPct");
+
+recipeNameEl.value = state.recipeName || "Minha Receita";
+weightPerPotEl.value = state.weightPerPot > 0 ? state.weightPerPot : 500;
+profitPctEl.value = state.profitPct;
+
+recipeNameEl.addEventListener("input", function() { state.recipeName = recipeNameEl.value; saveState(); });
+weightPerPotEl.addEventListener("input", function() {
+const value = parseFloat(weightPerPotEl.value);
+state.weightPerPot = isFinite(value) && value > 0 ? value : 0;
+saveState();
+render();
+});
+profitPctEl.addEventListener("input", function() {
+let value = parseFloat(profitPctEl.value);
+if (!isFinite(value)) value = 0;
+value = Math.max(0, Math.min(value, 99.99));
+state.profitPct = value;
+saveState();
+render();
+});
+
+document.getElementById('leftoverCosting').addEventListener('change', function() {
+state.leftoverCosting = this.value;
+saveState();
+render();
+});
+
+const opFields = ['laborHourly', 'prepTime', 'utilitiesCost'];
+opFields.forEach(function(field) {
+document.getElementById(field).addEventListener('input', function() { saveState(); render(); });
+});
+
+// ===== TABS =====
+const tabBtns = document.querySelectorAll(".tab-btn");
+tabBtns.forEach(function(btn) {
+btn.addEventListener("click", function(e) {
+e.preventDefault();
+tabBtns.forEach(function(b) { b.classList.remove("active"); });
+this.classList.add("active");
+Object.values({tab0: document.getElementById("tab0"), tab1: document.getElementById("tab1"), tab2: document.getElementById("tab2"), tab3: document.getElementById("tab3"), tab4: document.getElementById("tab4")}).forEach(function(tc) { tc.classList.remove("active"); });
+const target = document.getElementById(this.dataset.tab);
+if (target) target.classList.add("active");
+updateProgressBar(this.dataset.tab);
+});
+});
+
+// ===== RENDER ALL =====
 function renderAll() {
 renderInventory();
 renderRecipe();
@@ -3050,48 +2625,32 @@ renderAll();
 if (recipesList.length > 0) {
 const matching = recipesList.find(function(r) {
 const data = r.data;
-return data &&
-data.recipeName === state.recipeName &&
+return data && data.recipeName === state.recipeName &&
 JSON.stringify(data.inventory) === JSON.stringify(state.inventory) &&
 JSON.stringify(data.recipe) === JSON.stringify(state.recipe) &&
 JSON.stringify(data.packaging) === JSON.stringify(state.packaging);
 });
-if (matching) {
-currentRecipeId = matching.id;
-}
+if (matching) currentRecipeId = matching.id;
 }
 renderRecipeList();
 updateLoadedIndicators();
 
-const opFields = ['laborHourly', 'prepTime', 'utilitiesCost'];
-opFields.forEach(function(field) {
-document.getElementById(field).addEventListener('input', function() {
-saveState();
-render();
-});
-});
+// ===== ONBOARDING =====
+showOnboarding();
 
+// ===== SERVICE WORKER =====
 if ("serviceWorker" in navigator) {
 let refreshing = false;
-navigator.serviceWorker.addEventListener(
-"controllerchange",
-function() {
-if (refreshing) {
-return;
-}
+navigator.serviceWorker.addEventListener("controllerchange", function() {
+if (refreshing) return;
 refreshing = true;
 window.location.reload();
+});
+window.addEventListener("load", function() {
+navigator.serviceWorker.register("sw.js").catch(function() {});
+});
 }
-);
-window.addEventListener(
-"load",
-function() {
-navigator.serviceWorker
-.register("sw.js")
-.catch(function() {});
-}
-);
-}
+
 })();
 </script>
 </body>
