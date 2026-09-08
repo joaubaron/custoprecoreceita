@@ -1554,12 +1554,12 @@ Rendimento da receita e o custo detalhado de cada pote
 
 <div class="k">Tamanho do pote</div>
 <div class="v editable">
-<input type="number" id="weightPerPot" min="1" step="1" inputmode="numeric" value="500" placeholder="500" />
+<input type="number" id="weightPerPot" min="1" step="1" inputmode="numeric" value="500" placeholder="Ex: 500" />
 <span class="unit-suffix">g</span>
 </div>
 <div class="k"></div>
 <div class="v" id="potSizeWarning" style="display:none;color:var(--orange);font-size:11px;font-weight:600;text-align:right;">
-⚠️ Usando 500g (padrão) — preencha o campo acima
+⚠️ Informe o tamanho do pote para calcular
 </div>
 
 <div class="divider"></div>
@@ -2144,22 +2144,18 @@ pkgV += (parseFloat(i.qty) || 0) * (parseFloat(i.value) || 0);
 document.getElementById("pkgSubV").textContent = brl(pkgV);
 
 const weightPerPotVal = parseFloat(state.weightPerPot);
-const weightPerPot = isFinite(weightPerPotVal) && weightPerPotVal > 0 ? weightPerPotVal : 500;
+const weightPerPotValid = isFinite(weightPerPotVal) && weightPerPotVal > 0;
+const weightPerPot = weightPerPotValid ? weightPerPotVal : 0;
 
 const potSizeWarningEl = document.getElementById("potSizeWarning");
-if (weightPerPotVal <= 0 || !isFinite(weightPerPotVal)) {
-document.getElementById("weightPerPot").placeholder = "500";
-potSizeWarningEl.style.display = "block";
-} else {
-potSizeWarningEl.style.display = "none";
-}
+potSizeWarningEl.style.display = weightPerPotValid ? "none" : "block";
 
-const numPots = weightPerPot > 0 ? Math.floor(recW / weightPerPot) : 0;
+const numPots = weightPerPotValid ? Math.floor(recW / weightPerPot) : 0;
 const leftoverWeight = Math.max(0, recW - (numPots * weightPerPot));
 
 document.getElementById("totalWeight").textContent = num(recW, 0) + " g";
-document.getElementById("numPots").textContent = numPots + (numPots === 1 ? " pote" : " potes");
-document.getElementById("leftoverWeight").textContent = num(leftoverWeight, 0) + " g";
+document.getElementById("numPots").textContent = weightPerPotValid ? (numPots + (numPots === 1 ? " pote" : " potes")) : "—";
+document.getElementById("leftoverWeight").textContent = weightPerPotValid ? (num(leftoverWeight, 0) + " g") : "—";
 
 if (numPots > 0 && leftoverWeight > 0) {
 document.getElementById("leftoverStatus").textContent = 
@@ -2173,7 +2169,7 @@ document.getElementById("leftoverStatus").textContent =
 }
 
 const warningEl = document.getElementById("insufficientWarning");
-if (numPots === 0 && recW > 0) {
+if (weightPerPotValid && numPots === 0 && recW > 0) {
 const suggestedPotSize = Math.round(recW);
 warningEl.innerHTML = `
 ⚠️ A receita (${num(recW, 0)}g) não rende um pote completo de ${num(weightPerPot, 0)}g.<br>
@@ -2701,7 +2697,7 @@ const weightPerPotEl = document.getElementById("weightPerPot");
 const profitPctEl = document.getElementById("profitPct");
 
 recipeNameEl.value = state.recipeName || "Minha Receita";
-weightPerPotEl.value = state.weightPerPot > 0 ? state.weightPerPot : 500;
+weightPerPotEl.value = state.weightPerPot > 0 ? state.weightPerPot : "";
 profitPctEl.value = state.profitPct;
 
 recipeNameEl.addEventListener("input", function() { state.recipeName = recipeNameEl.value; saveState(); });
