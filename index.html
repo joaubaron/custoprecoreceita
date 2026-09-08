@@ -1554,7 +1554,7 @@ Rendimento da receita e o custo detalhado de cada pote
 
 <div class="k">Tamanho do pote</div>
 <div class="v editable">
-<input type="number" id="weightPerPot" min="1" step="1" inputmode="numeric" value="500" placeholder="Ex: 500" />
+<input type="number" id="weightPerPot" min="0" step="1" inputmode="numeric" value="500" placeholder="Ex: 500" />
 <span class="unit-suffix">g</span>
 </div>
 <div class="k"></div>
@@ -1857,7 +1857,7 @@ const raw = localStorage.getItem(STORAGE_KEY);
 if (raw) {
 const parsed = JSON.parse(raw);
 if (parsed && Array.isArray(parsed.inventory) && Array.isArray(parsed.recipe) && Array.isArray(parsed.packaging)) {
-if (!isFinite(parsed.weightPerPot) || parsed.weightPerPot <= 0) parsed.weightPerPot = 500;
+if (!isFinite(parsed.weightPerPot) || parsed.weightPerPot < 0) parsed.weightPerPot = 500;
 if (!isFinite(parsed.profitPct) || parsed.profitPct < 0 || parsed.profitPct > 99.99) parsed.profitPct = 35;
 parsed.inventory.forEach(function(item) {
 if (item && (String(item.unit || "").trim().toLowerCase() === "ml" || String(item.unit || "").trim().toLowerCase() === "l")) {
