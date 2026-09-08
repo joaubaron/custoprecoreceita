@@ -2139,9 +2139,13 @@ warningEl.innerHTML = `
 ⚠️ A receita (${num(recW, 0)}g) não rende um pote completo de ${num(weightPerPot, 0)}g.<br>
 💡 Sugestão: use um pote de ${suggestedPotSize}g para obter 1 pote completo.
 `;
+warningEl.style.display = "block";
 warningEl.classList.add("visible");
+console.log("✅ Aviso ativado!");
 } else {
+warningEl.style.display = "none";
 warningEl.classList.remove("visible");
+console.log("❌ Aviso desativado");
 }
 
 // ✅ CÁLCULO CORRIGIDO - SEMPRE DIVIDE PELO NÚMERO DE POTES
