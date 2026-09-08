@@ -607,11 +607,12 @@ tr.excess-warning input.cell {
 border-color: rgba(245, 168, 74, 0.4);
 }
 
-table th:nth-child(1), table td:nth-child(1) { width: 42% !important; }
-table th:nth-child(2), table td:nth-child(2) { width: 19% !important; }
-table th:nth-child(3), table td:nth-child(3) { width: 17% !important; }
-table th:nth-child(4), table td:nth-child(4) { width: 14% !important; }
-table th:nth-child(5), table td:nth-child(5) { width: 8% !important; }
+table th:nth-child(1), table td:nth-child(1) { width: 30% !important; }
+table th:nth-child(2), table td:nth-child(2) { width: 15% !important; }
+table th:nth-child(3), table td:nth-child(3) { width: 12% !important; }
+table th:nth-child(4), table td:nth-child(4) { width: 12% !important; }
+table th:nth-child(5), table td:nth-child(5) { width: 19% !important; }
+table th:nth-child(6), table td:nth-child(6) { width: 12% !important; }
 
 .total-line {
 display: flex;
@@ -675,7 +676,7 @@ font-weight: 700 !important;
 color: var(--text-secondary);
 }
 
-table:not(.operational-table) td:nth-child(4) input.cell.num {
+table:not(.operational-table) td:nth-child(5) input.cell.num {
 color: var(--gold) !important;
 font-weight: 700 !important;
 }
@@ -888,6 +889,14 @@ color: var(--gold);
 font-variant-numeric: tabular-nums;
 margin: 4px 0;
 word-break: break-word;
+}
+
+.price-tag .amt.high-margin-warning {
+color: var(--orange);
+}
+
+.price-tag .amt.very-high-margin-warning {
+color: var(--red);
 }
 
 .price-tag .per {
@@ -1222,11 +1231,12 @@ font-size: 9px;
 
 .tab-btn .emoji { font-size: 14px; }
 
-table th:nth-child(1), table td:nth-child(1) { width: 38% !important; }
-table th:nth-child(2), table td:nth-child(2) { width: 20% !important; }
-table th:nth-child(3), table td:nth-child(3) { width: 17% !important; }
-table th:nth-child(4), table td:nth-child(4) { width: 17% !important; }
-table th:nth-child(5), table td:nth-child(5) { width: 8% !important; }
+table th:nth-child(1), table td:nth-child(1) { width: 28% !important; }
+table th:nth-child(2), table td:nth-child(2) { width: 14% !important; }
+table th:nth-child(3), table td:nth-child(3) { width: 12% !important; }
+table th:nth-child(4), table td:nth-child(4) { width: 12% !important; }
+table th:nth-child(5), table td:nth-child(5) { width: 22% !important; }
+table th:nth-child(6), table td:nth-child(6) { width: 12% !important; }
 
 .total-value {
 font-size: 13px !important;
@@ -1377,6 +1387,7 @@ Cadastre os produtos que você compra e seus valores
 <th>Produto</th>
 <th class="num">Qtd.</th>
 <th>Un.</th>
+<th class="num">Dens.</th>
 <th class="num">R$</th>
 <th></th>
 </tr>
@@ -1384,7 +1395,7 @@ Cadastre os produtos que você compra e seus valores
 <tbody id="invBody"></tbody>
 <tfoot>
 <tr class="tfoot-total-row">
-<td colspan="5">
+<td colspan="6">
 <div class="total-line">
 <span class="total-label">Total em estoque</span>
 <span class="total-value" id="invTotalValue">R$ 0,00</span>
@@ -1543,7 +1554,7 @@ Rendimento da receita e o custo detalhado de cada pote
 
 <div class="k">Tamanho do pote</div>
 <div class="v editable">
-<input type="number" id="weightPerPot" min="1" step="1" inputmode="numeric" value="500" />
+<input type="number" id="weightPerPot" min="1" step="1" inputmode="numeric" value="500" placeholder="500" />
 <span class="unit-suffix">g</span>
 </div>
 
@@ -1556,7 +1567,7 @@ Rendimento da receita e o custo detalhado de cada pote
 <div class="v leftover-note" id="leftoverWeight"></div>
 <div class="k">Aproveitamento da sobra</div>
 <div class="v" style="color: var(--text-secondary); font-weight: 400;">
-<span id="leftoverStatus">Custo rateado entre os potes</span>  <!-- ✅ CORRETO -->
+<span id="leftoverStatus">Custo rateado entre os potes</span>
 </div>
 </div>
 
@@ -1605,6 +1616,9 @@ Defina sua margem de lucro e veja o preço de venda sugerido
 
 <div class="k">Markup equivalente</div>
 <div class="v" id="markup"></div>
+</div>
+
+<div id="marginWarning" style="display:none;margin-top:12px;padding:10px;border-radius:var(--radius-sm);font-size:13px;font-weight:600;text-align:center;">
 </div>
 
 <p class="sub" style="margin-top: 12px; margin-bottom: 0; font-size: 12px;">
@@ -1701,14 +1715,14 @@ inventory: [
 { name: "Azeite oliva", total: 500, unit: "ml", value: 27.90, density: 0.91 },
 { name: "Shoyu", total: 500, unit: "ml", value: 18.90, density: 1.18 },
 { name: "Vinagre arroz", total: 500, unit: "ml", value: 12.50, density: 1.01 },
-{ name: "Berinjela", total: 1, unit: "kg", value: 6.00 },
-{ name: "Abobrinha italiana", total: 1, unit: "kg", value: 4.00 },
-{ name: "Cebola", total: 1, unit: "kg", value: 4.50 },
-{ name: "Pimentão vermelho", total: 500, unit: "g", value: 4.50 },
-{ name: "Pimentão amarelo", total: 500, unit: "g", value: 5.60 },
-{ name: "Tomate", total: 1, unit: "kg", value: 5.50 },
-{ name: "Uva passa", total: 200, unit: "g", value: 15.78 },
-{ name: "Manjericão seco", total: 50, unit: "g", value: 12.85 }
+{ name: "Berinjela", total: 1, unit: "kg", value: 6.00, density: 1.00 },
+{ name: "Abobrinha italiana", total: 1, unit: "kg", value: 4.00, density: 1.00 },
+{ name: "Cebola", total: 1, unit: "kg", value: 4.50, density: 1.00 },
+{ name: "Pimentão vermelho", total: 500, unit: "g", value: 4.50, density: 1.00 },
+{ name: "Pimentão amarelo", total: 500, unit: "g", value: 5.60, density: 1.00 },
+{ name: "Tomate", total: 1, unit: "kg", value: 5.50, density: 1.00 },
+{ name: "Uva passa", total: 200, unit: "g", value: 15.78, density: 1.00 },
+{ name: "Manjericão seco", total: 50, unit: "g", value: 12.85, density: 1.00 }
 ],
 recipe: [
 { invIndex: 0, qty: 120, unit: "ml" },
@@ -1770,14 +1784,32 @@ const n = String(name || "")
 .toLowerCase()
 .normalize("NFD")
 .replace(/[\u0300-\u036f]/g, "");
-if (n.includes("azeite")) return 0.91;
-if (n.includes("shoyu") || n.includes("molho de soja")) return 1.18;
-if (n.includes("vinagre")) return 1.01;
-if (n.includes("mel")) return 1.42;
-if (n.includes("oleo") || n.includes("óleo")) return 0.92;
-if (n.includes("leite")) return 1.03;
-if (n.includes("creme de leite")) return 1.01;
-if (n.includes("agua") || n.includes("água")) return 1.00;
+
+// Mapeamento completo de densidades
+const densityMap = {
+// Óleos
+'azeite': 0.91, 'oleo': 0.92, 'oleo': 0.92, 'gergelim': 0.92,
+'canola': 0.92, 'girassol': 0.92, 'milho': 0.92, 'soja': 0.92,
+'coco': 0.92, 'palma': 0.90, 'linhaca': 0.93,
+// Líquidos densos
+'shoyu': 1.18, 'molho de soja': 1.18, 'mel': 1.42,
+'melaco': 1.40, 'xarope': 1.35, 'glucose': 1.35,
+'leite': 1.03, 'creme de leite': 1.01, 'iogurte': 1.04,
+'vinagre': 1.01, 'acucar': 1.59, 'acúcar': 1.59,
+// Água e similares
+'agua': 1.00, 'água': 1.00, 'caldo': 1.00, 'brodo': 1.00,
+// Farinhas e pós (densidade aparente)
+'farinha': 0.59, 'trigo': 0.59, 'milho': 0.60,
+'amido': 0.60, 'maizena': 0.60, 'polvilho': 0.60,
+'fermento': 0.60, 'cacau': 0.50, 'chocolate': 0.50,
+'acucar': 0.85, 'acúcar': 0.85, 'sal': 1.20,
+// Outros
+'manteiga': 0.91, 'margarina': 0.91, 'banha': 0.90
+};
+
+for (const [key, value] of Object.entries(densityMap)) {
+if (n.includes(key)) return value;
+}
 return 1.00;
 }
 
@@ -1830,16 +1862,16 @@ if (!isFinite(parseFloat(item.density)) || parseFloat(item.density) <= 0) {
 item.density = detected;
 }
 }
+// ✅ CORREÇÃO: garantir que density existe para todos
+if (!('density' in item) || !isFinite(parseFloat(item.density)) || parseFloat(item.density) <= 0) {
+item.density = getDensityByName(item.name);
+}
 });
 if (!('laborHourly' in parsed)) parsed.laborHourly = 8;
 if (!('prepTime' in parsed)) parsed.prepTime = 60;
 if (!('utilitiesCost' in parsed)) parsed.utilitiesCost = 2;
-parsed.recipe.forEach(function(r) {
-if (!r) return;
-const ru = String(r.unit || "").trim().toLowerCase();
-if (ru === "kg") r.unit = "g";
-else if (ru === "l") r.unit = "ml";
-});
+// ✅ CORREÇÃO: NÃO converte kg/L silenciosamente
+// Mantém a unidade original do usuário
 return parsed;
 }
 }
@@ -2083,7 +2115,6 @@ profitEl.textContent = '—';
 
 // ===== RENDER PRINCIPAL =====
 function render() {
-// ✅ FORÇA A LEITURA DOS DADOS MAIS RECENTES DO localStorage
 const freshState = loadState();
 state.weightPerPot = freshState.weightPerPot;
 state.profitPct = freshState.profitPct;
@@ -2111,6 +2142,11 @@ document.getElementById("pkgSubV").textContent = brl(pkgV);
 const weightPerPotVal = parseFloat(state.weightPerPot);
 const weightPerPot = isFinite(weightPerPotVal) && weightPerPotVal > 0 ? weightPerPotVal : 500;
 
+// ✅ CORREÇÃO: Mostrar o peso real sendo usado
+if (weightPerPotVal <= 0 || !isFinite(weightPerPotVal)) {
+document.getElementById("weightPerPot").placeholder = "500";
+}
+
 const numPots = weightPerPot > 0 ? Math.floor(recW / weightPerPot) : 0;
 const leftoverWeight = Math.max(0, recW - (numPots * weightPerPot));
 
@@ -2118,7 +2154,6 @@ document.getElementById("totalWeight").textContent = num(recW, 0) + " g";
 document.getElementById("numPots").textContent = numPots + (numPots === 1 ? " pote" : " potes");
 document.getElementById("leftoverWeight").textContent = num(leftoverWeight, 0) + " g";
 
-// Atualizar status da sobra
 if (numPots > 0 && leftoverWeight > 0) {
 document.getElementById("leftoverStatus").textContent = 
 `Custo rateado entre os ${numPots} potes`;
@@ -2144,7 +2179,6 @@ warningEl.style.display = "none";
 warningEl.classList.remove("visible");
 }
 
-// ✅ CÁLCULO CORRIGIDO - SEMPRE DIVIDE PELO NÚMERO DE POTES
 let costIngPot = 0;
 if (numPots > 0) {
 costIngPot = recV / numPots;
@@ -2168,22 +2202,39 @@ const markup = costTotalPot > 0 && price > 0 ? price / costTotalPot : 0;
 document.getElementById("markup").textContent = markup > 0 ? "×" + markup.toFixed(2).replace(".", ",") : "—";
 
 const finalPriceEl = document.getElementById("finalPrice");
-// ✅ FORÇA A ATUALIZAÇÃO DO jarPots
 const jarPotsEl = document.getElementById("jarPots");
+
+// ✅ CORREÇÃO: Alerta visual para margens altas
+const marginWarningEl = document.getElementById("marginWarning");
+if (profitPct >= 90) {
+marginWarningEl.style.display = "block";
+marginWarningEl.style.background = "var(--red-dim)";
+marginWarningEl.style.border = "1px solid var(--red-border)";
+marginWarningEl.style.color = "var(--red)";
+marginWarningEl.textContent = `⚠️ Margem de ${profitPct}% é muito alta! O preço pode ficar inviável para o mercado.`;
+finalPriceEl.classList.add("very-high-margin-warning");
+} else if (profitPct >= 70) {
+marginWarningEl.style.display = "block";
+marginWarningEl.style.background = "var(--orange-dim)";
+marginWarningEl.style.border = "1px solid rgba(245, 168, 74, 0.3)";
+marginWarningEl.style.color = "var(--orange)";
+marginWarningEl.textContent = `⚠️ Margem de ${profitPct}% está alta. Verifique se o preço é competitivo.`;
+finalPriceEl.classList.add("high-margin-warning");
+} else {
+marginWarningEl.style.display = "none";
+finalPriceEl.classList.remove("high-margin-warning", "very-high-margin-warning");
+}
 
 if (numPots === 0) {
 finalPriceEl.textContent = recW > 0 ? "Nenhum pote completo" : "Sem receita";
 finalPriceEl.classList.add("no-price");
 jarPotsEl.textContent = "0 potes para vender";
-console.log("🔴 jarPots atualizado para: 0 potes para vender");
 } else {
 finalPriceEl.textContent = brl(price);
 finalPriceEl.classList.remove("no-price");
 jarPotsEl.textContent = numPots + (numPots === 1 ? " pote" : " potes");
-console.log("🟢 jarPots atualizado para:", jarPotsEl.textContent);
 }
 
-// Quick Summary
 updateQuickSummary(costTotalPot, price, numPots);
 
 if (price > 0 && numPots > 0) {
@@ -2252,32 +2303,38 @@ tr.innerHTML =
 "<td><input class='cell' data-f='name' placeholder='Produto' inputmode='text'></td>" +
 "<td><input class='cell num' data-f='total' type='number' step='any' inputmode='decimal' min='0' placeholder='5500'></td>" +
 "<td><select class='cell' data-f='unit'><option value='g'>g</option><option value='ml'>ml</option><option value='kg'>kg</option><option value='L'>L</option></select></td>" +
+"<td><input class='cell num' data-f='density' type='number' step='0.01' inputmode='decimal' min='0.1' max='3' placeholder='1.00'></td>" +
 "<td><input class='cell num' data-f='value' type='number' step='any' inputmode='decimal' min='0' placeholder='0,00'></td>" +
 "<td><button class='rm-btn' title='remover'>✕</button></td>";
 const nameInput = tr.querySelector('[data-f="name"]');
 const totalInput = tr.querySelector('[data-f="total"]');
 const unitSelect = tr.querySelector('[data-f="unit"]');
+const densityInput = tr.querySelector('[data-f="density"]');
 const valueInput = tr.querySelector('[data-f="value"]');
-const inputs = [nameInput, totalInput, unitSelect, valueInput];
+const inputs = [nameInput, totalInput, unitSelect, densityInput, valueInput];
 nameInput.value = item.name || "";
 totalInput.value = item.total ?? "";
 unitSelect.value = item.unit || "g";
+densityInput.value = item.density ?? "1.00";
 valueInput.value = item.value ?? "";
 
 inputs.forEach(function(inp) {
 function updateInventoryField() {
 const f = inp.dataset.f;
 const v = inp.value;
-if (f === "total" || f === "value") {
+if (f === "total" || f === "value" || f === "density") {
 const numVal = parseFloat(v);
-state.inventory[idx][f] = isFinite(numVal) && numVal >= 0 ? numVal : 0;
+state.inventory[idx][f] = isFinite(numVal) && numVal >= 0 ? numVal : (f === "density" ? 1.00 : 0);
 } else {
 state.inventory[idx][f] = v;
 }
 if (f === "name" || f === "unit") {
 const currentUnit = String(state.inventory[idx].unit || "").trim().toLowerCase();
 if (currentUnit === "ml" || currentUnit === "l") {
+const density = parseFloat(state.inventory[idx].density);
+if (!isFinite(density) || density <= 0) {
 state.inventory[idx].density = getDensityByName(state.inventory[idx].name);
+}
 }
 }
 if (f === "unit") renderRecipe();
@@ -2289,7 +2346,18 @@ inp.addEventListener("keydown", function(e) { if (e.key === "Enter") { e.prevent
 inp.addEventListener("blur", updateInventoryField);
 inp.addEventListener("change", updateInventoryField);
 });
+
+// ✅ CORREÇÃO: remover linha com confirmação
 tr.querySelector(".rm-btn").addEventListener("click", function() {
+const productName = state.inventory[idx]?.name || "produto";
+showModal({
+icon: "🗑️",
+title: "Remover produto?",
+message: `Tem certeza que deseja remover "${productName}" do estoque?`,
+confirmText: "Remover",
+cancelText: "Cancelar",
+danger: true
+}, function() {
 state.inventory.splice(idx, 1);
 state.recipe = state.recipe.filter(r => r.invIndex !== idx);
 state.recipe.forEach(function(r) { if (r.invIndex > idx) r.invIndex--; });
@@ -2297,6 +2365,7 @@ saveState();
 renderInventory();
 renderRecipe();
 render();
+});
 });
 return tr;
 }
@@ -2327,7 +2396,7 @@ const invUnit = String(inv ? inv.unit : "").trim().toLowerCase();
 tr.innerHTML =
 "<td><div class='product-display'>" + productName + "</div></td>" +
 "<td><input class='cell num' data-f='qty' type='number' step='any' inputmode='decimal' min='0' placeholder='5500'></td>" +
-"<td><select class='cell' data-f='unit'><option value='g'>g</option><option value='ml'>ml</option></select></td>" +
+"<td><select class='cell' data-f='unit'><option value='g'>g</option><option value='ml'>ml</option><option value='kg'>kg</option><option value='L'>L</option></select></td>" +
 "<td class='num'><div class='cost-display' data-f='cost'>0,00</div></td>" +
 "<td><button class='rm-btn' title='remover'>✕</button></td>";
 const qtyInput = tr.querySelector('input[data-f="qty"]');
@@ -2369,11 +2438,23 @@ render();
 });
 qtyInput.addEventListener("keydown", function(e) { if (e.key === "Enter") { e.preventDefault(); qtyInput.blur(); } });
 unitInput.addEventListener("keydown", function(e) { if (e.key === "Enter") { e.preventDefault(); unitInput.blur(); } });
+
+// ✅ CORREÇÃO: remover linha com confirmação
 tr.querySelector(".rm-btn").addEventListener("click", function() {
+const productName = state.inventory[item.invIndex]?.name || "ingrediente";
+showModal({
+icon: "🗑️",
+title: "Remover ingrediente?",
+message: `Tem certeza que deseja remover "${productName}" da receita?`,
+confirmText: "Remover",
+cancelText: "Cancelar",
+danger: true
+}, function() {
 state.recipe.splice(idx, 1);
 saveState();
 renderRecipe();
 render();
+});
 });
 updateCostAndWarning();
 return tr;
@@ -2392,16 +2473,34 @@ state.recipe.forEach(function(r) { recV += getIngredientCost(r.invIndex, r.qty, 
 document.getElementById("recSubV").textContent = brl(recV);
 }
 
+// ✅ CORREÇÃO: encontrar próximo índice disponível
 document.getElementById("addRec").addEventListener("click", function() {
 if (state.inventory.length === 0) {
 showModal({ icon: "⚠️", title: "Estoque vazio", message: "Adicione produtos no estoque antes de criar a receita.", confirmText: "Entendi", onlyOk: true });
 return;
 }
-const nextIndex = state.recipe.length;
-if (nextIndex >= state.inventory.length) {
+
+// Encontra o próximo índice disponível
+const usedIndices = new Set();
+state.recipe.forEach(function(r) {
+if (r.invIndex !== undefined && r.invIndex !== null) {
+usedIndices.add(r.invIndex);
+}
+});
+
+let nextIndex = -1;
+for (let i = 0; i < state.inventory.length; i++) {
+if (!usedIndices.has(i)) {
+nextIndex = i;
+break;
+}
+}
+
+if (nextIndex === -1) {
 showModal({ icon: "ℹ️", title: "Todos os produtos já foram adicionados", message: "A lista da Receita já contém todos os produtos cadastrados no Estoque.", confirmText: "Entendi", onlyOk: true });
 return;
 }
+
 const defaultInv = state.inventory[nextIndex];
 state.recipe.push({ invIndex: nextIndex, qty: 0, unit: defaultRecipeUnitFor(defaultInv) });
 saveState();
@@ -2440,11 +2539,23 @@ inp.addEventListener("input", updatePackagingField);
 inp.addEventListener("keydown", function(e) { if (e.key === "Enter") { e.preventDefault(); inp.blur(); } });
 inp.addEventListener("blur", updatePackagingField);
 });
+
+// ✅ CORREÇÃO: remover linha com confirmação
 tr.querySelector(".rm-btn").addEventListener("click", function() {
+const itemName = state.packaging[idx]?.name || "item";
+showModal({
+icon: "🗑️",
+title: "Remover item?",
+message: `Tem certeza que deseja remover "${itemName}" da embalagem?`,
+confirmText: "Remover",
+cancelText: "Cancelar",
+danger: true
+}, function() {
 state.packaging.splice(idx, 1);
 saveState();
 renderPackaging();
 render();
+});
 });
 return tr;
 }
@@ -2646,10 +2757,8 @@ if (matching) currentRecipeId = matching.id;
 renderRecipeList();
 updateLoadedIndicators();
 
-// ===== ONBOARDING =====
 showOnboarding();
 
-// ===== SERVICE WORKER =====
 if ("serviceWorker" in navigator) {
 let refreshing = false;
 navigator.serviceWorker.addEventListener("controllerchange", function() {
