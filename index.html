@@ -2172,14 +2172,19 @@ const markup = costTotalPot > 0 && price > 0 ? price / costTotalPot : 0;
 document.getElementById("markup").textContent = markup > 0 ? "×" + markup.toFixed(2).replace(".", ",") : "—";
 
 const finalPriceEl = document.getElementById("finalPrice");
+// ✅ FORÇA A ATUALIZAÇÃO DO jarPots
+const jarPotsEl = document.getElementById("jarPots");
+
 if (numPots === 0) {
 finalPriceEl.textContent = recW > 0 ? "Nenhum pote completo" : "Sem receita";
 finalPriceEl.classList.add("no-price");
-document.getElementById("jarPots").textContent = recW > 0 ? "0 potes para vender" : "0 potes";
+jarPotsEl.textContent = "0 potes para vender";
+console.log("🔴 jarPots atualizado para: 0 potes para vender");
 } else {
 finalPriceEl.textContent = brl(price);
 finalPriceEl.classList.remove("no-price");
-document.getElementById("jarPots").textContent = numPots + (numPots === 1 ? " pote" : " potes");
+jarPotsEl.textContent = numPots + (numPots === 1 ? " pote" : " potes");
+console.log("🟢 jarPots atualizado para:", jarPotsEl.textContent);
 }
 
 // Quick Summary
