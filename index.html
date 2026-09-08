@@ -2232,10 +2232,16 @@ if (numPots === 0) {
 finalPriceEl.textContent = recW > 0 ? "Nenhum pote completo" : "Sem receita";
 finalPriceEl.classList.add("no-price");
 jarPotsEl.textContent = "0 potes para vender";
+// 👇 LIMPA OS VALORES DO QUICK SUMMARY QUANDO NÃO HÁ POTES
+document.getElementById('quickCostPot').textContent = '—';
+document.getElementById('quickPrice').textContent = '—';
+document.getElementById('quickProfit').textContent = '—';
 } else {
 finalPriceEl.textContent = brl(price);
 finalPriceEl.classList.remove("no-price");
 jarPotsEl.textContent = numPots + (numPots === 1 ? " pote" : " potes");
+// 👇 ATUALIZA O QUICK SUMMARY COM OS VALORES CORRETOS
+updateQuickSummary(costTotalPot, price, numPots);
 }
 
 updateQuickSummary(costTotalPot, price, numPots);
