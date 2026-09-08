@@ -2240,11 +2240,8 @@ document.getElementById('quickProfit').textContent = '—';
 finalPriceEl.textContent = brl(price);
 finalPriceEl.classList.remove("no-price");
 jarPotsEl.textContent = numPots + (numPots === 1 ? " pote" : " potes");
-// 👇 ATUALIZA O QUICK SUMMARY COM OS VALORES CORRETOS
 updateQuickSummary(costTotalPot, price, numPots);
 }
-
-updateQuickSummary(costTotalPot, price, numPots);
 
 if (price > 0 && numPots > 0) {
 const segments = [
