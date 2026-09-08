@@ -1629,6 +1629,7 @@ function loadState() {
     // Dados padrão com exemplos
     const defaultState = JSON.parse(JSON.stringify(DEFAULT_STATE));
     defaultState.inventory = getDefaultInventory();
+    defaultState.recipe = getDefaultRecipe();
     return defaultState;
 }
 
@@ -1808,30 +1809,34 @@ function updateLoadedIndicators() {
     document.getElementById('recipesTabLoadedName').textContent = name;
 }
 
+// ============================================
+// FIX: TABS NAVIGATION
+// ============================================
 function switchTab(tabId) {
-    const tabBtns = document.querySelectorAll('.tab-btn');
-    const tabContents = {
-        tab0: document.getElementById("tab0"),
-        tab1: document.getElementById("tab1"),
-        tab2: document.getElementById("tab2"),
-        tab3: document.getElementById("tab3"),
-        tab4: document.getElementById("tab4")
-    };
-    tabBtns.forEach(function(b) {
-        b.classList.remove("active");
+    document.querySelectorAll('.tab-btn').forEach(function(b) {
+        b.classList.remove('active');
     });
-    Object.values(tabContents).forEach(function(tc) {
-        tc.classList.remove("active");
+    document.querySelectorAll('.tab-content').forEach(function(tc) {
+        tc.classList.remove('active');
     });
+    
     const targetBtn = document.querySelector(`.tab-btn[data-tab="${tabId}"]`);
     if (targetBtn) {
-        targetBtn.classList.add("active");
+        targetBtn.classList.add('active');
     }
     const targetContent = document.getElementById(tabId);
     if (targetContent) {
-        targetContent.classList.add("active");
+        targetContent.classList.add('active');
     }
 }
+
+// Evento de clique das abas
+document.querySelectorAll('.tab-btn').forEach(function(btn) {
+    btn.addEventListener('click', function(e) {
+        e.preventDefault();
+        switchTab(this.dataset.tab);
+    });
+});
 
 function brl(n) {
     if (!isFinite(n)) n = 0;
@@ -2587,7 +2592,6 @@ if ("serviceWorker" in navigator) {
 // ============================================
 // EXPORT/IMPORT (adicional)
 // ============================================
-// Adicionar botão de export/import no footer ou na tab de receitas
 const footer = document.querySelector('.footer-note');
 if (footer) {
     const actions = document.createElement('div');
