@@ -1265,7 +1265,7 @@ font-size: 12px !important;
 <div class="onboarding-overlay" id="onboardingOverlay">
 <div class="onboarding-box">
 <span class="onboarding-icon">🫙</span>
-<h2>Bem-vindo ao app Precidicação</h2>
+<h2>Bem-vindo ao app Precificação</h2>
 <p>Calcule o preço de venda dos seus produtos artesanais</p>
 <div class="onboarding-steps">
 <div class="step-item">
@@ -1556,11 +1556,8 @@ Rendimento da receita e o custo detalhado de cada pote
 <div class="v leftover-note" id="leftoverWeight"></div>
 
 <div class="k">Aproveitamento da sobra</div>
-<div class="v">
-<select id="leftoverCosting" class="cell-select">
-<option value="absorb">Sobra diluída</option>
-<option value="proportional">Sobra descartada</option>
-</select>
+<div class="v" style="color: var(--text-secondary); font-weight: 400;">
+<span id="leftoverStatus">Sobra descartada (custo rateado)</span>
 </div>
 </div>
 
@@ -1737,8 +1734,7 @@ weightPerPot: 500,
 profitPct: 35,
 laborHourly: 8,
 prepTime: 60,
-utilitiesCost: 2,
-leftoverCosting: "absorb"
+utilitiesCost: 2
 };
 let state = loadState();
 let storageWarned = false;
@@ -1839,7 +1835,6 @@ item.density = detected;
 if (!('laborHourly' in parsed)) parsed.laborHourly = 8;
 if (!('prepTime' in parsed)) parsed.prepTime = 60;
 if (!('utilitiesCost' in parsed)) parsed.utilitiesCost = 2;
-if (!('leftoverCosting' in parsed)) parsed.leftoverCosting = "absorb";
 parsed.recipe.forEach(function(r) {
 if (!r) return;
 const ru = String(r.unit || "").trim().toLowerCase();
@@ -1897,8 +1892,7 @@ weightPerPot: state.weightPerPot,
 profitPct: state.profitPct,
 laborHourly: state.laborHourly,
 prepTime: state.prepTime,
-utilitiesCost: state.utilitiesCost,
-leftoverCosting: state.leftoverCosting
+utilitiesCost: state.utilitiesCost
 };
 }
 
@@ -1912,7 +1906,6 @@ state.profitPct = data.profitPct || 35;
 state.laborHourly = data.laborHourly || 8;
 state.prepTime = data.prepTime || 60;
 state.utilitiesCost = data.utilitiesCost || 2;
-state.leftoverCosting = data.leftoverCosting || "absorb";
 
 recipeNameEl.value = state.recipeName;
 weightPerPotEl.value = state.weightPerPot;
@@ -1921,7 +1914,6 @@ profitPctEl.value = state.profitPct;
 document.getElementById('laborHourly').value = state.laborHourly;
 document.getElementById('prepTime').value = state.prepTime;
 document.getElementById('utilitiesCost').value = state.utilitiesCost;
-document.getElementById('leftoverCosting').value = state.leftoverCosting;
 
 saveState();
 renderAll();
@@ -2119,22 +2111,37 @@ document.getElementById("totalWeight").textContent = num(recW, 0) + " g";
 document.getElementById("numPots").textContent = numPots + (numPots === 1 ? " pote" : " potes");
 document.getElementById("leftoverWeight").textContent = num(leftoverWeight, 0) + " g";
 
+// Atualizar status da sobra
+if (numPots > 0 && leftoverWeight > 0) {
+document.getElementById("leftoverStatus").textContent = 
+`Sobra de ${num(leftoverWeight, 0)}g (custo rateado entre os ${numPots} potes)`;
+} else if (numPots > 0) {
+document.getElementById("leftoverStatus").textContent = 
+`Sem sobra (aproveitamento total)`;
+} else {
+document.getElementById("leftoverStatus").textContent = 
+`Não há potes suficientes`;
+}
+
 const warningEl = document.getElementById("insufficientWarning");
 const warningPotSize = document.getElementById("warningPotSize");
 if (numPots === 0 && recW > 0) {
+const suggestedPotSize = Math.round(recW);
 warningPotSize.textContent = num(weightPerPot, 0);
+warningEl.innerHTML = `
+⚠️ A receita (${num(recW, 0)}g) não rende um pote completo de ${num(weightPerPot, 0)}g.<br>
+💡 Sugestão: use um pote de ${suggestedPotSize}g para obter 1 pote completo.
+`;
 warningEl.classList.add("visible");
 } else {
 warningEl.classList.remove("visible");
 }
 
+// ✅ CÁLCULO CORRIGIDO - SEMPRE DIVIDE PELO NÚMERO DE POTES
 let costIngPot = 0;
 if (numPots > 0) {
-if (state.leftoverCosting === "proportional" && recW > 0) {
-costIngPot = (recV / recW) * weightPerPot;
-} else {
+// O custo total da receita é rateado igualmente entre todos os potes
 costIngPot = recV / numPots;
-}
 }
 
 const costPkgPot = pkgV;
@@ -2490,7 +2497,6 @@ currentRecipeId = null;
 recipeNameEl.value = state.recipeName;
 weightPerPotEl.value = state.weightPerPot;
 profitPctEl.value = state.profitPct;
-document.getElementById('leftoverCosting').value = state.leftoverCosting;
 saveState();
 renderAll();
 });
@@ -2581,12 +2587,6 @@ let value = parseFloat(profitPctEl.value);
 if (!isFinite(value)) value = 0;
 value = Math.max(0, Math.min(value, 99.99));
 state.profitPct = value;
-saveState();
-render();
-});
-
-document.getElementById('leftoverCosting').addEventListener('change', function() {
-state.leftoverCosting = this.value;
 saveState();
 render();
 });
