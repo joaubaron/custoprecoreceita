@@ -1557,6 +1557,10 @@ Rendimento da receita e o custo detalhado de cada pote
 <input type="number" id="weightPerPot" min="1" step="1" inputmode="numeric" value="500" placeholder="500" />
 <span class="unit-suffix">g</span>
 </div>
+<div class="k"></div>
+<div class="v" id="potSizeWarning" style="display:none;color:var(--orange);font-size:11px;font-weight:600;text-align:right;">
+⚠️ Usando 500g (padrão) — preencha o campo acima
+</div>
 
 <div class="divider"></div>
 
@@ -2142,9 +2146,12 @@ document.getElementById("pkgSubV").textContent = brl(pkgV);
 const weightPerPotVal = parseFloat(state.weightPerPot);
 const weightPerPot = isFinite(weightPerPotVal) && weightPerPotVal > 0 ? weightPerPotVal : 500;
 
-// ✅ CORREÇÃO: Mostrar o peso real sendo usado
+const potSizeWarningEl = document.getElementById("potSizeWarning");
 if (weightPerPotVal <= 0 || !isFinite(weightPerPotVal)) {
 document.getElementById("weightPerPot").placeholder = "500";
+potSizeWarningEl.style.display = "block";
+} else {
+potSizeWarningEl.style.display = "none";
 }
 
 const numPots = weightPerPot > 0 ? Math.floor(recW / weightPerPot) : 0;
