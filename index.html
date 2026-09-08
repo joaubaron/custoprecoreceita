@@ -1321,7 +1321,7 @@ font-size: 12px !important;
 <div class="step-line" id="line3"></div>
 <div class="step" data-step="3">
 <span class="num">4</span>
-<span class="label-text">Preço de Venda</span>
+<span class="label-text">$ de Venda</span>
 </div>
 </div>
 
@@ -1554,10 +1554,9 @@ Rendimento da receita e o custo detalhado de cada pote
 
 <div class="k">Sobra da receita</div>
 <div class="v leftover-note" id="leftoverWeight"></div>
-
 <div class="k">Aproveitamento da sobra</div>
 <div class="v" style="color: var(--text-secondary); font-weight: 400;">
-<span id="leftoverStatus">Sobra descartada (custo rateado)</span>
+<span id="leftoverStatus">Custo rateado entre os potes</span>
 </div>
 </div>
 
@@ -2112,9 +2111,10 @@ document.getElementById("numPots").textContent = numPots + (numPots === 1 ? " po
 document.getElementById("leftoverWeight").textContent = num(leftoverWeight, 0) + " g";
 
 // Atualizar status da sobra
+// Atualizar status da sobra
 if (numPots > 0 && leftoverWeight > 0) {
 document.getElementById("leftoverStatus").textContent = 
-`Sobra de ${num(leftoverWeight, 0)}g (custo rateado entre os ${numPots} potes)`;
+`Custo rateado entre os ${numPots} potes`;
 } else if (numPots > 0) {
 document.getElementById("leftoverStatus").textContent = 
 `Sem sobra (aproveitamento total)`;
