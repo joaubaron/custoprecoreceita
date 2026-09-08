@@ -1354,30 +1354,30 @@ const RECIPES_STORAGE_KEY = "caponata-recipes-list";
 const DEFAULT_STATE = {
 recipeName: "Minha Receita",
 inventory: [
-{ id: 'inv_1', name: "Azeite oliva", total: 500, unit: "ml", value: 27.90, density: 0.91 },
-{ id: 'inv_2', name: "Shoyu", total: 500, unit: "ml", value: 18.90, density: 1.18 },
-{ id: 'inv_3', name: "Vinagre arroz", total: 500, unit: "ml", value: 12.50, density: 1.01 },
-{ id: 'inv_4', name: "Berinjela", total: 1, unit: "kg", value: 6.00 },
-{ id: 'inv_5', name: "Abobrinha italiana", total: 1, unit: "kg", value: 4.00 },
-{ id: 'inv_6', name: "Cebola", total: 1, unit: "kg", value: 4.50 },
-{ id: 'inv_7', name: "Pimentão vermelho", total: 500, unit: "g", value: 4.50 },
-{ id: 'inv_8', name: "Pimentão amarelo", total: 500, unit: "g", value: 5.60 },
-{ id: 'inv_9', name: "Tomate", total: 1, unit: "kg", value: 5.50 },
-{ id: 'inv_10', name: "Uva passa", total: 200, unit: "g", value: 15.78 },
-{ id: 'inv_11', name: "Manjericão seco", total: 50, unit: "g", value: 12.85 }
+{ name: "Azeite oliva", total: 500, unit: "ml", value: 27.90, density: 0.91 },
+{ name: "Shoyu", total: 500, unit: "ml", value: 18.90, density: 1.18 },
+{ name: "Vinagre arroz", total: 500, unit: "ml", value: 12.50, density: 1.01 },
+{ name: "Berinjela", total: 1, unit: "kg", value: 6.00 },
+{ name: "Abobrinha italiana", total: 1, unit: "kg", value: 4.00 },
+{ name: "Cebola", total: 1, unit: "kg", value: 4.50 },
+{ name: "Pimentão vermelho", total: 500, unit: "g", value: 4.50 },
+{ name: "Pimentão amarelo", total: 500, unit: "g", value: 5.60 },
+{ name: "Tomate", total: 1, unit: "kg", value: 5.50 },
+{ name: "Uva passa", total: 200, unit: "g", value: 15.78 },
+{ name: "Manjericão seco", total: 50, unit: "g", value: 12.85 }
 ],
 recipe: [
-{ productId: 'inv_1', qty: 120, unit: "ml" },
-{ productId: 'inv_2', qty: 120, unit: "ml" },
-{ productId: 'inv_3', qty: 120, unit: "ml" },
-{ productId: 'inv_4', qty: 700, unit: "g" },
-{ productId: 'inv_5', qty: 700, unit: "g" },
-{ productId: 'inv_6', qty: 180, unit: "g" },
-{ productId: 'inv_7', qty: 100, unit: "g" },
-{ productId: 'inv_8', qty: 100, unit: "g" },
-{ productId: 'inv_9', qty: 300, unit: "g" },
-{ productId: 'inv_10', qty: 100, unit: "g" },
-{ productId: 'inv_11', qty: 6, unit: "g" }
+{ invIndex: 0, qty: 120, unit: "ml" },
+{ invIndex: 1, qty: 120, unit: "ml" },
+{ invIndex: 2, qty: 120, unit: "ml" },
+{ invIndex: 3, qty: 700, unit: "g" },
+{ invIndex: 4, qty: 700, unit: "g" },
+{ invIndex: 5, qty: 180, unit: "g" },
+{ invIndex: 6, qty: 100, unit: "g" },
+{ invIndex: 7, qty: 100, unit: "g" },
+{ invIndex: 8, qty: 300, unit: "g" },
+{ invIndex: 9, qty: 100, unit: "g" },
+{ invIndex: 10, qty: 6, unit: "g" }
 ],
 packaging: [
 { name: "Vidro/tampa", qty: 1, unit: "un", value: 4.5 },
@@ -1397,35 +1397,6 @@ let storageWarned = false;
 let currentRecipeId = null;
 let recipesList = loadRecipesList();
 
-// CORREÇÃO 5: Migração automática de dados antigos (sem ID)
-function migrateOldData(data) {
-if (!data || typeof data !== 'object') return data;
-if (data.inventory && Array.isArray(data.inventory) && data.inventory.length > 0 && !data.inventory[0].id) {
-console.log("Migrando dados antigos (sem ID)...");
-data.inventory = data.inventory.map(function(item, index) {
-return {
-...item,
-id: 'inv_' + Date.now() + '_' + index + '_' + Math.random().toString(36).substr(2, 6)
-};
-});
-if (data.recipe && Array.isArray(data.recipe)) {
-data.recipe = data.recipe.map(function(r) {
-const inv = data.inventory[r.invIndex];
-return {
-productId: inv ? inv.id : null,
-qty: r.qty || 0,
-unit: r.unit || 'g'
-};
-}).filter(function(r) { return r.productId !== null; });
-}
-}
-return data;
-}
-
-function generateId() {
-return 'id_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-}
-
 function getDensityByName(name) {
 const n = String(name || "")
 .toLowerCase()
@@ -1442,37 +1413,35 @@ if (n.includes("agua") || n.includes("água")) return 1.00;
 return 1.00;
 }
 
-// CORREÇÃO 2: toGrams() NUNCA retorna null
 function toGrams(qty, unit, inv) {
 const q = parseFloat(qty) || 0;
 const u = String(unit || "").trim().toLowerCase();
 if (q < 0) return 0;
-
-switch(u) {
-case 'g':
+if (u === "g") {
 return q;
-case 'kg':
+}
+if (u === "kg") {
 return q * 1000;
-case 'ml':
+}
+if (u === "ml") {
 let density = parseFloat(inv && inv.density);
 if (!isFinite(density) || density <= 0) {
 density = getDensityByName(inv ? inv.name : "");
 }
 return q * density;
-case 'l':
-let densityL = parseFloat(inv && inv.density);
-if (!isFinite(densityL) || densityL <= 0) {
-densityL = getDensityByName(inv ? inv.name : "");
 }
-return q * 1000 * densityL;
-case 'un':
-case 'pote':
+if (u === "l") {
+let density = parseFloat(inv && inv.density);
+if (!isFinite(density) || density <= 0) {
+density = getDensityByName(inv ? inv.name : "");
+}
+return q * 1000 * density;
+}
+if (u === "un" || u === "pote") {
 const unitWeight = parseFloat(inv && inv.unitWeight);
 return q * (isFinite(unitWeight) && unitWeight > 0 ? unitWeight : 0);
-default:
-console.warn('Unidade "' + unit + '" não suportada. Usando "g" como fallback.');
-return q;
 }
+return null;
 }
 
 function defaultRecipeUnitFor(inv) {
@@ -1496,167 +1465,31 @@ return grams === null
 : grams;
 }
 
-function getInventoryItemById(id) {
-if (!id) return null;
-return state.inventory.find(function(item) { return item.id === id; }) || null;
-}
-
-function getInventoryIndexById(id) {
-if (!id) return -1;
-return state.inventory.findIndex(function(item) { return item.id === id; });
-}
-
-// CORREÇÃO 3: saveState com fallback sessionStorage + limpeza automática + exportação
-function saveState() {
-let saved = false;
-try {
-localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-saved = true;
-} catch(e) {
-try {
-sessionStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-saved = true;
-} catch(e2) {}
-}
-
-if (!saved) {
-if (limparEspacoStorage()) {
-try {
-localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-saved = true;
-} catch(e) {}
-}
-if (!saved) {
-showModal({
-icon: "⚠️",
-title: "Não foi possível salvar",
-message: "O armazenamento está cheio. Clique em 'Exportar' para fazer backup dos seus dados e liberar espaço.",
-confirmText: "Exportar",
-cancelText: "Cancelar",
-onlyOk: false
-}, function() {
-exportData();
-});
-}
-}
-}
-
-function limparEspacoStorage() {
-try {
-const keys = [];
-for (let i = 0; i < localStorage.length; i++) {
-const key = localStorage.key(i);
-if (key && key.startsWith('caponata-')) {
-keys.push(key);
-}
-}
-keys.sort(function(a, b) {
-const valA = localStorage.getItem(a) || '';
-const valB = localStorage.getItem(b) || '';
-return valB.length - valA.length;
-});
-const removed = [];
-for (let i = 0; i < Math.min(3, keys.length); i++) {
-if (keys[i] !== STORAGE_KEY && keys[i] !== RECIPES_STORAGE_KEY) {
-localStorage.removeItem(keys[i]);
-removed.push(keys[i]);
-}
-}
-return removed.length > 0;
-} catch(e) {
-return false;
-}
-}
-
-// CORREÇÃO 4: Exportar/Importar Dados
-function exportData() {
-const data = {
-state: state,
-recipes: recipesList,
-exportedAt: Date.now(),
-version: '1.0'
-};
-const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-const url = URL.createObjectURL(blob);
-const a = document.createElement('a');
-a.href = url;
-a.download = 'receitas_backup_' + Date.now() + '.json';
-document.body.appendChild(a);
-a.click();
-document.body.removeChild(a);
-URL.revokeObjectURL(url);
-}
-
-function importData(file) {
-const reader = new FileReader();
-reader.onload = function(e) {
-try {
-const data = JSON.parse(e.target.result);
-if (data.state && data.recipes) {
-state = data.state;
-recipesList = data.recipes || [];
-currentRecipeId = null;
-saveState();
-saveRecipesList();
-renderAll();
-showModal({
-icon: "✅",
-title: "Dados importados com sucesso!",
-message: "Seus dados foram restaurados do backup.",
-confirmText: "OK",
-onlyOk: true
-});
-} else {
-showModal({
-icon: "⚠️",
-title: "Arquivo inválido",
-message: "O arquivo selecionado não contém dados válidos.",
-confirmText: "OK",
-onlyOk: true
-});
-}
-} catch(err) {
-showModal({
-icon: "⚠️",
-title: "Erro ao importar",
-message: "Não foi possível ler o arquivo. Verifique se é um JSON válido.",
-confirmText: "OK",
-onlyOk: true
-});
-}
-};
-reader.readAsText(file);
-}
-
-// Adicionar botão de importação no cabeçalho (apenas visual, não mexe no layout original)
-// Será adicionado via JS após o load
-
 function loadState() {
 try {
 const raw = localStorage.getItem(STORAGE_KEY);
 if (raw) {
 const parsed = JSON.parse(raw);
-// CORREÇÃO 5: Migração automática
-const migrated = migrateOldData(parsed);
-if (migrated &&
-Array.isArray(migrated.inventory) &&
-Array.isArray(migrated.recipe) &&
-Array.isArray(migrated.packaging)
+if (
+parsed &&
+Array.isArray(parsed.inventory) &&
+Array.isArray(parsed.recipe) &&
+Array.isArray(parsed.packaging)
 ) {
 if (
-!isFinite(migrated.weightPerPot) ||
-migrated.weightPerPot <= 0
+!isFinite(parsed.weightPerPot) ||
+parsed.weightPerPot <= 0
 ) {
-migrated.weightPerPot = 500;
+parsed.weightPerPot = 500;
 }
 if (
-!isFinite(migrated.profitPct) ||
-migrated.profitPct < 0 ||
-migrated.profitPct > 99.99
+!isFinite(parsed.profitPct) ||
+parsed.profitPct < 0 ||
+parsed.profitPct > 99.99
 ) {
-migrated.profitPct = 35;
+parsed.profitPct = 35;
 }
-migrated.inventory.forEach(function(item) {
+parsed.inventory.forEach(function(item) {
 if (
 item &&
 (
@@ -1674,32 +1507,51 @@ item.density = detected;
 }
 }
 });
-if (!('laborHourly' in migrated)) migrated.laborHourly = 8;
-if (!('prepTime' in migrated)) migrated.prepTime = 60;
-if (!('utilitiesCost' in migrated)) migrated.utilitiesCost = 2;
-if (!('leftoverCosting' in migrated)) migrated.leftoverCosting = "absorb";
-return migrated;
+if (!('laborHourly' in parsed)) parsed.laborHourly = 8;
+if (!('prepTime' in parsed)) parsed.prepTime = 60;
+if (!('utilitiesCost' in parsed)) parsed.utilitiesCost = 2;
+if (!('leftoverCosting' in parsed)) parsed.leftoverCosting = "absorb";
+parsed.recipe.forEach(function(r) {
+if (!r) return;
+const ru =
+String(r.unit || "")
+.trim()
+.toLowerCase();
+if (ru === "kg") {
+r.unit = "g";
+} else if (ru === "l") {
+r.unit = "ml";
+}
+});
+return parsed;
 }
 }
 } catch (e) {}
-// Fallback: tentar sessionStorage
-try {
-const raw = sessionStorage.getItem(STORAGE_KEY);
-if (raw) {
-const parsed = JSON.parse(raw);
-const migrated = migrateOldData(parsed);
-if (migrated &&
-Array.isArray(migrated.inventory) &&
-Array.isArray(migrated.recipe) &&
-Array.isArray(migrated.packaging)
-) {
-return migrated;
-}
-}
-} catch(e) {}
 return JSON.parse(
 JSON.stringify(DEFAULT_STATE)
 );
+}
+
+function saveState() {
+try {
+localStorage.setItem(
+STORAGE_KEY,
+JSON.stringify(state)
+);
+} catch (e) {
+if (!storageWarned) {
+storageWarned = true;
+showModal({
+icon: "⚠️",
+title: "Não foi possível salvar",
+message:
+"O navegador bloqueou o armazenamento local. " +
+"Suas alterações funcionarão nesta sessão, mas podem se perder ao fechar.",
+confirmText: "Entendi",
+onlyOk: true
+});
+}
+}
 }
 
 function loadRecipesList() {
@@ -1771,7 +1623,7 @@ existing.updatedAt = Date.now();
 showModal({
 icon: "💾",
 title: "Receita atualizada!",
-message: '"' + name + '" foi atualizada com sucesso.',
+message: `"${name}" foi atualizada com sucesso.`,
 confirmText: "OK",
 onlyOk: true
 });
@@ -1788,7 +1640,7 @@ currentRecipeId = newRecipe.id;
 showModal({
 icon: "💾",
 title: "Receita salva!",
-message: '"' + name + '" foi salva com sucesso.',
+message: `"${name}" foi salva com sucesso.`,
 confirmText: "OK",
 onlyOk: true
 });
@@ -1814,7 +1666,7 @@ const name = recipe ? recipe.name : state.recipeName;
 showModal({
 icon: "🗑️",
 title: "Apagar receita?",
-message: 'Tem certeza que deseja apagar "' + name + '"? Esta ação não pode ser desfeita.',
+message: `Tem certeza que deseja apagar "${name}"? Esta ação não pode ser desfeita.`,
 confirmText: "Apagar",
 cancelText: "Cancelar",
 danger: true
@@ -1827,7 +1679,7 @@ updateLoadedIndicators();
 showModal({
 icon: "🗑️",
 title: "Receita apagada",
-message: '"' + name + '" foi removida com sucesso.',
+message: `"${name}" foi removida com sucesso.`,
 confirmText: "OK",
 onlyOk: true
 });
@@ -1845,7 +1697,7 @@ switchTab('tab3');
 showModal({
 icon: "📂",
 title: "Receita carregada",
-message: '"' + recipe.name + '" foi carregada com sucesso.',
+message: `"${recipe.name}" foi carregada com sucesso.`,
 confirmText: "OK",
 onlyOk: true
 });
@@ -1874,7 +1726,7 @@ b.classList.remove("active");
 Object.values(tabContents).forEach(function(tc) {
 tc.classList.remove("active");
 });
-const targetBtn = document.querySelector('.tab-btn[data-tab="' + tabId + '"]');
+const targetBtn = document.querySelector(`.tab-btn[data-tab="${tabId}"]`);
 if (targetBtn) {
 targetBtn.classList.add("active");
 }
@@ -2005,7 +1857,6 @@ target.classList.add("active");
 );
 });
 
-// CORREÇÃO 1: invRow usa ID em vez de índice
 function invRow(item, idx) {
 const tr =
 document.createElement("tr");
@@ -2057,12 +1908,6 @@ const valueInput =
 tr.querySelector('[data-f="value"]');
 const inputs =
 [nameInput, unitWeightInput, totalInput, unitSelect, valueInput];
-
-// Garantir que o item tenha ID
-if (!item.id) {
-item.id = generateId();
-}
-
 nameInput.value =
 item.name || "";
 unitWeightInput.value =
@@ -2073,12 +1918,10 @@ unitSelect.value =
 item.unit || "g";
 valueInput.value =
 item.value ?? "";
-
 function refreshUnitWeightVisibility() {
 unitWeightInput.style.display = "none";
 }
 refreshUnitWeightVisibility();
-
 inputs.forEach(function(inp) {
 function updateInventoryField() {
 const f =
@@ -2154,18 +1997,20 @@ updateInventoryField();
 }
 );
 });
-
-// CORREÇÃO 1: Deletar produto → usa ID, não índice
 tr.querySelector(".rm-btn")
 .addEventListener(
 "click",
 function() {
-const productId = state.inventory[idx].id;
 state.inventory.splice(idx, 1);
-state.recipe = state.recipe.filter(function(r) {
-return r.productId !== productId;
+state.recipe =
+state.recipe.filter(
+r => r.invIndex !== idx
+);
+state.recipe.forEach(function(r) {
+if (r.invIndex > idx) {
+r.invIndex--;
+}
 });
-// Não precisa reindexar porque usa ID
 saveState();
 renderInventory();
 renderRecipe();
@@ -2203,7 +2048,6 @@ document.getElementById(
 "click",
 function() {
 state.inventory.push({
-id: generateId(),
 name: "",
 total: 0,
 unit: "g",
@@ -2218,11 +2062,12 @@ render();
 );
 
 function getIngredientCost(
-productId,
+invIndex,
 qty,
 recipeUnit
 ) {
-const inv = getInventoryItemById(productId);
+const inv =
+state.inventory[invIndex];
 if (!inv) {
 return 0;
 }
@@ -2288,19 +2133,19 @@ totalGrams
 ) * value;
 }
 
-// CORREÇÃO 1: recRow usa productId em vez de invIndex
 function recRow(item, idx) {
 const tr =
 document.createElement("tr");
-const inv = getInventoryItemById(item.productId);
+const inv =
+state.inventory[item.invIndex];
 const productName =
 inv
 ? (
 inv.name ||
 "Produto " +
-(item.productId || "?")
+(item.invIndex + 1)
 )
-: "Produto removido";
+: "Produto";
 const invUnit =
 String(inv ? inv.unit : "")
 .trim()
@@ -2372,7 +2217,7 @@ return isUnitCounted
 function updateCostAndWarning() {
 const cost =
 getIngredientCost(
-item.productId,
+item.invIndex,
 qtyInput.value,
 currentUnit()
 );
@@ -2483,12 +2328,13 @@ recBody.innerHTML =
 "</tr>";
 return;
 }
-// Validar e limpar receitas com productId inválido
-state.recipe = state.recipe.filter(function(item) {
-if (!item.productId) return false;
-const inv = getInventoryItemById(item.productId);
-return inv !== null;
-});
+state.recipe =
+state.recipe.filter(
+item =>
+item.invIndex >= 0 &&
+item.invIndex <
+state.inventory.length
+);
 state.recipe.forEach(
 function(item, idx) {
 recBody.appendChild(
@@ -2501,7 +2347,7 @@ state.recipe.forEach(
 function(r) {
 recV +=
 getIngredientCost(
-r.productId,
+r.invIndex,
 r.qty,
 r.unit
 );
@@ -2531,18 +2377,16 @@ onlyOk: true
 });
 return;
 }
-// Procurar o primeiro produto que ainda não está na receita
-const usedProductIds = new Set();
-state.recipe.forEach(function(r) {
-if (r.productId) usedProductIds.add(r.productId);
-});
-const available = state.inventory.filter(function(inv) {
-return !usedProductIds.has(inv.id);
-});
-if (available.length === 0) {
+const nextIndex =
+state.recipe.length;
+if (
+nextIndex >=
+state.inventory.length
+) {
 showModal({
 icon: "ℹ️",
-title: "Todos os produtos já foram adicionados",
+title:
+"Todos os produtos já foram adicionados",
 message:
 "A lista da Receita já contém todos os produtos cadastrados no Mercado.",
 confirmText: "Entendi",
@@ -2550,9 +2394,10 @@ onlyOk: true
 });
 return;
 }
-const defaultInv = available[0];
+const defaultInv =
+state.inventory[nextIndex];
 state.recipe.push({
-productId: defaultInv.id,
+invIndex: nextIndex,
 qty: 0,
 unit: defaultRecipeUnitFor(defaultInv)
 });
@@ -2825,28 +2670,28 @@ renderAll();
 function renderRecipeList() {
 const container = document.getElementById('recipeList');
 const countEl = document.getElementById('recipeCount');
-countEl.textContent = '(' + recipesList.length + ')';
+countEl.textContent = `(${recipesList.length})`;
 if (recipesList.length === 0) {
-container.innerHTML = '<div class="recipe-list-empty">Nenhuma receita salva ainda</div>';
+container.innerHTML = `<div class="recipe-list-empty">Nenhuma receita salva ainda</div>`;
 return;
 }
-const sorted = [...recipesList].sort(function(a, b) { return b.updatedAt - a.updatedAt; });
+const sorted = [...recipesList].sort((a, b) => b.updatedAt - a.updatedAt);
 container.innerHTML = sorted.map(function(recipe) {
 const isActive = recipe.id === currentRecipeId ? 'active' : '';
 const date = new Date(recipe.updatedAt);
 const dateStr = date.toLocaleDateString('pt-BR') + ' ' + date.toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
-return '
-<div class="recipe-item ' + isActive + '" data-id="' + recipe.id + '">
+return `
+<div class="recipe-item ${isActive}" data-id="${recipe.id}">
 <div class="recipe-info">
-<div class="recipe-name">' + recipe.name + '</div>
-<div class="recipe-meta">Atualizado em ' + dateStr + '</div>
+<div class="recipe-name">${recipe.name}</div>
+<div class="recipe-meta">Atualizado em ${dateStr}</div>
 </div>
 <div class="recipe-actions">
-<button class="load-btn" data-id="' + recipe.id + '" title="Carregar">📂</button>
-<button class="del-btn" data-id="' + recipe.id + '" title="Apagar">🗑️</button>
+<button class="load-btn" data-id="${recipe.id}" title="Carregar">📂</button>
+<button class="del-btn" data-id="${recipe.id}" title="Apagar">🗑️</button>
 </div>
 </div>
-';
+`;
 }).join('');
 container.querySelectorAll('.load-btn').forEach(function(btn) {
 btn.addEventListener('click', function(e) {
@@ -2864,7 +2709,7 @@ if (recipe) {
 showModal({
 icon: "🗑️",
 title: "Apagar receita?",
-message: 'Tem certeza que deseja apagar "' + recipe.name + '"?',
+message: `Tem certeza que deseja apagar "${recipe.name}"?`,
 confirmText: "Apagar",
 cancelText: "Cancelar",
 danger: true
@@ -2948,7 +2793,8 @@ state.recipe.forEach(
 function(r) {
 const qty =
 parseFloat(r.qty) || 0;
-const inv = getInventoryItemById(r.productId);
+const inv =
+state.inventory[r.invIndex];
 const unit =
 r.unit ||
 (
@@ -2964,7 +2810,7 @@ inv
 );
 recV +=
 getIngredientCost(
-r.productId,
+r.invIndex,
 qty,
 unit
 );
@@ -3270,43 +3116,6 @@ updateLoadedIndicators();
 }
 
 renderAll();
-
-// Adicionar botão de importação (não mexe no layout original, apenas adiciona funcionalidade)
-// Criar input hidden para importação
-const importInput = document.createElement('input');
-importInput.type = 'file';
-importInput.accept = '.json';
-importInput.style.display = 'none';
-importInput.id = 'importFileInput';
-document.body.appendChild(importInput);
-
-importInput.addEventListener('change', function(e) {
-if (this.files && this.files[0]) {
-importData(this.files[0]);
-}
-this.value = '';
-});
-
-// Adicionar botão de importação ao lado do reset (sem quebrar layout)
-const resetBtn = document.getElementById('resetBtn');
-const importBtn = document.createElement('button');
-importBtn.className = 'reset-btn';
-importBtn.textContent = '📤 Importar';
-importBtn.style.marginRight = '8px';
-importBtn.addEventListener('click', function() {
-document.getElementById('importFileInput').click();
-});
-resetBtn.parentNode.insertBefore(importBtn, resetBtn);
-
-// Adicionar botão de exportação
-const exportBtn = document.createElement('button');
-exportBtn.className = 'reset-btn';
-exportBtn.textContent = '📥 Exportar';
-exportBtn.style.marginRight = '8px';
-exportBtn.addEventListener('click', function() {
-exportData();
-});
-resetBtn.parentNode.insertBefore(exportBtn, resetBtn);
 
 if (recipesList.length > 0) {
 const matching = recipesList.find(function(r) {
