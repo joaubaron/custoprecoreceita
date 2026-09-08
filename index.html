@@ -1177,7 +1177,6 @@ Inclui mão de obra, energia, água e estrutura
 </section>
 </div>
 <div class="tab-content" id="tab3">
-    <!-- Card 1: Rendimento e Custo (unificado) -->
     <section class="card">
         <h2>🫙 Rendimento e Custo por Pote</h2>
         <p class="sub">
@@ -1218,7 +1217,6 @@ Inclui mão de obra, energia, água e estrutura
         
         <div class="divider" style="margin: 16px 0;"></div>
         
-        <!-- Custos detalhados -->
         <div class="kv-grid">
             <div class="k">Ingredientes rateados</div>
             <div class="v" id="costIngPot"></div>
@@ -1236,7 +1234,6 @@ Inclui mão de obra, energia, água e estrutura
         </div>
     </section>
 
-    <!-- Card 2: Precificação -->
     <section class="card">
         <h2>💰 Precificação</h2>
         <p class="sub">
@@ -1264,11 +1261,9 @@ Inclui mão de obra, energia, água e estrutura
             💡 Margem de lucro calculada sobre o preço de venda
         </p>
         
-        <!-- Legenda do preço -->
         <div class="jar-legend" id="jarLegend"></div>
     </section>
 
-    <!-- Card 3: Ações -->
     <section class="card">
         <h2>⚡ Ações</h2>
         <p class="sub">
@@ -1437,10 +1432,6 @@ density = getDensityByName(inv ? inv.name : "");
 }
 return q * 1000 * density;
 }
-if (u === "un" || u === "pote") {
-const unitWeight = parseFloat(inv && inv.unitWeight);
-return q * (isFinite(unitWeight) && unitWeight > 0 ? unitWeight : 0);
-}
 return null;
 }
 
@@ -1449,11 +1440,8 @@ const u =
 String(inv ? inv.unit : "")
 .trim()
 .toLowerCase();
-if (u === "un" || u === "pote") {
+if (u === "ml" || u === "l" || u === "kg") {
 return u;
-}
-if (u === "ml" || u === "l") {
-return "ml";
 }
 return "g";
 }
@@ -1865,12 +1853,6 @@ tr.innerHTML =
 "<input class='cell' data-f='name' " +
 "placeholder='Produto' " +
 "inputmode='text'>" +
-"<input class='cell num unit-weight-input' data-f='unitWeight' " +
-"type='number' step='any' " +
-"inputmode='decimal' min='0' " +
-"placeholder='peso aprox. por un. (g)' " +
-"title='Peso aproximado de 1 unidade, em gramas — usado só para calcular o rendimento (nº de potes)' " +
-"style='display:none;margin-top:4px;height:30px;font-size:10px;'>" +
 "</td>" +
 "<td>" +
 "<input class='cell num' data-f='total' " +
@@ -1884,7 +1866,6 @@ tr.innerHTML =
 "<option value='ml'>ml</option>" +
 "<option value='kg'>kg</option>" +
 "<option value='L'>L</option>" +
-"<option value='un'>un</option>" +
 "</select>" +
 "</td>" +
 "<td>" +
@@ -1898,8 +1879,6 @@ tr.innerHTML =
 "</td>";
 const nameInput =
 tr.querySelector('[data-f="name"]');
-const unitWeightInput =
-tr.querySelector('[data-f="unitWeight"]');
 const totalInput =
 tr.querySelector('[data-f="total"]');
 const unitSelect =
@@ -1907,28 +1886,16 @@ tr.querySelector('[data-f="unit"]');
 const valueInput =
 tr.querySelector('[data-f="value"]');
 const inputs =
-[nameInput, unitWeightInput, totalInput, unitSelect, valueInput];
+[nameInput, totalInput, unitSelect, valueInput];
 nameInput.value =
 item.name || "";
-unitWeightInput.value =
-item.unitWeight ?? "";
 totalInput.value =
 item.total ?? "";
 unitSelect.value =
 item.unit || "g";
 valueInput.value =
 item.value ?? "";
-function refreshUnitWeightVisibility() {
-const u =
-String(unitSelect.value || "")
-.trim()
-.toLowerCase();
-unitWeightInput.style.display =
-(u === "un" || u === "pote")
-? "block"
-: "none";
-}
-refreshUnitWeightVisibility();
+
 inputs.forEach(function(inp) {
 function updateInventoryField() {
 const f =
@@ -1937,8 +1904,7 @@ const v =
 inp.value;
 if (
 f === "total" ||
-f === "value" ||
-f === "unitWeight"
+f === "value"
 ) {
 const numVal =
 parseFloat(v);
@@ -1972,7 +1938,6 @@ state.inventory[idx].name
 }
 }
 if (f === "unit") {
-refreshUnitWeightVisibility();
 renderRecipe();
 }
 saveState();
@@ -2101,19 +2066,7 @@ recipeUnit || inv.unit || ""
 )
 .trim()
 .toLowerCase();
-if (
-inventoryUnit === "un" ||
-inventoryUnit === "pote"
-) {
-if (
-usedUnit !== inventoryUnit
-) {
-return 0;
-}
-return (
-q / total
-) * value;
-}
+
 const totalGrams =
 toGrams(
 total,
@@ -2157,20 +2110,7 @@ const invUnit =
 String(inv ? inv.unit : "")
 .trim()
 .toLowerCase();
-const isUnitCounted =
-invUnit === "un" ||
-invUnit === "pote";
-const unitFieldHtml =
-isUnitCounted
-?
-"<div class='product-display' style='justify-content:center;'>" +
-(invUnit === "pote" ? "pote" : "un") +
-"</div>"
-:
-"<select class='cell' data-f='unit'>" +
-"<option value='g'>g</option>" +
-"<option value='ml'>ml</option>" +
-"</select>";
+
 tr.innerHTML =
 "<td>" +
 "<div class='product-display'>" +
@@ -2184,7 +2124,10 @@ productName +
 "placeholder='5500'>" +
 "</td>" +
 "<td>" +
-unitFieldHtml +
+"<select class='cell' data-f='unit'>" +
+"<option value='g'>g</option>" +
+"<option value='ml'>ml</option>" +
+"</select>" +
 "</td>" +
 "<td class='num'>" +
 "<div class='cost-display' data-f='cost'>" +
@@ -2206,16 +2149,11 @@ const costCell =
 tr.querySelector(".cost-display");
 qtyInput.value =
 item.qty ?? "";
-if (isUnitCounted) {
-item.unit = invUnit;
-} else if (unitInput) {
 unitInput.value =
 item.unit ?? "";
-}
+
 function currentUnit() {
-return isUnitCounted
-? invUnit
-: (unitInput ? unitInput.value : "");
+return unitInput ? unitInput.value : "";
 }
 
 function updateCostAndWarning() {
@@ -2260,7 +2198,6 @@ updateCostAndWarning();
 render();
 }
 );
-if (unitInput) {
 unitInput.addEventListener(
 "input",
 function() {
@@ -2279,7 +2216,6 @@ unitInput.blur();
 }
 }
 );
-}
 qtyInput.addEventListener(
 "keydown",
 function(e) {
