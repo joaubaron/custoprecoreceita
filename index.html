@@ -1919,14 +1919,7 @@ item.unit || "g";
 valueInput.value =
 item.value ?? "";
 function refreshUnitWeightVisibility() {
-const u =
-String(unitSelect.value || "")
-.trim()
-.toLowerCase();
-unitWeightInput.style.display =
-(u === "un" || u === "pote")
-? "block"
-: "none";
+unitWeightInput.style.display = "none";
 }
 refreshUnitWeightVisibility();
 inputs.forEach(function(inp) {
@@ -2207,7 +2200,10 @@ tr.querySelector(".cost-display");
 qtyInput.value =
 item.qty ?? "";
 if (isUnitCounted) {
+if (item.unit !== invUnit) {
 item.unit = invUnit;
+saveState();
+}
 } else if (unitInput) {
 unitInput.value =
 item.unit ?? "";
@@ -2232,9 +2228,19 @@ maximumFractionDigits: 2
 });
 
 if (inv) {
+const invUnitLower = String(inv.unit || "").trim().toLowerCase();
+const isUnitCountedInv = invUnitLower === "un" || invUnitLower === "pote";
+let exceeds = false;
+if (isUnitCountedInv) {
+const invTotalUnits = parseFloat(inv.total) || 0;
+const usedUnits = parseFloat(qtyInput.value) || 0;
+exceeds = invTotalUnits > 0 && usedUnits > invTotalUnits;
+} else {
 const invTotalGrams = toGrams(inv.total, inv.unit, inv);
 const usedGrams = toGrams(qtyInput.value, currentUnit(), inv);
-if (invTotalGrams > 0 && usedGrams > invTotalGrams) {
+exceeds = invTotalGrams > 0 && usedGrams > invTotalGrams;
+}
+if (exceeds) {
 tr.classList.add("excess-warning");
 tr.setAttribute("title", "Atenção: A quantidade informada excede o lote comprado cadastrado no Mercado!");
 } else {
