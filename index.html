@@ -335,11 +335,12 @@ tr.excess-warning input.cell {
 border-color: rgba(245, 168, 74, 0.4);
 }
 
-table th:nth-child(1), table td:nth-child(1) { width: 42% !important; }
-table th:nth-child(2), table td:nth-child(2) { width: 19% !important; }
-table th:nth-child(3), table td:nth-child(3) { width: 17% !important; }
-table th:nth-child(4), table td:nth-child(4) { width: 14% !important; }
-table th:nth-child(5), table td:nth-child(5) { width: 8% !important; }
+table th:nth-child(1), table td:nth-child(1) { width: 32% !important; }
+table th:nth-child(2), table td:nth-child(2) { width: 15% !important; }
+table th:nth-child(3), table td:nth-child(3) { width: 15% !important; }
+table th:nth-child(4), table td:nth-child(4) { width: 15% !important; }
+table th:nth-child(5), table td:nth-child(5) { width: 15% !important; }
+table th:nth-child(6), table td:nth-child(6) { width: 8% !important; }
 
 .total-line {
 display: flex;
@@ -403,7 +404,7 @@ font-weight: 700 !important;
 color: var(--text-secondary);
 }
 
-table:not(.operational-table) td:nth-child(4) input.cell.num {
+table:not(.operational-table) td:nth-child(5) input.cell.num {
 color: var(--gold) !important;
 font-weight: 700 !important;
 }
@@ -975,11 +976,12 @@ font-size: 10px;
 
 .tab-btn .emoji { font-size: 16px; }
 
-table th:nth-child(1), table td:nth-child(1) { width: 38% !important; }
-table th:nth-child(2), table td:nth-child(2) { width: 20% !important; }
-table th:nth-child(3), table td:nth-child(3) { width: 17% !important; }
-table th:nth-child(4), table td:nth-child(4) { width: 17% !important; }
-table th:nth-child(5), table td:nth-child(5) { width: 8% !important; }
+table th:nth-child(1), table td:nth-child(1) { width: 30% !important; }
+table th:nth-child(2), table td:nth-child(2) { width: 14% !important; }
+table th:nth-child(3), table td:nth-child(3) { width: 14% !important; }
+table th:nth-child(4), table td:nth-child(4) { width: 14% !important; }
+table th:nth-child(5), table td:nth-child(5) { width: 16% !important; }
+table th:nth-child(6), table td:nth-child(6) { width: 12% !important; }
 
 .total-value {
 font-size: 13px !important;
@@ -1058,6 +1060,7 @@ Cadastre os produtos que você compra e seus valores
 <th>Produto</th>
 <th class="num">Qtd.</th>
 <th>Un.</th>
+<th class="num">Peso/un (g)</th>
 <th class="num">R$</th>
 <th></th>
 </tr>
@@ -1065,7 +1068,7 @@ Cadastre os produtos que você compra e seus valores
 <tbody id="invBody"></tbody>
 <tfoot>
 <tr class="tfoot-total-row">
-<td colspan="5">
+<td colspan="6">
 <div class="total-line">
 <span class="total-label">Total em estoque</span>
 <span class="total-value" id="invTotalValue">R$ 0,00</span>
@@ -1497,7 +1500,10 @@ return q * 1000 * density2;
 }
 if (u === "un" || u === "pote") {
 var unitWeight = parseFloat(inv && inv.unitWeight);
-return q * (isFinite(unitWeight) && unitWeight > 0 ? unitWeight : 0);
+if (isFinite(unitWeight) && unitWeight > 0) {
+return q * unitWeight;
+}
+return 0;
 }
 return 0;
 }
@@ -1557,6 +1563,11 @@ var ul = String(item.unit || "").trim().toLowerCase();
 if (ul === "ml" || ul === "l") {
 if (!isFinite(parseFloat(item.density)) || parseFloat(item.density) <= 0) {
 item.density = getDensityByName(item.name);
+}
+}
+if (ul === "un" || ul === "pote") {
+if (!isFinite(parseFloat(item.unitWeight)) || parseFloat(item.unitWeight) <= 0) {
+item.unitWeight = 0;
 }
 }
 });
@@ -1830,6 +1841,8 @@ if (target) target.classList.add("active");
 
 function invRow(item, idx) {
 var tr = document.createElement("tr");
+var isUnit = String(item.unit || "").trim().toLowerCase() === "un" || String(item.unit || "").trim().toLowerCase() === "pote";
+
 tr.innerHTML =
 "<td>" +
 "<input class='cell' data-f='name' placeholder='Produto' inputmode='text'>" +
@@ -1847,48 +1860,84 @@ tr.innerHTML =
 "</select>" +
 "</td>" +
 "<td>" +
+"<input class='cell num unit-weight-input' data-f='unitWeight' type='number' step='any' inputmode='decimal' min='0' placeholder='g/un' " + (isUnit ? "" : "style='display:none;'") + ">" +
+"</td>" +
+"<td>" +
 "<input class='cell num' data-f='value' type='number' step='any' inputmode='decimal' min='0' placeholder='0,00'>" +
 "</td>" +
 "<td>" +
 "<button class='rm-btn' title='remover'>✕</button>" +
 "</td>";
+
 var nameInput = tr.querySelector('[data-f="name"]');
 var totalInput = tr.querySelector('[data-f="total"]');
 var unitSelect = tr.querySelector('[data-f="unit"]');
+var unitWeightInput = tr.querySelector('[data-f="unitWeight"]');
 var valueInput = tr.querySelector('[data-f="value"]');
-var inputs = [nameInput, totalInput, unitSelect, valueInput];
+
 nameInput.value = item.name || "";
 totalInput.value = item.total ?? "";
 unitSelect.value = item.unit || "g";
+unitWeightInput.value = item.unitWeight ?? "";
 valueInput.value = item.value ?? "";
 
-inputs.forEach(function(inp) {
+function toggleUnitWeightVisibility() {
+var selectedUnit = unitSelect.value.trim().toLowerCase();
+var isUnit = selectedUnit === "un" || selectedUnit === "pote";
+unitWeightInput.style.display = isUnit ? "" : "none";
+if (isUnit && unitWeightInput.value === "") {
+unitWeightInput.value = "0";
+}
+}
+
+toggleUnitWeightVisibility();
+
+unitSelect.addEventListener("change", function() {
+toggleUnitWeightVisibility();
+updateInventoryField();
+});
+
 function updateInventoryField() {
-var f = inp.dataset.f;
-var v = inp.value;
-if (f === "total" || f === "value") {
+var f = nameInput.dataset.f;
+var v = nameInput.value;
+state.inventory[idx][f] = v;
+
+f = totalInput.dataset.f;
+v = totalInput.value;
 var numVal = parseFloat(v);
 state.inventory[idx][f] = isFinite(numVal) && numVal >= 0 ? numVal : 0;
-} else {
+
+f = unitSelect.dataset.f;
+v = unitSelect.value;
 state.inventory[idx][f] = v;
-}
-if (f === "name" || f === "unit") {
+
+f = unitWeightInput.dataset.f;
+v = unitWeightInput.value;
+var numWeight = parseFloat(v);
+state.inventory[idx][f] = isFinite(numWeight) && numWeight > 0 ? numWeight : 0;
+
+f = valueInput.dataset.f;
+v = valueInput.value;
+numVal = parseFloat(v);
+state.inventory[idx][f] = isFinite(numVal) && numVal >= 0 ? numVal : 0;
+
 var currentUnit = String(state.inventory[idx].unit || "").trim().toLowerCase();
 if (currentUnit === "ml" || currentUnit === "l") {
 state.inventory[idx].density = getDensityByName(state.inventory[idx].name);
 }
-}
-if (f === "unit") {
-renderRecipe();
-}
+
 saveState();
+renderRecipe();
 render();
 }
+
+[nameInput, totalInput, unitSelect, unitWeightInput, valueInput].forEach(function(inp) {
 inp.addEventListener("input", updateInventoryField);
 inp.addEventListener("keydown", function(e) { if (e.key === "Enter") { e.preventDefault(); inp.blur(); } });
 inp.addEventListener("blur", updateInventoryField);
 inp.addEventListener("change", updateInventoryField);
 });
+
 tr.querySelector(".rm-btn").addEventListener("click", function() {
 state.inventory.splice(idx, 1);
 saveState();
@@ -1896,6 +1945,7 @@ renderInventory();
 renderRecipe();
 render();
 });
+
 return tr;
 }
 
@@ -1908,7 +1958,7 @@ document.getElementById("invTotalValue").textContent = brl(total);
 }
 
 document.getElementById("addInv").addEventListener("click", function() {
-state.inventory.push({ id: genId(), name: "", total: 0, unit: "g", value: 0, density: 1.00 });
+state.inventory.push({ id: genId(), name: "", total: 0, unit: "g", unitWeight: 0, value: 0, density: 1.00 });
 saveState();
 renderInventory();
 renderRecipe();
@@ -1924,10 +1974,12 @@ var q = parseFloat(qty) || 0;
 if (total <= 0 || value <= 0 || q <= 0) return 0;
 var inventoryUnit = String(inv.unit || "").trim().toLowerCase();
 var usedUnit = String(recipeUnit || inv.unit || "").trim().toLowerCase();
+
 if (inventoryUnit === "un" || inventoryUnit === "pote") {
 if (usedUnit !== inventoryUnit) return 0;
 return (q / total) * value;
 }
+
 var totalGrams = toGrams(total, inventoryUnit, inv);
 var usedGrams = toGrams(q, usedUnit, inv);
 if (totalGrams <= 0 || usedGrams < 0) return 0;
