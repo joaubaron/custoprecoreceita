@@ -999,7 +999,7 @@ font-size: 12px !important;
 </header>
 <div class="tabs" id="tabContainer">
 <button class="tab-btn active" data-tab="tab0">
-<span class="emoji">🛒</span> Mercado
+<span class="emoji">🛒</span> Estoque
 </button>
 <button class="tab-btn" data-tab="tab1">
 <span class="emoji">🧺</span> Receita
@@ -1018,7 +1018,7 @@ font-size: 12px !important;
 <div>
 <div class="tab-content active" id="tab0">
 <section class="card">
-<h2>🛒 Mercado</h2>
+<h2>🛒 Estoque</h2>
 <p class="sub">
 Cadastre os produtos que você compra e seus valores
 </p>
@@ -2174,7 +2174,7 @@ const invTotalGrams = toGrams(inv.total, inv.unit, inv);
 const usedGrams = toGrams(qtyInput.value, currentUnit(), inv);
 if (invTotalGrams > 0 && usedGrams > invTotalGrams) {
 tr.classList.add("excess-warning");
-tr.setAttribute("title", "Atenção: A quantidade informada excede o lote comprado cadastrado no Mercado!");
+tr.setAttribute("title", "Atenção: A quantidade informada excede o lote comprado cadastrado no Estoque!");
 } else {
 tr.classList.remove("excess-warning");
 tr.removeAttribute("title");
@@ -2318,7 +2318,7 @@ icon: "ℹ️",
 title:
 "Todos os produtos já foram adicionados",
 message:
-"A lista da Receita já contém todos os produtos cadastrados no Mercado.",
+"A lista da Receita já contém todos os produtos cadastrados no Estoque.",
 confirmText: "Entendi",
 onlyOk: true
 });
