@@ -377,7 +377,7 @@ justify-content: flex-end;
 select.cell {
 cursor: pointer;
 -webkit-appearance: none;
-background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23a9a7c0'/%3E%3C/svg%3E");
+background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23a9a7c0'/%3E3C/svg%3E");
 background-repeat: no-repeat;
 background-position: right 6px center;
 padding-right: 18px;
@@ -828,6 +828,18 @@ background: var(--green-dim);
 border-color: var(--red);
 color: var(--red);
 background: var(--red-dim);
+}
+
+.action-btn.export-btn:hover {
+border-color: var(--blue);
+color: var(--blue);
+background: var(--blue-dim);
+}
+
+.action-btn.import-btn:hover {
+border-color: var(--gold);
+color: var(--gold);
+background: var(--gold-soft);
 }
 
 .link-to-recipes a {
@@ -1324,8 +1336,13 @@ Gerencie suas receitas. Clique para carregar e editar
 <button class="action-btn save-btn" id="saveRecipeBtnTab4">💾 Salvar receita</button>
 <button class="action-btn delete-btn" id="deleteCurrentRecipeBtnTab4">🗑️ Apagar receita</button>
 </div>
+<div class="recipe-actions-bar" style="margin-top: 12px;">
+<button class="action-btn export-btn" id="exportDataBtn">📤 Exportar dados</button>
+<button class="action-btn import-btn" id="importDataBtn">📥 Importar dados</button>
+<input type="file" id="importFileInput" accept="application/json" style="display:none;">
+</div>
 <p class="sub" style="margin-top:16px;font-size:11px;color:var(--text-muted);">
-💡 Dica: As receitas são salvas localmente neste dispositivo
+💡 Dica: As receitas são salvas localmente neste dispositivo. Use exportar para fazer backup.
 </p>
 </div>
 </section>
@@ -1363,33 +1380,39 @@ Confirmar
 "use strict";
 const STORAGE_KEY = "caponata-calc-v4";
 const RECIPES_STORAGE_KEY = "caponata-recipes-list";
-const DEFAULT_STATE = {
+const OLD_KEYS = ["caponata-calc-v1", "caponata-calc-v2", "caponata-calc-v3"];
+
+function genId() {
+return "inv_" + Date.now() + "_" + Math.random().toString(36).slice(2, 8);
+}
+
+var DEFAULT_STATE = {
 recipeName: "Minha Receita",
 inventory: [
-{ name: "Azeite oliva", total: 500, unit: "ml", value: 27.90, density: 0.91 },
-{ name: "Shoyu", total: 500, unit: "ml", value: 18.90, density: 1.18 },
-{ name: "Vinagre arroz", total: 500, unit: "ml", value: 12.50, density: 1.01 },
-{ name: "Berinjela", total: 1, unit: "kg", value: 6.00 },
-{ name: "Abobrinha italiana", total: 1, unit: "kg", value: 4.00 },
-{ name: "Cebola", total: 1, unit: "kg", value: 4.50 },
-{ name: "Pimentão vermelho", total: 500, unit: "g", value: 4.50 },
-{ name: "Pimentão amarelo", total: 500, unit: "g", value: 5.60 },
-{ name: "Tomate", total: 1, unit: "kg", value: 5.50 },
-{ name: "Uva passa", total: 200, unit: "g", value: 15.78 },
-{ name: "Manjericão seco", total: 50, unit: "g", value: 12.85 }
+{ id: "inv_def_0", name: "Azeite oliva", total: 500, unit: "ml", value: 27.90, density: 0.91 },
+{ id: "inv_def_1", name: "Shoyu", total: 500, unit: "ml", value: 18.90, density: 1.18 },
+{ id: "inv_def_2", name: "Vinagre arroz", total: 500, unit: "ml", value: 12.50, density: 1.01 },
+{ id: "inv_def_3", name: "Berinjela", total: 1, unit: "kg", value: 6.00 },
+{ id: "inv_def_4", name: "Abobrinha italiana", total: 1, unit: "kg", value: 4.00 },
+{ id: "inv_def_5", name: "Cebola", total: 1, unit: "kg", value: 4.50 },
+{ id: "inv_def_6", name: "Pimentão vermelho", total: 500, unit: "g", value: 4.50 },
+{ id: "inv_def_7", name: "Pimentão amarelo", total: 500, unit: "g", value: 5.60 },
+{ id: "inv_def_8", name: "Tomate", total: 1, unit: "kg", value: 5.50 },
+{ id: "inv_def_9", name: "Uva passa", total: 200, unit: "g", value: 15.78 },
+{ id: "inv_def_10", name: "Manjericão seco", total: 50, unit: "g", value: 12.85 }
 ],
 recipe: [
-{ invIndex: 0, qty: 120, unit: "ml" },
-{ invIndex: 1, qty: 120, unit: "ml" },
-{ invIndex: 2, qty: 120, unit: "ml" },
-{ invIndex: 3, qty: 700, unit: "g" },
-{ invIndex: 4, qty: 700, unit: "g" },
-{ invIndex: 5, qty: 180, unit: "g" },
-{ invIndex: 6, qty: 100, unit: "g" },
-{ invIndex: 7, qty: 100, unit: "g" },
-{ invIndex: 8, qty: 300, unit: "g" },
-{ invIndex: 9, qty: 100, unit: "g" },
-{ invIndex: 10, qty: 6, unit: "g" }
+{ invId: "inv_def_0", qty: 120, unit: "ml" },
+{ invId: "inv_def_1", qty: 120, unit: "ml" },
+{ invId: "inv_def_2", qty: 120, unit: "ml" },
+{ invId: "inv_def_3", qty: 700, unit: "g" },
+{ invId: "inv_def_4", qty: 700, unit: "g" },
+{ invId: "inv_def_5", qty: 180, unit: "g" },
+{ invId: "inv_def_6", qty: 100, unit: "g" },
+{ invId: "inv_def_7", qty: 100, unit: "g" },
+{ invId: "inv_def_8", qty: 300, unit: "g" },
+{ invId: "inv_def_9", qty: 100, unit: "g" },
+{ invId: "inv_def_10", qty: 6, unit: "g" }
 ],
 packaging: [
 { name: "Vidro/tampa", qty: 1, unit: "un", value: 4.5 },
@@ -1414,13 +1437,30 @@ return String(str == null ? "" : str)
 .replace(/'/g, "&#39;");
 }
 
-let state = loadState();
-let storageWarned = false;
-let currentRecipeId = null;
-let recipesList = loadRecipesList();
+function getStorage() {
+try {
+localStorage.setItem("__test__", "1");
+localStorage.removeItem("__test__");
+return localStorage;
+} catch (e) {
+try {
+sessionStorage.setItem("__test__", "1");
+sessionStorage.removeItem("__test__");
+return sessionStorage;
+} catch (e2) {
+return null;
+}
+}
+}
+
+var storage = getStorage();
+var storageWarned = false;
+var state = loadState();
+var currentRecipeId = null;
+var recipesList = loadRecipesList();
 
 function getDensityByName(name) {
-const n = String(name || "")
+var n = String(name || "")
 .toLowerCase()
 .normalize("NFD")
 .replace(/[\u0300-\u036f]/g, "");
@@ -1436,86 +1476,149 @@ return 1.00;
 }
 
 function toGrams(qty, unit, inv) {
-const q = parseFloat(qty) || 0;
-const u = String(unit || "").trim().toLowerCase();
+var q = parseFloat(qty) || 0;
+var u = String(unit || "").trim().toLowerCase();
 if (q < 0) return 0;
 if (u === "g") return q;
 if (u === "kg") return q * 1000;
 if (u === "ml") {
-let density = parseFloat(inv && inv.density);
+var density = parseFloat(inv && inv.density);
 if (!isFinite(density) || density <= 0) {
 density = getDensityByName(inv ? inv.name : "");
 }
 return q * density;
 }
 if (u === "l") {
-let density = parseFloat(inv && inv.density);
-if (!isFinite(density) || density <= 0) {
-density = getDensityByName(inv ? inv.name : "");
+var density2 = parseFloat(inv && inv.density);
+if (!isFinite(density2) || density2 <= 0) {
+density2 = getDensityByName(inv ? inv.name : "");
 }
-return q * 1000 * density;
+return q * 1000 * density2;
 }
 if (u === "un" || u === "pote") {
-const unitWeight = parseFloat(inv && inv.unitWeight);
+var unitWeight = parseFloat(inv && inv.unitWeight);
 return q * (isFinite(unitWeight) && unitWeight > 0 ? unitWeight : 0);
 }
-return null;
+return 0;
 }
 
 function defaultRecipeUnitFor(inv) {
-const u = String(inv ? inv.unit : "").trim().toLowerCase();
+var u = String(inv ? inv.unit : "").trim().toLowerCase();
 if (u === "un" || u === "pote") return u;
 if (u === "ml" || u === "l") return "ml";
 return "g";
 }
 
 function getRecipeWeight(qty, unit, inv) {
-const grams = toGrams(qty, unit, inv);
-return grams === null ? 0 : grams;
+return toGrams(qty, unit, inv);
 }
 
-function loadState() {
-try {
-const raw = localStorage.getItem(STORAGE_KEY);
-if (raw) {
-const parsed = JSON.parse(raw);
-if (parsed && Array.isArray(parsed.inventory) && Array.isArray(parsed.recipe) && Array.isArray(parsed.packaging)) {
+function findInvById(id) {
+for (var i = 0; i < state.inventory.length; i++) {
+if (state.inventory[i].id === id) return state.inventory[i];
+}
+return null;
+}
+
+function migrateState(parsed) {
+if (!parsed) return JSON.parse(JSON.stringify(DEFAULT_STATE));
+if (!parsed.inventory) parsed.inventory = [];
+if (!parsed.recipe) parsed.recipe = [];
+if (!parsed.packaging) parsed.packaging = [];
+
+parsed.inventory.forEach(function(item, idx) {
+if (!item) return;
+if (!item.id) {
+item.id = genId();
+}
+});
+
+parsed.recipe.forEach(function(r) {
+if (!r) return;
+if (r.invId === undefined && r.invIndex !== undefined) {
+var inv = parsed.inventory[r.invIndex];
+if (inv) {
+r.invId = inv.id;
+}
+delete r.invIndex;
+}
+});
+
 if (!isFinite(parsed.weightPerPot) || parsed.weightPerPot <= 0) parsed.weightPerPot = 500;
 if (!isFinite(parsed.profitPct) || parsed.profitPct < 0 || parsed.profitPct > 99.99) parsed.profitPct = 35;
+if (!('laborHourly' in parsed) || !isFinite(parsed.laborHourly) || parsed.laborHourly < 0) parsed.laborHourly = 8;
+if (!('prepTime' in parsed) || !isFinite(parsed.prepTime) || parsed.prepTime < 0) parsed.prepTime = 60;
+if (!('utilitiesCost' in parsed) || !isFinite(parsed.utilitiesCost) || parsed.utilitiesCost < 0) parsed.utilitiesCost = 2;
+if (!('leftoverCosting' in parsed)) parsed.leftoverCosting = "absorb";
+
 parsed.inventory.forEach(function(item) {
-if (item && (String(item.unit || "").trim().toLowerCase() === "ml" || String(item.unit || "").trim().toLowerCase() === "l")) {
+if (!item) return;
+var ul = String(item.unit || "").trim().toLowerCase();
+if (ul === "ml" || ul === "l") {
 if (!isFinite(parseFloat(item.density)) || parseFloat(item.density) <= 0) {
 item.density = getDensityByName(item.name);
 }
 }
 });
-if (!('laborHourly' in parsed) || !isFinite(parsed.laborHourly) || parsed.laborHourly < 0) parsed.laborHourly = 8;
-if (!('prepTime' in parsed) || !isFinite(parsed.prepTime) || parsed.prepTime < 0) parsed.prepTime = 60;
-if (!('utilitiesCost' in parsed) || !isFinite(parsed.utilitiesCost) || parsed.utilitiesCost < 0) parsed.utilitiesCost = 2;
-if (!('leftoverCosting' in parsed)) parsed.leftoverCosting = "absorb";
+
 parsed.recipe.forEach(function(r) {
 if (!r) return;
-const ru = String(r.unit || "").trim().toLowerCase();
+var ru = String(r.unit || "").trim().toLowerCase();
 if (ru === "kg") r.unit = "g";
 else if (ru === "l") r.unit = "ml";
 });
+
 return parsed;
 }
+
+function loadState() {
+if (!storage) return JSON.parse(JSON.stringify(DEFAULT_STATE));
+
+var raw = storage.getItem(STORAGE_KEY);
+
+if (!raw) {
+for (var i = 0; i < OLD_KEYS.length; i++) {
+raw = storage.getItem(OLD_KEYS[i]);
+if (raw) break;
+}
+}
+
+if (raw) {
+try {
+var parsed = JSON.parse(raw);
+if (parsed && Array.isArray(parsed.inventory) && Array.isArray(parsed.recipe) && Array.isArray(parsed.packaging)) {
+parsed = migrateState(parsed);
+storage.setItem(STORAGE_KEY, JSON.stringify(parsed));
+return parsed;
 }
 } catch (e) {}
+}
 return JSON.parse(JSON.stringify(DEFAULT_STATE));
 }
 
 function saveState() {
+if (!storage) {
+if (!storageWarned) {
+storageWarned = true;
+showModal({
+icon: "⚠️",
+title: "Não foi possível salvar",
+message: "O navegador bloqueou o armazenamento. Suas alterações funcionarão nesta sessão, mas podem se perder ao fechar.",
+confirmText: "Entendi",
+onlyOk: true
+});
+}
+return;
+}
 try {
-localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+storage.setItem(STORAGE_KEY, JSON.stringify(state));
 } catch (e) {
 if (!storageWarned) {
 storageWarned = true;
 showModal({
 icon: "⚠️",
 title: "Não foi possível salvar",
-message: "O navegador bloqueou o armazenamento local. Suas alterações funcionarão nesta sessão, mas podem se perder ao fechar.",
+message: "O armazenamento está cheio ou bloqueado. Suas alterações funcionarão nesta sessão, mas podem se perder ao fechar.",
 confirmText: "Entendi",
 onlyOk: true
 });
@@ -1524,10 +1627,11 @@ onlyOk: true
 }
 
 function loadRecipesList() {
+if (!storage) return [];
 try {
-const raw = localStorage.getItem(RECIPES_STORAGE_KEY);
+var raw = storage.getItem(RECIPES_STORAGE_KEY);
 if (raw) {
-const parsed = JSON.parse(raw);
+var parsed = JSON.parse(raw);
 if (Array.isArray(parsed)) return parsed;
 }
 } catch (e) {}
@@ -1535,17 +1639,18 @@ return [];
 }
 
 function saveRecipesList() {
+if (!storage) return;
 try {
-localStorage.setItem(RECIPES_STORAGE_KEY, JSON.stringify(recipesList));
+storage.setItem(RECIPES_STORAGE_KEY, JSON.stringify(recipesList));
 } catch (e) {}
 }
 
 function getRecipeData() {
 return {
 recipeName: state.recipeName,
-inventory: state.inventory,
-recipe: state.recipe,
-packaging: state.packaging,
+inventory: JSON.parse(JSON.stringify(state.inventory)),
+recipe: JSON.parse(JSON.stringify(state.recipe)),
+packaging: JSON.parse(JSON.stringify(state.packaging)),
 weightPerPot: state.weightPerPot,
 profitPct: state.profitPct,
 laborHourly: state.laborHourly,
@@ -1556,16 +1661,17 @@ leftoverCosting: state.leftoverCosting
 }
 
 function loadRecipeData(data) {
-state.recipeName = data.recipeName || "Minha Receita";
-state.inventory = data.inventory || [];
-state.recipe = data.recipe || [];
-state.packaging = data.packaging || [];
-state.weightPerPot = data.weightPerPot || 500;
-state.profitPct = data.profitPct || 35;
-state.laborHourly = data.laborHourly || 8;
-state.prepTime = data.prepTime || 60;
-state.utilitiesCost = data.utilitiesCost || 2;
-state.leftoverCosting = data.leftoverCosting || "absorb";
+var migrated = migrateState(data);
+state.recipeName = migrated.recipeName || "Minha Receita";
+state.inventory = migrated.inventory || [];
+state.recipe = migrated.recipe || [];
+state.packaging = migrated.packaging || [];
+state.weightPerPot = migrated.weightPerPot || 500;
+state.profitPct = migrated.profitPct || 35;
+state.laborHourly = migrated.laborHourly || 8;
+state.prepTime = migrated.prepTime || 60;
+state.utilitiesCost = migrated.utilitiesCost || 2;
+state.leftoverCosting = migrated.leftoverCosting || "absorb";
 
 syncInputsFromState();
 saveState();
@@ -1583,16 +1689,16 @@ document.getElementById('leftoverCosting').value = state.leftoverCosting;
 }
 
 function saveCurrentRecipe() {
-const name = state.recipeName.trim() || "Receita sem nome";
-const existing = recipesList.find(r => r.id === currentRecipeId);
+var name = state.recipeName.trim() || "Receita sem nome";
+var existing = recipesList.find(function(r) { return r.id === currentRecipeId; });
 if (existing) {
 existing.name = name;
 existing.data = getRecipeData();
 existing.updatedAt = Date.now();
 showModal({ icon: "💾", title: "Receita atualizada!", message: '"' + name + '" foi atualizada com sucesso.', confirmText: "OK", onlyOk: true });
 } else {
-const newRecipe = {
-id: 'recipe_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6),
+var newRecipe = {
+id: 'recipe_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8),
 name: name,
 data: getRecipeData(),
 createdAt: Date.now(),
@@ -1612,8 +1718,8 @@ if (!currentRecipeId) {
 showModal({ icon: "ℹ️", title: "Nenhuma receita selecionada", message: "Não há uma receita carregada para apagar.", confirmText: "OK", onlyOk: true });
 return;
 }
-const recipe = recipesList.find(r => r.id === currentRecipeId);
-const name = recipe ? recipe.name : state.recipeName;
+var recipe = recipesList.find(function(r) { return r.id === currentRecipeId; });
+var name = recipe ? recipe.name : state.recipeName;
 showModal({
 icon: "🗑️",
 title: "Apagar receita?",
@@ -1622,7 +1728,7 @@ confirmText: "Apagar",
 cancelText: "Cancelar",
 danger: true
 }, function() {
-recipesList = recipesList.filter(r => r.id !== currentRecipeId);
+recipesList = recipesList.filter(function(r) { return r.id !== currentRecipeId; });
 currentRecipeId = null;
 saveRecipesList();
 renderRecipeList();
@@ -1632,7 +1738,7 @@ showModal({ icon: "🗑️", title: "Receita apagada", message: '"' + name + '" 
 }
 
 function loadRecipeFromList(recipeId) {
-const recipe = recipesList.find(r => r.id === recipeId);
+var recipe = recipesList.find(function(r) { return r.id === recipeId; });
 if (recipe) {
 currentRecipeId = recipe.id;
 loadRecipeData(recipe.data);
@@ -1644,8 +1750,8 @@ showModal({ icon: "📂", title: "Receita carregada", message: '"' + recipe.name
 }
 
 function updateLoadedIndicators() {
-const recipe = recipesList.find(r => r.id === currentRecipeId);
-const name = recipe ? recipe.name : "Nenhuma";
+var recipe = recipesList.find(function(r) { return r.id === currentRecipeId; });
+var name = recipe ? recipe.name : "Nenhuma";
 document.getElementById('priceTabLoadedName').textContent = name;
 document.getElementById('recipesTabLoadedName').textContent = name;
 }
@@ -1672,12 +1778,12 @@ if (!isFinite(n)) n = 0;
 return n.toLocaleString("pt-BR", { minimumFractionDigits: digits || 0, maximumFractionDigits: digits || 2 });
 }
 
-const recipeNameEl = document.getElementById("recipeName");
-const invBody = document.getElementById("invBody");
-const recBody = document.getElementById("recBody");
-const pkgBody = document.getElementById("pkgBody");
-const weightPerPotEl = document.getElementById("weightPerPot");
-const profitPctEl = document.getElementById("profitPct");
+var recipeNameEl = document.getElementById("recipeName");
+var invBody = document.getElementById("invBody");
+var recBody = document.getElementById("recBody");
+var pkgBody = document.getElementById("pkgBody");
+var weightPerPotEl = document.getElementById("weightPerPot");
+var profitPctEl = document.getElementById("profitPct");
 
 syncInputsFromState();
 
@@ -1687,14 +1793,14 @@ saveState();
 });
 
 weightPerPotEl.addEventListener("input", function() {
-const value = parseFloat(weightPerPotEl.value);
+var value = parseFloat(weightPerPotEl.value);
 state.weightPerPot = isFinite(value) && value > 0 ? value : 0;
 saveState();
 render();
 });
 
 profitPctEl.addEventListener("input", function() {
-let value = parseFloat(profitPctEl.value);
+var value = parseFloat(profitPctEl.value);
 if (!isFinite(value)) value = 0;
 value = Math.max(0, Math.min(value, 99.99));
 state.profitPct = value;
@@ -1723,7 +1829,7 @@ if (target) target.classList.add("active");
 });
 
 function invRow(item, idx) {
-const tr = document.createElement("tr");
+var tr = document.createElement("tr");
 tr.innerHTML =
 "<td>" +
 "<input class='cell' data-f='name' placeholder='Produto' inputmode='text'>" +
@@ -1746,11 +1852,11 @@ tr.innerHTML =
 "<td>" +
 "<button class='rm-btn' title='remover'>✕</button>" +
 "</td>";
-const nameInput = tr.querySelector('[data-f="name"]');
-const totalInput = tr.querySelector('[data-f="total"]');
-const unitSelect = tr.querySelector('[data-f="unit"]');
-const valueInput = tr.querySelector('[data-f="value"]');
-const inputs = [nameInput, totalInput, unitSelect, valueInput];
+var nameInput = tr.querySelector('[data-f="name"]');
+var totalInput = tr.querySelector('[data-f="total"]');
+var unitSelect = tr.querySelector('[data-f="unit"]');
+var valueInput = tr.querySelector('[data-f="value"]');
+var inputs = [nameInput, totalInput, unitSelect, valueInput];
 nameInput.value = item.name || "";
 totalInput.value = item.total ?? "";
 unitSelect.value = item.unit || "g";
@@ -1758,16 +1864,16 @@ valueInput.value = item.value ?? "";
 
 inputs.forEach(function(inp) {
 function updateInventoryField() {
-const f = inp.dataset.f;
-const v = inp.value;
+var f = inp.dataset.f;
+var v = inp.value;
 if (f === "total" || f === "value") {
-const numVal = parseFloat(v);
+var numVal = parseFloat(v);
 state.inventory[idx][f] = isFinite(numVal) && numVal >= 0 ? numVal : 0;
 } else {
 state.inventory[idx][f] = v;
 }
 if (f === "name" || f === "unit") {
-const currentUnit = String(state.inventory[idx].unit || "").trim().toLowerCase();
+var currentUnit = String(state.inventory[idx].unit || "").trim().toLowerCase();
 if (currentUnit === "ml" || currentUnit === "l") {
 state.inventory[idx].density = getDensityByName(state.inventory[idx].name);
 }
@@ -1785,8 +1891,6 @@ inp.addEventListener("change", updateInventoryField);
 });
 tr.querySelector(".rm-btn").addEventListener("click", function() {
 state.inventory.splice(idx, 1);
-state.recipe = state.recipe.filter(r => r.invIndex !== idx);
-state.recipe.forEach(function(r) { if (r.invIndex > idx) r.invIndex--; });
 saveState();
 renderInventory();
 renderRecipe();
@@ -1798,45 +1902,45 @@ return tr;
 function renderInventory() {
 invBody.innerHTML = "";
 state.inventory.forEach(function(item, idx) { invBody.appendChild(invRow(item, idx)); });
-let total = 0;
+var total = 0;
 state.inventory.forEach(function(i) { total += parseFloat(i.value) || 0; });
 document.getElementById("invTotalValue").textContent = brl(total);
 }
 
 document.getElementById("addInv").addEventListener("click", function() {
-state.inventory.push({ name: "", total: 0, unit: "g", value: 0, density: 1.00 });
+state.inventory.push({ id: genId(), name: "", total: 0, unit: "g", value: 0, density: 1.00 });
 saveState();
 renderInventory();
 renderRecipe();
 render();
 });
 
-function getIngredientCost(invIndex, qty, recipeUnit) {
-const inv = state.inventory[invIndex];
+function getIngredientCost(invId, qty, recipeUnit) {
+var inv = findInvById(invId);
 if (!inv) return 0;
-const total = parseFloat(inv.total) || 0;
-const value = parseFloat(inv.value) || 0;
-const q = parseFloat(qty) || 0;
+var total = parseFloat(inv.total) || 0;
+var value = parseFloat(inv.value) || 0;
+var q = parseFloat(qty) || 0;
 if (total <= 0 || value <= 0 || q <= 0) return 0;
-const inventoryUnit = String(inv.unit || "").trim().toLowerCase();
-const usedUnit = String(recipeUnit || inv.unit || "").trim().toLowerCase();
+var inventoryUnit = String(inv.unit || "").trim().toLowerCase();
+var usedUnit = String(recipeUnit || inv.unit || "").trim().toLowerCase();
 if (inventoryUnit === "un" || inventoryUnit === "pote") {
 if (usedUnit !== inventoryUnit) return 0;
 return (q / total) * value;
 }
-const totalGrams = toGrams(total, inventoryUnit, inv);
-const usedGrams = toGrams(q, usedUnit, inv);
-if (totalGrams === null || usedGrams === null || totalGrams <= 0 || usedGrams < 0) return 0;
+var totalGrams = toGrams(total, inventoryUnit, inv);
+var usedGrams = toGrams(q, usedUnit, inv);
+if (totalGrams <= 0 || usedGrams < 0) return 0;
 return (usedGrams / totalGrams) * value;
 }
 
 function recRow(item, idx) {
-const tr = document.createElement("tr");
-const inv = state.inventory[item.invIndex];
-const productName = inv ? (inv.name || "Produto " + (item.invIndex + 1)) : "Produto";
-const invUnit = String(inv ? inv.unit : "").trim().toLowerCase();
-const isUnitCounted = invUnit === "un" || invUnit === "pote";
-const unitFieldHtml = isUnitCounted
+var tr = document.createElement("tr");
+var inv = findInvById(item.invId);
+var productName = inv ? (inv.name || "Produto") : "Produto";
+var invUnit = String(inv ? inv.unit : "").trim().toLowerCase();
+var isUnitCounted = invUnit === "un" || invUnit === "pote";
+var unitFieldHtml = isUnitCounted
 ? "<div class='product-display' style='justify-content:center;'>" + (invUnit === "pote" ? "pote" : "un") + "</div>"
 : "<select class='cell' data-f='unit'><option value='g'>g</option><option value='ml'>ml</option></select>";
 
@@ -1855,9 +1959,9 @@ tr.innerHTML =
 "<button class='rm-btn' title='remover'>✕</button>" +
 "</td>";
 
-const qtyInput = tr.querySelector('input[data-f="qty"]');
-const unitInput = tr.querySelector('[data-f="unit"]');
-const costCell = tr.querySelector(".cost-display");
+var qtyInput = tr.querySelector('input[data-f="qty"]');
+var unitInput = tr.querySelector('[data-f="unit"]');
+var costCell = tr.querySelector(".cost-display");
 qtyInput.value = item.qty ?? "";
 
 if (isUnitCounted) {
@@ -1871,19 +1975,19 @@ return isUnitCounted ? invUnit : (unitInput ? unitInput.value : "");
 }
 
 function updateCostAndWarning() {
-const cost = getIngredientCost(item.invIndex, qtyInput.value, currentUnit());
+var cost = getIngredientCost(item.invId, qtyInput.value, currentUnit());
 costCell.textContent = cost.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 if (inv) {
-const invUnitLower = String(inv.unit || "").trim().toLowerCase();
-const isUnitCountedInv = invUnitLower === "un" || invUnitLower === "pote";
-let exceeds = false;
+var invUnitLower = String(inv.unit || "").trim().toLowerCase();
+var isUnitCountedInv = invUnitLower === "un" || invUnitLower === "pote";
+var exceeds = false;
 if (isUnitCountedInv) {
-const invTotalUnits = parseFloat(inv.total) || 0;
-const usedUnits = parseFloat(qtyInput.value) || 0;
+var invTotalUnits = parseFloat(inv.total) || 0;
+var usedUnits = parseFloat(qtyInput.value) || 0;
 exceeds = invTotalUnits > 0 && usedUnits > invTotalUnits;
 } else {
-const invTotalGrams = toGrams(inv.total, inv.unit, inv);
-const usedGrams = toGrams(qtyInput.value, currentUnit(), inv);
+var invTotalGrams = toGrams(inv.total, inv.unit, inv);
+var usedGrams = toGrams(qtyInput.value, currentUnit(), inv);
 exceeds = invTotalGrams > 0 && usedGrams > invTotalGrams;
 }
 if (exceeds) {
@@ -1897,7 +2001,7 @@ tr.removeAttribute("title");
 }
 
 qtyInput.addEventListener("input", function() {
-const v = parseFloat(qtyInput.value);
+var v = parseFloat(qtyInput.value);
 state.recipe[idx].qty = isFinite(v) && v >= 0 ? v : 0;
 saveState();
 updateCostAndWarning();
@@ -1929,23 +2033,26 @@ if (state.inventory.length === 0) {
 recBody.innerHTML = "<tr><td colspan='5' style='text-align:center;color:var(--text-muted);padding:20px 0;'>⚠️ Adicione produtos no estoque primeiro.</td></tr>";
 return;
 }
-var filtered = state.recipe.filter(item => item.invIndex >= 0 && item.invIndex < state.inventory.length);
+var filtered = state.recipe.filter(function(item) {
+return item && item.invId && findInvById(item.invId);
+});
 if (filtered.length !== state.recipe.length) {
 state.recipe = filtered;
 saveState();
 }
 state.recipe.forEach(function(item, idx) { recBody.appendChild(recRow(item, idx)); });
-let recV = 0;
-state.recipe.forEach(function(r) { recV += getIngredientCost(r.invIndex, r.qty, r.unit); });
+var recV = 0;
+state.recipe.forEach(function(r) { recV += getIngredientCost(r.invId, r.qty, r.unit); });
 document.getElementById("recSubV").textContent = brl(recV);
 }
 
-function findFirstUnusedInvIndex() {
-const used = new Set(state.recipe.map(r => r.invIndex));
+function findFirstUnusedInvId() {
+var used = {};
+state.recipe.forEach(function(r) { if (r.invId) used[r.invId] = true; });
 for (var i = 0; i < state.inventory.length; i++) {
-if (!used.has(i)) return i;
+if (!used[state.inventory[i].id]) return state.inventory[i].id;
 }
-return -1;
+return null;
 }
 
 document.getElementById("addRec").addEventListener("click", function() {
@@ -1953,36 +2060,37 @@ if (state.inventory.length === 0) {
 showModal({ icon: "⚠️", title: "Estoque vazio", message: "Adicione produtos no estoque antes de criar a receita.", confirmText: "Entendi", onlyOk: true });
 return;
 }
-const unusedIndex = findFirstUnusedInvIndex();
-if (unusedIndex === -1) {
+var unusedId = findFirstUnusedInvId();
+if (unusedId === null) {
 showModal({ icon: "ℹ️", title: "Todos os produtos já foram adicionados", message: "A lista da Receita já contém todos os produtos cadastrados no Mercado.", confirmText: "Entendi", onlyOk: true });
 return;
 }
-state.recipe.push({ invIndex: unusedIndex, qty: 0, unit: defaultRecipeUnitFor(state.inventory[unusedIndex]) });
+var inv = findInvById(unusedId);
+state.recipe.push({ invId: unusedId, qty: 0, unit: defaultRecipeUnitFor(inv) });
 saveState();
 renderRecipe();
 render();
 });
 
 function pkgRow(item, idx) {
-const tr = document.createElement("tr");
+var tr = document.createElement("tr");
 tr.innerHTML =
 "<td><input class='cell' data-f='name' placeholder='nome' inputmode='text'></td>" +
 "<td><input class='cell num' data-f='qty' type='number' step='any' inputmode='decimal' min='0'></td>" +
 "<td><input class='cell' data-f='unit' placeholder='un' inputmode='text'></td>" +
 "<td><input class='cell num' data-f='value' type='number' step='any' inputmode='decimal' min='0'></td>" +
 "<td><button class='rm-btn' title='remover'>✕</button></td>";
-const inputs = tr.querySelectorAll("input");
+var inputs = tr.querySelectorAll("input");
 inputs[0].value = item.name ?? "";
 inputs[1].value = item.qty ?? "";
 inputs[2].value = item.unit ?? "";
 inputs[3].value = item.value ?? "";
 inputs.forEach(function(inp) {
 function updatePackagingField() {
-const f = inp.dataset.f;
-const v = inp.value;
+var f = inp.dataset.f;
+var v = inp.value;
 if (f === "qty" || f === "value") {
-const numVal = parseFloat(v);
+var numVal = parseFloat(v);
 state.packaging[idx][f] = isFinite(numVal) && numVal >= 0 ? numVal : 0;
 } else {
 state.packaging[idx][f] = v;
@@ -2006,7 +2114,7 @@ return tr;
 function renderPackaging() {
 pkgBody.innerHTML = "";
 state.packaging.forEach(function(item, idx) { pkgBody.appendChild(pkgRow(item, idx)); });
-let pkgV = 0;
+var pkgV = 0;
 state.packaging.forEach(function(i) { pkgV += (parseFloat(i.qty) || 0) * (parseFloat(i.value) || 0); });
 document.getElementById("pkgSubV").textContent = brl(pkgV);
 }
@@ -2018,12 +2126,12 @@ renderPackaging();
 render();
 });
 
-const modalOverlay = document.getElementById("modalOverlay");
-const modalIcon = document.getElementById("modalIcon");
-const modalTitle = document.getElementById("modalTitle");
-const modalMsg = document.getElementById("modalMsg");
-const modalCancelBtn = document.getElementById("modalCancelBtn");
-const modalConfirmBtn = document.getElementById("modalConfirmBtn");
+var modalOverlay = document.getElementById("modalOverlay");
+var modalIcon = document.getElementById("modalIcon");
+var modalTitle = document.getElementById("modalTitle");
+var modalMsg = document.getElementById("modalMsg");
+var modalCancelBtn = document.getElementById("modalCancelBtn");
+var modalConfirmBtn = document.getElementById("modalConfirmBtn");
 
 function closeModal() { modalOverlay.classList.remove("open"); }
 
@@ -2064,28 +2172,29 @@ renderAll();
 });
 
 function renderRecipeList() {
-const container = document.getElementById('recipeList');
-const countEl = document.getElementById('recipeCount');
+var container = document.getElementById('recipeList');
+var countEl = document.getElementById('recipeCount');
 countEl.textContent = '(' + recipesList.length + ')';
 if (recipesList.length === 0) {
 container.innerHTML = '<div class="recipe-list-empty">Nenhuma receita salva ainda</div>';
 return;
 }
-const sorted = [].concat(recipesList).sort(function(a, b) { return b.updatedAt - a.updatedAt; });
+var sorted = [].concat(recipesList).sort(function(a, b) { return b.updatedAt - a.updatedAt; });
 container.innerHTML = sorted.map(function(recipe) {
 var isActive = recipe.id === currentRecipeId ? 'active' : '';
 var date = new Date(recipe.updatedAt);
 var dateStr = date.toLocaleDateString('pt-BR') + ' ' + date.toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
 var safeName = escapeHtml(recipe.name);
 var safeDate = escapeHtml(dateStr);
-return '<div class="recipe-item ' + isActive + '" data-id="' + escapeHtml(recipe.id) + '">' +
+var safeId = escapeHtml(recipe.id);
+return '<div class="recipe-item ' + isActive + '" data-id="' + safeId + '">' +
 '<div class="recipe-info">' +
 '<div class="recipe-name">' + safeName + '</div>' +
 '<div class="recipe-meta">Atualizado em ' + safeDate + '</div>' +
 '</div>' +
 '<div class="recipe-actions">' +
-'<button class="load-btn" data-id="' + escapeHtml(recipe.id) + '" title="Carregar">📂</button>' +
-'<button class="del-btn" data-id="' + escapeHtml(recipe.id) + '" title="Apagar">🗑️</button>' +
+'<button class="load-btn" data-id="' + safeId + '" title="Carregar">📂</button>' +
+'<button class="del-btn" data-id="' + safeId + '" title="Apagar">🗑️</button>' +
 '</div>' +
 '</div>';
 }).join('');
@@ -2136,13 +2245,70 @@ document.getElementById('saveRecipeBtn').addEventListener('click', handleSaveRec
 document.getElementById('saveRecipeBtnTab4').addEventListener('click', handleSaveRecipe);
 document.getElementById('deleteCurrentRecipeBtnTab4').addEventListener('click', handleDeleteRecipe);
 
-const jarLegend = document.getElementById("jarLegend");
-const jarPots = document.getElementById("jarPots");
+function exportData() {
+var data = {
+version: 4,
+state: state,
+recipes: recipesList,
+exportedAt: new Date().toISOString()
+};
+var blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+var url = URL.createObjectURL(blob);
+var a = document.createElement('a');
+a.href = url;
+a.download = 'custo-do-pote-backup.json';
+document.body.appendChild(a);
+a.click();
+document.body.removeChild(a);
+URL.revokeObjectURL(url);
+showModal({ icon: "📤", title: "Dados exportados!", message: "O arquivo foi baixado com sucesso. Guarde-o em local seguro.", confirmText: "OK", onlyOk: true });
+}
+
+function importData(file) {
+var reader = new FileReader();
+reader.onload = function(e) {
+try {
+var data = JSON.parse(e.target.result);
+if (data.state) {
+state = migrateState(data.state);
+syncInputsFromState();
+saveState();
+}
+if (data.recipes && Array.isArray(data.recipes)) {
+recipesList = data.recipes.map(function(r) {
+if (r.data) r.data = migrateState(r.data);
+return r;
+});
+saveRecipesList();
+}
+currentRecipeId = null;
+renderAll();
+showModal({ icon: "✅", title: "Dados importados!", message: "Seus dados foram importados com sucesso.", confirmText: "OK", onlyOk: true });
+} catch (err) {
+showModal({ icon: "⚠️", title: "Erro ao importar", message: "O arquivo não é um backup válido.", confirmText: "Entendi", onlyOk: true });
+}
+};
+reader.readAsText(file);
+}
+
+document.getElementById('exportDataBtn').addEventListener('click', exportData);
+document.getElementById('importDataBtn').addEventListener('click', function() {
+document.getElementById('importFileInput').click();
+});
+document.getElementById('importFileInput').addEventListener('change', function(e) {
+if (e.target.files && e.target.files[0]) {
+importData(e.target.files[0]);
+e.target.value = '';
+}
+});
+
+var jarLegend = document.getElementById("jarLegend");
+var jarPots = document.getElementById("jarPots");
 
 function calculateOperationalCost(numPots) {
-const laborHourly = parseFloat(document.getElementById('laborHourly').value) || 0;
-const prepTime = parseFloat(document.getElementById('prepTime').value) || 0;
-const utilitiesCost = parseFloat(document.getElementById('utilitiesCost').value) || 0;
+var laborHourly = parseFloat(document.getElementById('laborHourly').value) || 0;
+var prepTime = parseFloat(document.getElementById('prepTime').value) || 0;
+var utilitiesCost = parseFloat(document.getElementById('utilitiesCost').value) || 0;
 state.laborHourly = laborHourly;
 state.prepTime = prepTime;
 state.utilitiesCost = utilitiesCost;
@@ -2150,40 +2316,40 @@ if (numPots <= 0) {
 document.getElementById('operationalTotal').textContent = "—";
 return { total: 0, labor: 0, utilities: 0 };
 }
-const laborPerPot = (laborHourly * (prepTime / 60)) / numPots;
-const utilitiesPerPot = utilitiesCost / numPots;
-const totalOperational = laborPerPot + utilitiesPerPot;
+var laborPerPot = (laborHourly * (prepTime / 60)) / numPots;
+var utilitiesPerPot = utilitiesCost / numPots;
+var totalOperational = laborPerPot + utilitiesPerPot;
 document.getElementById('operationalTotal').textContent = brl(totalOperational);
 return { total: totalOperational, labor: laborPerPot, utilities: utilitiesPerPot };
 }
 
 function render() {
-let recW = 0;
-let recV = 0;
+var recW = 0;
+var recV = 0;
 state.recipe.forEach(function(r) {
-const qty = parseFloat(r.qty) || 0;
-const inv = state.inventory[r.invIndex];
-const unit = r.unit || (inv ? inv.unit : "g");
+var qty = parseFloat(r.qty) || 0;
+var inv = findInvById(r.invId);
+var unit = r.unit || (inv ? inv.unit : "g");
 recW += getRecipeWeight(qty, unit, inv);
-recV += getIngredientCost(r.invIndex, qty, unit);
+recV += getIngredientCost(r.invId, qty, unit);
 });
 document.getElementById("recSubV").textContent = brl(recV);
 
-let pkgV = 0;
+var pkgV = 0;
 state.packaging.forEach(function(i) { pkgV += (parseFloat(i.qty) || 0) * (parseFloat(i.value) || 0); });
 document.getElementById("pkgSubV").textContent = brl(pkgV);
 
-const weightPerPotVal = parseFloat(state.weightPerPot);
-const weightPerPot = isFinite(weightPerPotVal) && weightPerPotVal > 0 ? weightPerPotVal : 500;
-const numPots = weightPerPot > 0 ? Math.floor(recW / weightPerPot) : 0;
-const leftoverWeight = Math.max(0, recW - (numPots * weightPerPot));
+var weightPerPotVal = parseFloat(state.weightPerPot);
+var weightPerPot = isFinite(weightPerPotVal) && weightPerPotVal > 0 ? weightPerPotVal : 500;
+var numPots = weightPerPot > 0 ? Math.floor(recW / weightPerPot) : 0;
+var leftoverWeight = Math.max(0, recW - (numPots * weightPerPot));
 
 document.getElementById("totalWeight").textContent = num(recW, 0) + " g";
 document.getElementById("numPots").textContent = numPots + (numPots === 1 ? " pote" : " potes");
 document.getElementById("leftoverWeight").textContent = num(leftoverWeight, 0) + " g";
 
-const warningEl = document.getElementById("insufficientWarning");
-const warningPotSize = document.getElementById("warningPotSize");
+var warningEl = document.getElementById("insufficientWarning");
+var warningPotSize = document.getElementById("warningPotSize");
 if (numPots === 0 && recW > 0) {
 warningPotSize.textContent = num(weightPerPot, 0);
 warningEl.classList.add("visible");
@@ -2191,7 +2357,7 @@ warningEl.classList.add("visible");
 warningEl.classList.remove("visible");
 }
 
-let costIngPot = 0;
+var costIngPot = 0;
 if (numPots > 0) {
 if (state.leftoverCosting === "proportional" && recW > 0) {
 costIngPot = (recV / recW) * weightPerPot;
@@ -2200,24 +2366,24 @@ costIngPot = recV / numPots;
 }
 }
 
-const costPkgPot = pkgV;
-const operational = calculateOperationalCost(numPots);
-const costTotalPot = numPots > 0 ? costIngPot + costPkgPot + operational.total : 0;
+var costPkgPot = pkgV;
+var operational = calculateOperationalCost(numPots);
+var costTotalPot = numPots > 0 ? costIngPot + costPkgPot + operational.total : 0;
 
 document.getElementById("costIngPot").textContent = numPots > 0 ? brl(costIngPot) : "—";
 document.getElementById("costPkgPot").textContent = numPots > 0 ? brl(costPkgPot) : "—";
 document.getElementById("costOpPot").textContent = numPots > 0 ? brl(operational.total) : "—";
 document.getElementById("costTotalPot").textContent = numPots > 0 ? brl(costTotalPot) : "—";
 
-const profitPct = Math.max(0, Math.min(parseFloat(state.profitPct) || 0, 99.99));
-const margin = profitPct / 100;
-const price = numPots > 0 && margin < 1 && costTotalPot > 0 ? costTotalPot / (1 - margin) : 0;
-const profitValue = price > 0 ? Math.max(0, price - costTotalPot) : 0;
-const markup = costTotalPot > 0 && price > 0 ? price / costTotalPot : 0;
+var profitPct = Math.max(0, Math.min(parseFloat(state.profitPct) || 0, 99.99));
+var margin = profitPct / 100;
+var price = numPots > 0 && margin < 1 && costTotalPot > 0 ? costTotalPot / (1 - margin) : 0;
+var profitValue = price > 0 ? Math.max(0, price - costTotalPot) : 0;
+var markup = costTotalPot > 0 && price > 0 ? price / costTotalPot : 0;
 
 document.getElementById("markup").textContent = markup > 0 ? "×" + markup.toFixed(2).replace(".", ",") : "—";
 
-const finalPriceEl = document.getElementById("finalPrice");
+var finalPriceEl = document.getElementById("finalPrice");
 if (numPots === 0) {
 finalPriceEl.textContent = recW > 0 ? "Nenhum pote completo" : "Sem receita";
 finalPriceEl.classList.add("no-price");
@@ -2229,15 +2395,15 @@ jarPots.textContent = numPots + (numPots === 1 ? " pote" : " potes");
 }
 
 if (price > 0) {
-const segments = [
+var segments = [
 { label: "Ingredientes", value: costIngPot, color: "#6bcb8a" },
 { label: "Embalagem", value: costPkgPot, color: "#6ab0e8" },
 { label: "Operacional", value: operational.total, color: "#e86a6a" },
 { label: "Lucro", value: profitValue, color: "#ffd84d" }
 ];
-const total = price;
+var total = price;
 jarLegend.innerHTML = segments.map(function(seg) {
-const pct = total > 0 ? Math.round((seg.value / total) * 100) : 0;
+var pct = total > 0 ? Math.round((seg.value / total) * 100) : 0;
 return "<div>" +
 "<span class='lab'><span class='sw' style='background:" + seg.color + "'></span>" + seg.label + "</span>" +
 "<span class='val'>" + pct + "%</span>" +
@@ -2247,7 +2413,7 @@ return "<div>" +
 jarLegend.innerHTML = "<div><span class='lab'>A composição do preço aparecerá quando houver pelo menos 1 pote completo.</span></div>";
 }
 
-let invTotal = 0;
+var invTotal = 0;
 state.inventory.forEach(function(i) { invTotal += parseFloat(i.value) || 0; });
 document.getElementById("invTotalValue").textContent = brl(invTotal);
 }
@@ -2264,7 +2430,7 @@ updateLoadedIndicators();
 renderAll();
 
 if (recipesList.length > 0) {
-const matching = recipesList.find(function(r) {
+var matching = recipesList.find(function(r) {
 var data = r.data;
 return data &&
 data.recipeName === state.recipeName &&
@@ -2285,7 +2451,7 @@ render();
 });
 
 if ("serviceWorker" in navigator) {
-let refreshing = false;
+var refreshing = false;
 navigator.serviceWorker.addEventListener("controllerchange", function() {
 if (refreshing) return;
 refreshing = true;
