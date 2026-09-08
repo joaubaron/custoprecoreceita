@@ -2083,6 +2083,14 @@ profitEl.textContent = '—';
 
 // ===== RENDER PRINCIPAL =====
 function render() {
+// ✅ FORÇA A LEITURA DOS DADOS MAIS RECENTES DO localStorage
+const freshState = loadState();
+state.weightPerPot = freshState.weightPerPot;
+state.profitPct = freshState.profitPct;
+state.laborHourly = freshState.laborHourly;
+state.prepTime = freshState.prepTime;
+state.utilitiesCost = freshState.utilitiesCost;
+
 let recW = 0;
 let recV = 0;
 state.recipe.forEach(function(r) {
@@ -2139,7 +2147,6 @@ warningEl.classList.remove("visible");
 // ✅ CÁLCULO CORRIGIDO - SEMPRE DIVIDE PELO NÚMERO DE POTES
 let costIngPot = 0;
 if (numPots > 0) {
-// O custo total da receita é rateado igualmente entre todos os potes
 costIngPot = recV / numPots;
 }
 
@@ -2174,7 +2181,7 @@ document.getElementById("jarPots").textContent = numPots + (numPots === 1 ? " po
 // Quick Summary
 updateQuickSummary(costTotalPot, price, numPots);
 
-if (price > 0) {
+if (price > 0 && numPots > 0) {
 const segments = [
 { label: "Ingredientes", value: costIngPot, color: "#6bcb8a" },
 { label: "Embalagem", value: costPkgPot, color: "#6ab0e8" },
