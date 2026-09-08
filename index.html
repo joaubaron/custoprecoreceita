@@ -1177,7 +1177,6 @@ Inclui mão de obra, energia, água e estrutura
 </section>
 </div>
 <div class="tab-content" id="tab3">
-    <!-- Card 1: Rendimento e Custo (unificado) -->
     <section class="card">
         <h2>🫙 Rendimento e Custo por Pote</h2>
         <p class="sub">
@@ -1218,7 +1217,6 @@ Inclui mão de obra, energia, água e estrutura
         
         <div class="divider" style="margin: 16px 0;"></div>
         
-        <!-- Custos detalhados -->
         <div class="kv-grid">
             <div class="k">Ingredientes rateados</div>
             <div class="v" id="costIngPot"></div>
@@ -1236,7 +1234,6 @@ Inclui mão de obra, energia, água e estrutura
         </div>
     </section>
 
-    <!-- Card 2: Precificação -->
     <section class="card">
         <h2>💰 Precificação</h2>
         <p class="sub">
@@ -1264,11 +1261,9 @@ Inclui mão de obra, energia, água e estrutura
             💡 Margem de lucro calculada sobre o preço de venda
         </p>
         
-        <!-- Legenda do preço -->
         <div class="jar-legend" id="jarLegend"></div>
     </section>
 
-    <!-- Card 3: Ações -->
     <section class="card">
         <h2>⚡ Ações</h2>
         <p class="sub">
@@ -1349,1819 +1344,1277 @@ Confirmar
 <script>
 (function() {
 "use strict";
-const STORAGE_KEY = "caponata-calc-v4";
-const RECIPES_STORAGE_KEY = "caponata-recipes-list";
+const STORAGE_KEY = "caponata-calc-v5";
+const RECIPES_STORAGE_KEY = "caponata-recipes-list-v2";
+const BACKUP_KEY = "caponata-backup";
+
+// ============================================
+// CORREÇÃO 1: Produtos com ID único
+// ============================================
+function generateId() {
+    return 'id_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+}
+
+function createProduct(name, total, unit, value, unitWeight, density) {
+    return {
+        id: generateId(),
+        name: name || "",
+        total: parseFloat(total) || 0,
+        unit: unit || "g",
+        value: parseFloat(value) || 0,
+        unitWeight: parseFloat(unitWeight) || 0,
+        density: density || getDensityByName(name || "")
+    };
+}
+
+// ============================================
+// CORREÇÃO 2: toGrams com fallback e warnings
+// ============================================
+function getDensityByName(name) {
+    const n = String(name || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    if (n.includes("azeite") || n.includes("oleo") || n.includes("óleo")) return 0.92;
+    if (n.includes("shoyu") || n.includes("molho de soja")) return 1.18;
+    if (n.includes("vinagre")) return 1.01;
+    if (n.includes("mel")) return 1.42;
+    if (n.includes("leite")) return 1.03;
+    if (n.includes("creme de leite")) return 1.01;
+    if (n.includes("agua") || n.includes("água")) return 1.00;
+    return 1.00;
+}
+
+function toGrams(qty, unit, inv) {
+    const q = parseFloat(qty) || 0;
+    if (q < 0) return 0;
+    
+    const u = String(unit || "").trim().toLowerCase();
+    
+    // Unidades suportadas com conversão
+    switch(u) {
+        case 'g': return q;
+        case 'kg': return q * 1000;
+        case 'ml': {
+            let density = 1.0;
+            if (inv && inv.density > 0) density = inv.density;
+            else if (inv && inv.name) density = getDensityByName(inv.name);
+            return q * density;
+        }
+        case 'l': {
+            let density = 1.0;
+            if (inv && inv.density > 0) density = inv.density;
+            else if (inv && inv.name) density = getDensityByName(inv.name);
+            return q * 1000 * density;
+        }
+        case 'un':
+        case 'pote': {
+            const unitWeight = (inv && inv.unitWeight > 0) ? inv.unitWeight : 0;
+            if (unitWeight <= 0) {
+                console.warn(`Unidade "${u}" sem peso unitário definido para "${inv?.name || 'produto'}"`);
+                return 0;
+            }
+            return q * unitWeight;
+        }
+        default: {
+            console.warn(`Unidade "${unit}" não suportada. Usando "g" como fallback.`);
+            return q;
+        }
+    }
+}
+
+function getRecipeWeight(qty, unit, inv) {
+    const grams = toGrams(qty, unit, inv);
+    if (grams === null || !isFinite(grams)) {
+        console.warn(`Conversão falhou para qty=${qty}, unit=${unit}`);
+        return 0;
+    }
+    return grams;
+}
+
+// ============================================
+// CORREÇÃO 3: localStorage com fallback e backup
+// ============================================
+function saveToStorage(key, data) {
+    let saved = false;
+    
+    try {
+        localStorage.setItem(key, JSON.stringify(data));
+        saved = true;
+    } catch (e) {
+        console.warn('localStorage cheio, tentando sessionStorage...', e);
+        try {
+            sessionStorage.setItem(key, JSON.stringify(data));
+            saved = true;
+        } catch (e2) {
+            console.error('Não foi possível salvar em lugar nenhum:', e2);
+        }
+    }
+    
+    return saved;
+}
+
+function loadFromStorage(key) {
+    let data = null;
+    
+    try {
+        const raw = localStorage.getItem(key);
+        if (raw) data = JSON.parse(raw);
+    } catch (e) {}
+    
+    if (!data) {
+        try {
+            const raw = sessionStorage.getItem(key);
+            if (raw) data = JSON.parse(raw);
+        } catch (e) {}
+    }
+    
+    return data;
+}
+
+function limparEspacoStorage() {
+    try {
+        const recipes = loadRecipesList();
+        if (recipes.length > 5) {
+            const sorted = [...recipes].sort((a, b) => a.updatedAt - b.updatedAt);
+            const toRemove = sorted.slice(0, Math.min(5, recipes.length - 5));
+            toRemove.forEach(r => {
+                recipesList = recipesList.filter(item => item.id !== r.id);
+            });
+            saveRecipesList();
+            renderRecipeList();
+            return true;
+        }
+    } catch (e) {
+        console.error('Erro ao limpar espaço:', e);
+    }
+    return false;
+}
+
+function exportData() {
+    const data = {
+        state: state,
+        recipes: recipesList,
+        exportedAt: new Date().toISOString(),
+        version: "2.0"
+    };
+    
+    try {
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `receitas_backup_${Date.now()}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+        return true;
+    } catch (e) {
+        console.error('Erro ao exportar:', e);
+        return false;
+    }
+}
+
+function importData(file) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const data = JSON.parse(e.target.result);
+            if (data.state && data.recipes) {
+                state = data.state;
+                recipesList = data.recipes;
+                saveState();
+                saveRecipesList();
+                renderAll();
+                showModal({
+                    icon: "✅",
+                    title: "Dados importados!",
+                    message: `${recipesList.length} receitas importadas com sucesso.`,
+                    confirmText: "OK",
+                    onlyOk: true
+                });
+            } else {
+                throw new Error("Formato inválido");
+            }
+        } catch (err) {
+            showModal({
+                icon: "❌",
+                title: "Erro na importação",
+                message: "Arquivo inválido ou corrompido.",
+                confirmText: "OK",
+                onlyOk: true
+            });
+        }
+    };
+    reader.readAsText(file);
+}
+
+// ============================================
+// STATE
+// ============================================
 const DEFAULT_STATE = {
-recipeName: "Minha Receita",
-inventory: [
-{ name: "Azeite oliva", total: 500, unit: "ml", value: 27.90, density: 0.91 },
-{ name: "Shoyu", total: 500, unit: "ml", value: 18.90, density: 1.18 },
-{ name: "Vinagre arroz", total: 500, unit: "ml", value: 12.50, density: 1.01 },
-{ name: "Berinjela", total: 1, unit: "kg", value: 6.00 },
-{ name: "Abobrinha italiana", total: 1, unit: "kg", value: 4.00 },
-{ name: "Cebola", total: 1, unit: "kg", value: 4.50 },
-{ name: "Pimentão vermelho", total: 500, unit: "g", value: 4.50 },
-{ name: "Pimentão amarelo", total: 500, unit: "g", value: 5.60 },
-{ name: "Tomate", total: 1, unit: "kg", value: 5.50 },
-{ name: "Uva passa", total: 200, unit: "g", value: 15.78 },
-{ name: "Manjericão seco", total: 50, unit: "g", value: 12.85 }
-],
-recipe: [
-{ invIndex: 0, qty: 120, unit: "ml" },
-{ invIndex: 1, qty: 120, unit: "ml" },
-{ invIndex: 2, qty: 120, unit: "ml" },
-{ invIndex: 3, qty: 700, unit: "g" },
-{ invIndex: 4, qty: 700, unit: "g" },
-{ invIndex: 5, qty: 180, unit: "g" },
-{ invIndex: 6, qty: 100, unit: "g" },
-{ invIndex: 7, qty: 100, unit: "g" },
-{ invIndex: 8, qty: 300, unit: "g" },
-{ invIndex: 9, qty: 100, unit: "g" },
-{ invIndex: 10, qty: 6, unit: "g" }
-],
-packaging: [
-{ name: "Vidro/tampa", qty: 1, unit: "un", value: 4.5 },
-{ name: "Rótulo", qty: 1, unit: "un", value: 1.5 },
-{ name: "Decoração", qty: 1, unit: "un", value: 2 },
-{ name: "Cordinha", qty: 1, unit: "un", value: .8 }
-],
-weightPerPot: 500,
-profitPct: 35,
-laborHourly: 8,
-prepTime: 60,
-utilitiesCost: 2,
-leftoverCosting: "absorb"
+    recipeName: "Minha Receita",
+    inventory: [],
+    recipe: [],
+    packaging: [],
+    weightPerPot: 500,
+    profitPct: 35,
+    laborHourly: 8,
+    prepTime: 60,
+    utilitiesCost: 2,
+    leftoverCosting: "absorb"
 };
+
+// Dados de exemplo com ID
+function getDefaultInventory() {
+    return [
+        createProduct("Azeite oliva", 500, "ml", 27.90, 0, 0.91),
+        createProduct("Shoyu", 500, "ml", 18.90, 0, 1.18),
+        createProduct("Vinagre arroz", 500, "ml", 12.50, 0, 1.01),
+        createProduct("Berinjela", 1, "kg", 6.00, 0),
+        createProduct("Abobrinha italiana", 1, "kg", 4.00, 0),
+        createProduct("Cebola", 1, "kg", 4.50, 0),
+        createProduct("Pimentão vermelho", 500, "g", 4.50, 0),
+        createProduct("Pimentão amarelo", 500, "g", 5.60, 0),
+        createProduct("Tomate", 1, "kg", 5.50, 0),
+        createProduct("Uva passa", 200, "g", 15.78, 0),
+        createProduct("Manjericão seco", 50, "g", 12.85, 0)
+    ];
+}
+
+function getDefaultRecipe() {
+    const inv = state.inventory;
+    if (inv.length < 11) return [];
+    return [
+        { productId: inv[0].id, qty: 120, unit: "ml" },
+        { productId: inv[1].id, qty: 120, unit: "ml" },
+        { productId: inv[2].id, qty: 120, unit: "ml" },
+        { productId: inv[3].id, qty: 700, unit: "g" },
+        { productId: inv[4].id, qty: 700, unit: "g" },
+        { productId: inv[5].id, qty: 180, unit: "g" },
+        { productId: inv[6].id, qty: 100, unit: "g" },
+        { productId: inv[7].id, qty: 100, unit: "g" },
+        { productId: inv[8].id, qty: 300, unit: "g" },
+        { productId: inv[9].id, qty: 100, unit: "g" },
+        { productId: inv[10].id, qty: 6, unit: "g" }
+    ];
+}
+
 let state = loadState();
 let storageWarned = false;
 let currentRecipeId = null;
 let recipesList = loadRecipesList();
 
-function getDensityByName(name) {
-const n = String(name || "")
-.toLowerCase()
-.normalize("NFD")
-.replace(/[\u0300-\u036f]/g, "");
-if (n.includes("azeite")) return 0.91;
-if (n.includes("shoyu") || n.includes("molho de soja")) return 1.18;
-if (n.includes("vinagre")) return 1.01;
-if (n.includes("mel")) return 1.42;
-if (n.includes("oleo") || n.includes("óleo")) return 0.92;
-if (n.includes("leite")) return 1.03;
-if (n.includes("creme de leite")) return 1.01;
-if (n.includes("agua") || n.includes("água")) return 1.00;
-return 1.00;
-}
-
-function toGrams(qty, unit, inv) {
-const q = parseFloat(qty) || 0;
-const u = String(unit || "").trim().toLowerCase();
-if (q < 0) return 0;
-if (u === "g") {
-return q;
-}
-if (u === "kg") {
-return q * 1000;
-}
-if (u === "ml") {
-let density = parseFloat(inv && inv.density);
-if (!isFinite(density) || density <= 0) {
-density = getDensityByName(inv ? inv.name : "");
-}
-return q * density;
-}
-if (u === "l") {
-let density = parseFloat(inv && inv.density);
-if (!isFinite(density) || density <= 0) {
-density = getDensityByName(inv ? inv.name : "");
-}
-return q * 1000 * density;
-}
-if (u === "un" || u === "pote") {
-const unitWeight = parseFloat(inv && inv.unitWeight);
-return q * (isFinite(unitWeight) && unitWeight > 0 ? unitWeight : 0);
-}
-return null;
-}
-
-function defaultRecipeUnitFor(inv) {
-const u =
-String(inv ? inv.unit : "")
-.trim()
-.toLowerCase();
-if (u === "un" || u === "pote") {
-return u;
-}
-if (u === "ml" || u === "l") {
-return "ml";
-}
-return "g";
-}
-
-function getRecipeWeight(qty, unit, inv) {
-const grams = toGrams(qty, unit, inv);
-return grams === null
-? 0
-: grams;
-}
-
 function loadState() {
-try {
-const raw = localStorage.getItem(STORAGE_KEY);
-if (raw) {
-const parsed = JSON.parse(raw);
-if (
-parsed &&
-Array.isArray(parsed.inventory) &&
-Array.isArray(parsed.recipe) &&
-Array.isArray(parsed.packaging)
-) {
-if (
-!isFinite(parsed.weightPerPot) ||
-parsed.weightPerPot <= 0
-) {
-parsed.weightPerPot = 500;
-}
-if (
-!isFinite(parsed.profitPct) ||
-parsed.profitPct < 0 ||
-parsed.profitPct > 99.99
-) {
-parsed.profitPct = 35;
-}
-parsed.inventory.forEach(function(item) {
-if (
-item &&
-(
-String(item.unit || "").trim().toLowerCase() === "ml" ||
-String(item.unit || "").trim().toLowerCase() === "l"
-)
-) {
-const detected =
-getDensityByName(item.name);
-if (
-!isFinite(parseFloat(item.density)) ||
-parseFloat(item.density) <= 0
-) {
-item.density = detected;
-}
-}
-});
-if (!('laborHourly' in parsed)) parsed.laborHourly = 8;
-if (!('prepTime' in parsed)) parsed.prepTime = 60;
-if (!('utilitiesCost' in parsed)) parsed.utilitiesCost = 2;
-if (!('leftoverCosting' in parsed)) parsed.leftoverCosting = "absorb";
-parsed.recipe.forEach(function(r) {
-if (!r) return;
-const ru =
-String(r.unit || "")
-.trim()
-.toLowerCase();
-if (ru === "kg") {
-r.unit = "g";
-} else if (ru === "l") {
-r.unit = "ml";
-}
-});
-return parsed;
-}
-}
-} catch (e) {}
-return JSON.parse(
-JSON.stringify(DEFAULT_STATE)
-);
+    const data = loadFromStorage(STORAGE_KEY);
+    if (data && data.inventory && Array.isArray(data.inventory)) {
+        // Migrar dados antigos (sem ID) para novo formato
+        if (data.inventory.length > 0 && !data.inventory[0].id) {
+            data.inventory = data.inventory.map(item => ({
+                ...item,
+                id: generateId()
+            }));
+            // Atualizar receita com productId
+            if (data.recipe) {
+                data.recipe = data.recipe.map(r => {
+                    const inv = data.inventory[r.invIndex];
+                    return {
+                        productId: inv ? inv.id : null,
+                        qty: r.qty,
+                        unit: r.unit || "g"
+                    };
+                }).filter(r => r.productId);
+            }
+        }
+        if (!('leftoverCosting' in data)) data.leftoverCosting = "absorb";
+        if (!data.recipe) data.recipe = [];
+        return data;
+    }
+    // Dados padrão com exemplos
+    const defaultState = JSON.parse(JSON.stringify(DEFAULT_STATE));
+    defaultState.inventory = getDefaultInventory();
+    return defaultState;
 }
 
 function saveState() {
-try {
-localStorage.setItem(
-STORAGE_KEY,
-JSON.stringify(state)
-);
-} catch (e) {
-if (!storageWarned) {
-storageWarned = true;
-showModal({
-icon: "⚠️",
-title: "Não foi possível salvar",
-message:
-"O navegador bloqueou o armazenamento local. " +
-"Suas alterações funcionarão nesta sessão, mas podem se perder ao fechar.",
-confirmText: "Entendi",
-onlyOk: true
-});
-}
-}
+    const saved = saveToStorage(STORAGE_KEY, state);
+    if (!saved && !storageWarned) {
+        storageWarned = true;
+        const limpo = limparEspacoStorage();
+        if (limpo) {
+            // Tentar salvar novamente
+            const savedAgain = saveToStorage(STORAGE_KEY, state);
+            if (savedAgain) {
+                storageWarned = false;
+                return;
+            }
+        }
+        showModal({
+            icon: "⚠️",
+            title: "Espaço insuficiente",
+            message: "Não há espaço para salvar. Exporte seus dados ou limpe receitas antigas.",
+            confirmText: "Exportar Dados",
+            cancelText: "Entendi",
+            onlyOk: false
+        }, function() {
+            exportData();
+        });
+    }
 }
 
 function loadRecipesList() {
-try {
-const raw = localStorage.getItem(RECIPES_STORAGE_KEY);
-if (raw) {
-const parsed = JSON.parse(raw);
-if (Array.isArray(parsed)) {
-return parsed;
-}
-}
-} catch (e) {}
-return [];
+    const data = loadFromStorage(RECIPES_STORAGE_KEY);
+    if (Array.isArray(data)) {
+        return data;
+    }
+    return [];
 }
 
 function saveRecipesList() {
-try {
-localStorage.setItem(RECIPES_STORAGE_KEY, JSON.stringify(recipesList));
-} catch (e) {}
+    saveToStorage(RECIPES_STORAGE_KEY, recipesList);
 }
 
 function getRecipeData() {
-return {
-recipeName: state.recipeName,
-inventory: state.inventory,
-recipe: state.recipe,
-packaging: state.packaging,
-weightPerPot: state.weightPerPot,
-profitPct: state.profitPct,
-laborHourly: state.laborHourly,
-prepTime: state.prepTime,
-utilitiesCost: state.utilitiesCost,
-leftoverCosting: state.leftoverCosting
-};
+    return {
+        recipeName: state.recipeName,
+        inventory: state.inventory,
+        recipe: state.recipe,
+        packaging: state.packaging,
+        weightPerPot: state.weightPerPot,
+        profitPct: state.profitPct,
+        laborHourly: state.laborHourly,
+        prepTime: state.prepTime,
+        utilitiesCost: state.utilitiesCost,
+        leftoverCosting: state.leftoverCosting
+    };
 }
 
 function loadRecipeData(data) {
-state.recipeName = data.recipeName || "Minha Receita";
-state.inventory = data.inventory || [];
-state.recipe = data.recipe || [];
-state.packaging = data.packaging || [];
-state.weightPerPot = data.weightPerPot || 500;
-state.profitPct = data.profitPct || 35;
-state.laborHourly = data.laborHourly || 8;
-state.prepTime = data.prepTime || 60;
-state.utilitiesCost = data.utilitiesCost || 2;
-state.leftoverCosting = data.leftoverCosting || "absorb";
+    state.recipeName = data.recipeName || "Minha Receita";
+    state.inventory = data.inventory || [];
+    state.recipe = data.recipe || [];
+    state.packaging = data.packaging || [];
+    state.weightPerPot = data.weightPerPot || 500;
+    state.profitPct = data.profitPct || 35;
+    state.laborHourly = data.laborHourly || 8;
+    state.prepTime = data.prepTime || 60;
+    state.utilitiesCost = data.utilitiesCost || 2;
+    state.leftoverCosting = data.leftoverCosting || "absorb";
 
-recipeNameEl.value = state.recipeName;
-weightPerPotEl.value = state.weightPerPot;
-profitPctEl.value = state.profitPct;
+    recipeNameEl.value = state.recipeName;
+    weightPerPotEl.value = state.weightPerPot;
+    profitPctEl.value = state.profitPct;
 
-document.getElementById('laborHourly').value = state.laborHourly;
-document.getElementById('prepTime').value = state.prepTime;
-document.getElementById('utilitiesCost').value = state.utilitiesCost;
-document.getElementById('leftoverCosting').value = state.leftoverCosting;
+    document.getElementById('laborHourly').value = state.laborHourly;
+    document.getElementById('prepTime').value = state.prepTime;
+    document.getElementById('utilitiesCost').value = state.utilitiesCost;
+    document.getElementById('leftoverCosting').value = state.leftoverCosting;
 
-saveState();
-renderAll();
+    saveState();
+    renderAll();
 }
 
 function saveCurrentRecipe() {
-const name = state.recipeName.trim() || "Receita sem nome";
-const existing = recipesList.find(r => r.id === currentRecipeId);
-if (existing) {
-existing.name = name;
-existing.data = getRecipeData();
-existing.updatedAt = Date.now();
-showModal({
-icon: "💾",
-title: "Receita atualizada!",
-message: `"${name}" foi atualizada com sucesso.`,
-confirmText: "OK",
-onlyOk: true
-});
-} else {
-const newRecipe = {
-id: 'recipe_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6),
-name: name,
-data: getRecipeData(),
-createdAt: Date.now(),
-updatedAt: Date.now()
-};
-recipesList.push(newRecipe);
-currentRecipeId = newRecipe.id;
-showModal({
-icon: "💾",
-title: "Receita salva!",
-message: `"${name}" foi salva com sucesso.`,
-confirmText: "OK",
-onlyOk: true
-});
-}
-saveRecipesList();
-renderRecipeList();
-updateLoadedIndicators();
+    const name = state.recipeName.trim() || "Receita sem nome";
+    const existing = recipesList.find(r => r.id === currentRecipeId);
+    if (existing) {
+        existing.name = name;
+        existing.data = getRecipeData();
+        existing.updatedAt = Date.now();
+        showModal({
+            icon: "💾",
+            title: "Receita atualizada!",
+            message: `"${name}" foi atualizada com sucesso.`,
+            confirmText: "OK",
+            onlyOk: true
+        });
+    } else {
+        const newRecipe = {
+            id: generateId(),
+            name: name,
+            data: getRecipeData(),
+            createdAt: Date.now(),
+            updatedAt: Date.now()
+        };
+        recipesList.push(newRecipe);
+        currentRecipeId = newRecipe.id;
+        showModal({
+            icon: "💾",
+            title: "Receita salva!",
+            message: `"${name}" foi salva com sucesso.`,
+            confirmText: "OK",
+            onlyOk: true
+        });
+    }
+    saveRecipesList();
+    renderRecipeList();
+    updateLoadedIndicators();
 }
 
 function deleteCurrentRecipe() {
-if (!currentRecipeId) {
-showModal({
-icon: "ℹ️",
-title: "Nenhuma receita selecionada",
-message: "Não há uma receita carregada para apagar.",
-confirmText: "OK",
-onlyOk: true
-});
-return;
-}
-const recipe = recipesList.find(r => r.id === currentRecipeId);
-const name = recipe ? recipe.name : state.recipeName;
-showModal({
-icon: "🗑️",
-title: "Apagar receita?",
-message: `Tem certeza que deseja apagar "${name}"? Esta ação não pode ser desfeita.`,
-confirmText: "Apagar",
-cancelText: "Cancelar",
-danger: true
-}, function() {
-recipesList = recipesList.filter(r => r.id !== currentRecipeId);
-currentRecipeId = null;
-saveRecipesList();
-renderRecipeList();
-updateLoadedIndicators();
-showModal({
-icon: "🗑️",
-title: "Receita apagada",
-message: `"${name}" foi removida com sucesso.`,
-confirmText: "OK",
-onlyOk: true
-});
-});
+    if (!currentRecipeId) {
+        showModal({
+            icon: "ℹ️",
+            title: "Nenhuma receita selecionada",
+            message: "Não há uma receita carregada para apagar.",
+            confirmText: "OK",
+            onlyOk: true
+        });
+        return;
+    }
+    const recipe = recipesList.find(r => r.id === currentRecipeId);
+    const name = recipe ? recipe.name : state.recipeName;
+    showModal({
+        icon: "🗑️",
+        title: "Apagar receita?",
+        message: `Tem certeza que deseja apagar "${name}"? Esta ação não pode ser desfeita.`,
+        confirmText: "Apagar",
+        cancelText: "Cancelar",
+        danger: true
+    }, function() {
+        recipesList = recipesList.filter(r => r.id !== currentRecipeId);
+        currentRecipeId = null;
+        saveRecipesList();
+        renderRecipeList();
+        updateLoadedIndicators();
+        showModal({
+            icon: "🗑️",
+            title: "Receita apagada",
+            message: `"${name}" foi removida com sucesso.`,
+            confirmText: "OK",
+            onlyOk: true
+        });
+    });
 }
 
 function loadRecipeFromList(recipeId) {
-const recipe = recipesList.find(r => r.id === recipeId);
-if (recipe) {
-currentRecipeId = recipe.id;
-loadRecipeData(recipe.data);
-renderRecipeList();
-updateLoadedIndicators();
-switchTab('tab3');
-showModal({
-icon: "📂",
-title: "Receita carregada",
-message: `"${recipe.name}" foi carregada com sucesso.`,
-confirmText: "OK",
-onlyOk: true
-});
-}
+    const recipe = recipesList.find(r => r.id === recipeId);
+    if (recipe) {
+        currentRecipeId = recipe.id;
+        loadRecipeData(recipe.data);
+        renderRecipeList();
+        updateLoadedIndicators();
+        switchTab('tab3');
+        showModal({
+            icon: "📂",
+            title: "Receita carregada",
+            message: `"${recipe.name}" foi carregada com sucesso.`,
+            confirmText: "OK",
+            onlyOk: true
+        });
+    }
 }
 
 function updateLoadedIndicators() {
-const recipe = recipesList.find(r => r.id === currentRecipeId);
-const name = recipe ? recipe.name : "Nenhuma";
-document.getElementById('priceTabLoadedName').textContent = name;
-document.getElementById('recipesTabLoadedName').textContent = name;
+    const recipe = recipesList.find(r => r.id === currentRecipeId);
+    const name = recipe ? recipe.name : "Nenhuma";
+    document.getElementById('priceTabLoadedName').textContent = name;
+    document.getElementById('recipesTabLoadedName').textContent = name;
 }
 
 function switchTab(tabId) {
-const tabBtns = document.querySelectorAll('.tab-btn');
-const tabContents = {
-tab0: document.getElementById("tab0"),
-tab1: document.getElementById("tab1"),
-tab2: document.getElementById("tab2"),
-tab3: document.getElementById("tab3"),
-tab4: document.getElementById("tab4")
-};
-tabBtns.forEach(function(b) {
-b.classList.remove("active");
-});
-Object.values(tabContents).forEach(function(tc) {
-tc.classList.remove("active");
-});
-const targetBtn = document.querySelector(`.tab-btn[data-tab="${tabId}"]`);
-if (targetBtn) {
-targetBtn.classList.add("active");
-}
-const targetContent = document.getElementById(tabId);
-if (targetContent) {
-targetContent.classList.add("active");
-}
+    const tabBtns = document.querySelectorAll('.tab-btn');
+    const tabContents = {
+        tab0: document.getElementById("tab0"),
+        tab1: document.getElementById("tab1"),
+        tab2: document.getElementById("tab2"),
+        tab3: document.getElementById("tab3"),
+        tab4: document.getElementById("tab4")
+    };
+    tabBtns.forEach(function(b) {
+        b.classList.remove("active");
+    });
+    Object.values(tabContents).forEach(function(tc) {
+        tc.classList.remove("active");
+    });
+    const targetBtn = document.querySelector(`.tab-btn[data-tab="${tabId}"]`);
+    if (targetBtn) {
+        targetBtn.classList.add("active");
+    }
+    const targetContent = document.getElementById(tabId);
+    if (targetContent) {
+        targetContent.classList.add("active");
+    }
 }
 
 function brl(n) {
-if (!isFinite(n)) n = 0;
-return "R$ " +
-n.toLocaleString("pt-BR", {
-minimumFractionDigits: 2,
-maximumFractionDigits: 2
-}) + " ";
+    if (!isFinite(n)) n = 0;
+    return "R$ " + n.toLocaleString("pt-BR", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    });
 }
 
 function num(n, digits) {
-if (!isFinite(n)) n = 0;
-return n.toLocaleString("pt-BR", {
-minimumFractionDigits: digits || 0,
-maximumFractionDigits: digits || 2
+    if (!isFinite(n)) n = 0;
+    return n.toLocaleString("pt-BR", {
+        minimumFractionDigits: digits || 0,
+        maximumFractionDigits: digits || 2
+    });
+}
+
+// ============================================
+// RENDER FUNCTIONS
+// ============================================
+const recipeNameEl = document.getElementById("recipeName");
+const invBody = document.getElementById("invBody");
+const recBody = document.getElementById("recBody");
+const pkgBody = document.getElementById("pkgBody");
+const weightPerPotEl = document.getElementById("weightPerPot");
+const profitPctEl = document.getElementById("profitPct");
+
+recipeNameEl.value = state.recipeName || "Minha Receita";
+weightPerPotEl.value = state.weightPerPot > 0 ? state.weightPerPot : 500;
+profitPctEl.value = state.profitPct;
+
+recipeNameEl.addEventListener("input", function() {
+    state.recipeName = recipeNameEl.value;
+    saveState();
 });
-}
 
-const recipeNameEl =
-document.getElementById("recipeName");
-const invBody =
-document.getElementById("invBody");
-const recBody =
-document.getElementById("recBody");
-const pkgBody =
-document.getElementById("pkgBody");
-const weightPerPotEl =
-document.getElementById("weightPerPot");
-const profitPctEl =
-document.getElementById("profitPct");
+weightPerPotEl.addEventListener("input", function() {
+    const value = parseFloat(weightPerPotEl.value);
+    state.weightPerPot = isFinite(value) && value > 0 ? value : 0;
+    saveState();
+    render();
+});
 
-recipeNameEl.value =
-state.recipeName || "Minha Receita";
-weightPerPotEl.value =
-state.weightPerPot > 0
-? state.weightPerPot
-: 500;
-profitPctEl.value =
-state.profitPct;
-
-recipeNameEl.addEventListener(
-"input",
-function() {
-state.recipeName =
-recipeNameEl.value;
-saveState();
-}
-);
-
-weightPerPotEl.addEventListener(
-"input",
-function() {
-const value =
-parseFloat(weightPerPotEl.value);
-state.weightPerPot =
-isFinite(value) && value > 0
-? value
-: 0;
-saveState();
-render();
-}
-);
-
-profitPctEl.addEventListener(
-"input",
-function() {
-let value =
-parseFloat(profitPctEl.value);
-if (!isFinite(value)) {
-value = 0;
-}
-value =
-Math.max(
-0,
-Math.min(value, 99.99)
-);
-state.profitPct = value;
-saveState();
-render();
-}
-);
+profitPctEl.addEventListener("input", function() {
+    let value = parseFloat(profitPctEl.value);
+    if (!isFinite(value)) value = 0;
+    value = Math.max(0, Math.min(value, 99.99));
+    state.profitPct = value;
+    saveState();
+    render();
+});
 
 document.getElementById('leftoverCosting').addEventListener('change', function() {
-state.leftoverCosting = this.value;
-saveState();
-render();
+    state.leftoverCosting = this.value;
+    saveState();
+    render();
 });
 
-const tabBtns =
-document.querySelectorAll(".tab-btn");
-const tabContents = {
-tab0: document.getElementById("tab0"),
-tab1: document.getElementById("tab1"),
-tab2: document.getElementById("tab2"),
-tab3: document.getElementById("tab3"),
-tab4: document.getElementById("tab4")
-};
-tabBtns.forEach(function(btn) {
-btn.addEventListener(
-"click",
-function(e) {
-e.preventDefault();
-tabBtns.forEach(function(b) {
-b.classList.remove("active");
-});
-this.classList.add("active");
-Object.values(tabContents).forEach(
-function(tc) {
-tc.classList.remove("active");
-}
-);
-const target =
-document.getElementById(
-this.dataset.tab
-);
-if (target) {
-target.classList.add("active");
-}
-}
-);
-});
-
+// ============================================
+// CORREÇÃO 1: Inventory com ID
+// ============================================
 function invRow(item, idx) {
-const tr =
-document.createElement("tr");
-tr.innerHTML =
-"<td>" +
-"<input class='cell' data-f='name' " +
-"placeholder='Produto' " +
-"inputmode='text'>" +
-"<input class='cell num unit-weight-input' data-f='unitWeight' " +
-"type='number' step='any' " +
-"inputmode='decimal' min='0' " +
-"placeholder='peso aprox. por un. (g)' " +
-"title='Peso aproximado de 1 unidade, em gramas — usado só para calcular o rendimento (nº de potes)' " +
-"style='display:none;margin-top:4px;height:30px;font-size:10px;'>" +
-"</td>" +
-"<td>" +
-"<input class='cell num' data-f='total' " +
-"type='number' step='any' " +
-"inputmode='decimal' min='0' " +
-"placeholder='5500'>" +
-"</td>" +
-"<td>" +
-"<select class='cell' data-f='unit'>" +
-"<option value='g'>g</option>" +
-"<option value='ml'>ml</option>" +
-"<option value='kg'>kg</option>" +
-"<option value='L'>L</option>" +
-"<option value='un'>un</option>" +
-"</select>" +
-"</td>" +
-"<td>" +
-"<input class='cell num' data-f='value' " +
-"type='number' step='any' " +
-"inputmode='decimal' min='0' " +
-"placeholder='0,00'>" +
-"</td>" +
-"<td>" +
-"<button class='rm-btn' title='remover'>✕</button>" +
-"</td>";
-const nameInput =
-tr.querySelector('[data-f="name"]');
-const unitWeightInput =
-tr.querySelector('[data-f="unitWeight"]');
-const totalInput =
-tr.querySelector('[data-f="total"]');
-const unitSelect =
-tr.querySelector('[data-f="unit"]');
-const valueInput =
-tr.querySelector('[data-f="value"]');
-const inputs =
-[nameInput, unitWeightInput, totalInput, unitSelect, valueInput];
-nameInput.value =
-item.name || "";
-unitWeightInput.value =
-item.unitWeight ?? "";
-totalInput.value =
-item.total ?? "";
-unitSelect.value =
-item.unit || "g";
-valueInput.value =
-item.value ?? "";
-function refreshUnitWeightVisibility() {
-unitWeightInput.style.display = "none";
-}
-refreshUnitWeightVisibility();
-inputs.forEach(function(inp) {
-function updateInventoryField() {
-const f =
-inp.dataset.f;
-const v =
-inp.value;
-if (
-f === "total" ||
-f === "value" ||
-f === "unitWeight"
-) {
-const numVal =
-parseFloat(v);
-state.inventory[idx][f] =
-isFinite(numVal) &&
-numVal >= 0
-? numVal
-: 0;
-} else {
-state.inventory[idx][f] =
-v;
-}
-if (
-f === "name" ||
-f === "unit"
-) {
-const currentUnit =
-String(
-state.inventory[idx].unit || ""
-)
-.trim()
-.toLowerCase();
-if (
-currentUnit === "ml" ||
-currentUnit === "l"
-) {
-state.inventory[idx].density =
-getDensityByName(
-state.inventory[idx].name
-);
-}
-}
-if (f === "unit") {
-refreshUnitWeightVisibility();
-renderRecipe();
-}
-saveState();
-render();
-}
-inp.addEventListener(
-"input",
-updateInventoryField
-);
-inp.addEventListener(
-"keydown",
-function(e) {
-if (e.key === "Enter") {
-e.preventDefault();
-inp.blur();
-}
-}
-);
-inp.addEventListener(
-"blur",
-function() {
-updateInventoryField();
-}
-);
-inp.addEventListener(
-"change",
-function() {
-updateInventoryField();
-}
-);
-});
-tr.querySelector(".rm-btn")
-.addEventListener(
-"click",
-function() {
-state.inventory.splice(idx, 1);
-state.recipe =
-state.recipe.filter(
-r => r.invIndex !== idx
-);
-state.recipe.forEach(function(r) {
-if (r.invIndex > idx) {
-r.invIndex--;
-}
-});
-saveState();
-renderInventory();
-renderRecipe();
-render();
-}
-);
-return tr;
+    const tr = document.createElement("tr");
+    tr.innerHTML =
+        "<td>" +
+        "<input class='cell' data-f='name' placeholder='Produto' inputmode='text'>" +
+        "<input class='cell num unit-weight-input' data-f='unitWeight' type='number' step='any' inputmode='decimal' min='0' placeholder='peso aprox. por un. (g)' title='Peso aproximado de 1 unidade, em gramas — usado só para calcular o rendimento (nº de potes)' style='display:none;margin-top:4px;height:30px;font-size:10px;'>" +
+        "</td>" +
+        "<td><input class='cell num' data-f='total' type='number' step='any' inputmode='decimal' min='0' placeholder='5500'></td>" +
+        "<td><select class='cell' data-f='unit'><option value='g'>g</option><option value='ml'>ml</option><option value='kg'>kg</option><option value='L'>L</option><option value='un'>un</option></select></td>" +
+        "<td><input class='cell num' data-f='value' type='number' step='any' inputmode='decimal' min='0' placeholder='0,00'></td>" +
+        "<td><button class='rm-btn' title='remover'>✕</button></td>";
+
+    const nameInput = tr.querySelector('[data-f="name"]');
+    const unitWeightInput = tr.querySelector('[data-f="unitWeight"]');
+    const totalInput = tr.querySelector('[data-f="total"]');
+    const unitSelect = tr.querySelector('[data-f="unit"]');
+    const valueInput = tr.querySelector('[data-f="value"]');
+    const inputs = [nameInput, unitWeightInput, totalInput, unitSelect, valueInput];
+
+    nameInput.value = item.name || "";
+    unitWeightInput.value = item.unitWeight ?? "";
+    totalInput.value = item.total ?? "";
+    unitSelect.value = item.unit || "g";
+    valueInput.value = item.value ?? "";
+
+    function refreshUnitWeightVisibility() {
+        const u = unitSelect.value.toLowerCase();
+        unitWeightInput.style.display = (u === "un" || u === "pote") ? "block" : "none";
+    }
+    refreshUnitWeightVisibility();
+
+    inputs.forEach(function(inp) {
+        function updateInventoryField() {
+            const f = inp.dataset.f;
+            const v = inp.value;
+            if (f === "total" || f === "value" || f === "unitWeight") {
+                const numVal = parseFloat(v);
+                state.inventory[idx][f] = isFinite(numVal) && numVal >= 0 ? numVal : 0;
+            } else {
+                state.inventory[idx][f] = v;
+            }
+            if (f === "unit") {
+                refreshUnitWeightVisibility();
+                renderRecipe();
+            }
+            saveState();
+            render();
+        }
+        inp.addEventListener("input", updateInventoryField);
+        inp.addEventListener("keydown", function(e) {
+            if (e.key === "Enter") { e.preventDefault(); inp.blur(); }
+        });
+        inp.addEventListener("blur", updateInventoryField);
+        inp.addEventListener("change", updateInventoryField);
+    });
+
+    // CORREÇÃO 1: Deletar produto com ID
+    tr.querySelector(".rm-btn").addEventListener("click", function() {
+        const productId = state.inventory[idx].id;
+        
+        // Remove do inventário
+        state.inventory.splice(idx, 1);
+        
+        // Remove da receita (usando productId)
+        state.recipe = state.recipe.filter(r => r.productId !== productId);
+        
+        saveState();
+        renderInventory();
+        renderRecipe();
+        render();
+    });
+
+    return tr;
 }
 
 function renderInventory() {
-invBody.innerHTML = "";
-state.inventory.forEach(
-function(item, idx) {
-invBody.appendChild(
-invRow(item, idx)
-);
-}
-);
-let total = 0;
-state.inventory.forEach(
-function(i) {
-total +=
-parseFloat(i.value) || 0;
-}
-);
-document.getElementById(
-"invTotalValue"
-).textContent =
-brl(total);
+    invBody.innerHTML = "";
+    state.inventory.forEach(function(item, idx) {
+        invBody.appendChild(invRow(item, idx));
+    });
+    let total = 0;
+    state.inventory.forEach(function(i) {
+        total += parseFloat(i.value) || 0;
+    });
+    document.getElementById("invTotalValue").textContent = brl(total);
 }
 
-document.getElementById(
-"addInv"
-).addEventListener(
-"click",
-function() {
-state.inventory.push({
-name: "",
-total: 0,
-unit: "g",
-value: 0,
-density: 1.00
+document.getElementById("addInv").addEventListener("click", function() {
+    state.inventory.push(createProduct("", 0, "g", 0));
+    saveState();
+    renderInventory();
+    renderRecipe();
+    render();
 });
-saveState();
-renderInventory();
-renderRecipe();
-render();
-}
-);
 
-function getIngredientCost(
-invIndex,
-qty,
-recipeUnit
-) {
-const inv =
-state.inventory[invIndex];
-if (!inv) {
-return 0;
-}
-const total =
-parseFloat(inv.total) || 0;
-const value =
-parseFloat(inv.value) || 0;
-const q =
-parseFloat(qty) || 0;
-if (
-total <= 0 ||
-value <= 0 ||
-q <= 0
-) {
-return 0;
-}
-const inventoryUnit =
-String(inv.unit || "")
-.trim()
-.toLowerCase();
-const usedUnit =
-String(
-recipeUnit || inv.unit || ""
-)
-.trim()
-.toLowerCase();
-if (
-inventoryUnit === "un" ||
-inventoryUnit === "pote"
-) {
-if (
-usedUnit !== inventoryUnit
-) {
-return 0;
-}
-return (
-q / total
-) * value;
-}
-const totalGrams =
-toGrams(
-total,
-inventoryUnit,
-inv
-);
-const usedGrams =
-toGrams(
-q,
-usedUnit,
-inv
-);
-if (
-totalGrams === null ||
-usedGrams === null ||
-totalGrams <= 0 ||
-usedGrams < 0
-) {
-return 0;
-}
-return (
-usedGrams /
-totalGrams
-) * value;
+// ============================================
+// RECIPE com productId
+// ============================================
+function getIngredientCost(productId, qty, recipeUnit) {
+    const inv = state.inventory.find(p => p.id === productId);
+    if (!inv) {
+        console.warn(`Produto ${productId} não encontrado`);
+        return 0;
+    }
+    const total = parseFloat(inv.total) || 0;
+    const value = parseFloat(inv.value) || 0;
+    const q = parseFloat(qty) || 0;
+    if (total <= 0 || value <= 0 || q <= 0) return 0;
+
+    const inventoryUnit = String(inv.unit || "").trim().toLowerCase();
+    const usedUnit = String(recipeUnit || inv.unit || "").trim().toLowerCase();
+
+    if (inventoryUnit === "un" || inventoryUnit === "pote") {
+        if (usedUnit !== inventoryUnit) return 0;
+        return (q / total) * value;
+    }
+
+    const totalGrams = toGrams(total, inventoryUnit, inv);
+    const usedGrams = toGrams(q, usedUnit, inv);
+    if (totalGrams === null || usedGrams === null || totalGrams <= 0 || usedGrams < 0) return 0;
+
+    return (usedGrams / totalGrams) * value;
 }
 
 function recRow(item, idx) {
-const tr =
-document.createElement("tr");
-const inv =
-state.inventory[item.invIndex];
-const productName =
-inv
-? (
-inv.name ||
-"Produto " +
-(item.invIndex + 1)
-)
-: "Produto";
-const invUnit =
-String(inv ? inv.unit : "")
-.trim()
-.toLowerCase();
-const isUnitCounted =
-invUnit === "un" ||
-invUnit === "pote";
-const unitFieldHtml =
-isUnitCounted
-?
-"<div class='product-display' style='justify-content:center;'>" +
-(invUnit === "pote" ? "pote" : "un") +
-"</div>"
-:
-"<select class='cell' data-f='unit'>" +
-"<option value='g'>g</option>" +
-"<option value='ml'>ml</option>" +
-"</select>";
-tr.innerHTML =
-"<td>" +
-"<div class='product-display'>" +
-productName +
-"</div>" +
-"</td>" +
-"<td>" +
-"<input class='cell num' data-f='qty' " +
-"type='number' step='any' " +
-"inputmode='decimal' min='0' " +
-"placeholder='5500'>" +
-"</td>" +
-"<td>" +
-unitFieldHtml +
-"</td>" +
-"<td class='num'>" +
-"<div class='cost-display' data-f='cost'>" +
-"0,00" +
-"</div>" +
-"</td>" +
-"<td>" +
-"<button class='rm-btn' title='remover'>✕</button>" +
-"</td>";
-const qtyInput =
-tr.querySelector(
-'input[data-f="qty"]'
-);
-const unitInput =
-tr.querySelector(
-'[data-f="unit"]'
-);
-const costCell =
-tr.querySelector(".cost-display");
-qtyInput.value =
-item.qty ?? "";
-if (isUnitCounted) {
-if (item.unit !== invUnit) {
-item.unit = invUnit;
-saveState();
-}
-} else if (unitInput) {
-unitInput.value =
-item.unit ?? "";
-}
-function currentUnit() {
-return isUnitCounted
-? invUnit
-: (unitInput ? unitInput.value : "");
-}
+    const tr = document.createElement("tr");
+    const inv = state.inventory.find(p => p.id === item.productId);
+    const productName = inv ? (inv.name || "Produto " + (idx + 1)) : "Produto removido";
+    const invUnit = String(inv ? inv.unit : "").trim().toLowerCase();
+    const isUnitCounted = invUnit === "un" || invUnit === "pote";
 
-function updateCostAndWarning() {
-const cost =
-getIngredientCost(
-item.invIndex,
-qtyInput.value,
-currentUnit()
-);
-costCell.textContent =
-cost.toLocaleString("pt-BR", {
-minimumFractionDigits: 2,
-maximumFractionDigits: 2
-});
+    const unitFieldHtml = isUnitCounted
+        ? "<div class='product-display' style='justify-content:center;'>" + (invUnit === "pote" ? "pote" : "un") + "</div>"
+        : "<select class='cell' data-f='unit'><option value='g'>g</option><option value='ml'>ml</option></select>";
 
-if (inv) {
-const invUnitLower = String(inv.unit || "").trim().toLowerCase();
-const isUnitCountedInv = invUnitLower === "un" || invUnitLower === "pote";
-let exceeds = false;
-if (isUnitCountedInv) {
-const invTotalUnits = parseFloat(inv.total) || 0;
-const usedUnits = parseFloat(qtyInput.value) || 0;
-exceeds = invTotalUnits > 0 && usedUnits > invTotalUnits;
-} else {
-const invTotalGrams = toGrams(inv.total, inv.unit, inv);
-const usedGrams = toGrams(qtyInput.value, currentUnit(), inv);
-exceeds = invTotalGrams > 0 && usedGrams > invTotalGrams;
-}
-if (exceeds) {
-tr.classList.add("excess-warning");
-tr.setAttribute("title", "Atenção: A quantidade informada excede o lote comprado cadastrado no Mercado!");
-} else {
-tr.classList.remove("excess-warning");
-tr.removeAttribute("title");
-}
-}
-}
+    tr.innerHTML =
+        "<td><div class='product-display'>" + productName + "</div></td>" +
+        "<td><input class='cell num' data-f='qty' type='number' step='any' inputmode='decimal' min='0' placeholder='5500'></td>" +
+        "<td>" + unitFieldHtml + "</td>" +
+        "<td class='num'><div class='cost-display' data-f='cost'>0,00</div></td>" +
+        "<td><button class='rm-btn' title='remover'>✕</button></td>";
 
-qtyInput.addEventListener(
-"input",
-function() {
-const v =
-parseFloat(
-qtyInput.value
-);
-state.recipe[idx].qty =
-isFinite(v) && v >= 0
-? v
-: 0;
-saveState();
-updateCostAndWarning();
-render();
-}
-);
-if (unitInput) {
-unitInput.addEventListener(
-"input",
-function() {
-state.recipe[idx].unit = unitInput.value;
-saveState();
-updateCostAndWarning();
-render();
-}
-);
-unitInput.addEventListener(
-"keydown",
-function(e) {
-if (e.key === "Enter") {
-e.preventDefault();
-unitInput.blur();
-}
-}
-);
-}
-qtyInput.addEventListener(
-"keydown",
-function(e) {
-if (e.key === "Enter") {
-e.preventDefault();
-qtyInput.blur();
-}
-}
-);
-tr.querySelector(".rm-btn")
-.addEventListener(
-"click",
-function() {
-state.recipe.splice(
-idx,
-1
-);
-saveState();
-renderRecipe();
-render();
-}
-);
-updateCostAndWarning();
-return tr;
+    const qtyInput = tr.querySelector('input[data-f="qty"]');
+    const unitInput = tr.querySelector('[data-f="unit"]');
+    const costCell = tr.querySelector(".cost-display");
+
+    qtyInput.value = item.qty ?? "";
+    if (isUnitCounted) {
+        if (item.unit !== invUnit) {
+            item.unit = invUnit;
+            saveState();
+        }
+    } else if (unitInput) {
+        unitInput.value = item.unit ?? "";
+    }
+
+    function currentUnit() {
+        return isUnitCounted ? invUnit : (unitInput ? unitInput.value : "");
+    }
+
+    function updateCostAndWarning() {
+        const cost = getIngredientCost(item.productId, qtyInput.value, currentUnit());
+        costCell.textContent = cost.toLocaleString("pt-BR", {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+
+        if (inv) {
+            const invUnitLower = String(inv.unit || "").trim().toLowerCase();
+            const isUnitCountedInv = invUnitLower === "un" || invUnitLower === "pote";
+            let exceeds = false;
+            if (isUnitCountedInv) {
+                const invTotalUnits = parseFloat(inv.total) || 0;
+                const usedUnits = parseFloat(qtyInput.value) || 0;
+                exceeds = invTotalUnits > 0 && usedUnits > invTotalUnits;
+            } else {
+                const invTotalGrams = toGrams(inv.total, inv.unit, inv);
+                const usedGrams = toGrams(qtyInput.value, currentUnit(), inv);
+                exceeds = invTotalGrams > 0 && usedGrams > invTotalGrams;
+            }
+            if (exceeds) {
+                tr.classList.add("excess-warning");
+                tr.setAttribute("title", "Atenção: A quantidade informada excede o lote comprado cadastrado no Mercado!");
+            } else {
+                tr.classList.remove("excess-warning");
+                tr.removeAttribute("title");
+            }
+        }
+    }
+
+    qtyInput.addEventListener("input", function() {
+        const v = parseFloat(qtyInput.value);
+        state.recipe[idx].qty = isFinite(v) && v >= 0 ? v : 0;
+        saveState();
+        updateCostAndWarning();
+        render();
+    });
+
+    if (unitInput) {
+        unitInput.addEventListener("input", function() {
+            state.recipe[idx].unit = unitInput.value;
+            saveState();
+            updateCostAndWarning();
+            render();
+        });
+        unitInput.addEventListener("keydown", function(e) {
+            if (e.key === "Enter") { e.preventDefault(); unitInput.blur(); }
+        });
+    }
+
+    qtyInput.addEventListener("keydown", function(e) {
+        if (e.key === "Enter") { e.preventDefault(); qtyInput.blur(); }
+    });
+
+    tr.querySelector(".rm-btn").addEventListener("click", function() {
+        state.recipe.splice(idx, 1);
+        saveState();
+        renderRecipe();
+        render();
+    });
+
+    updateCostAndWarning();
+    return tr;
 }
 
 function renderRecipe() {
-recBody.innerHTML = "";
-if (
-state.inventory.length === 0
-) {
-recBody.innerHTML =
-"<tr>" +
-"<td colspan='5' " +
-"style='text-align:center;" +
-"color:var(--text-muted);" +
-"padding:20px 0;'>" +
-"⚠️ Adicione produtos no estoque primeiro." +
-"</td>" +
-"</tr>";
-return;
-}
-state.recipe =
-state.recipe.filter(
-item =>
-item.invIndex >= 0 &&
-item.invIndex <
-state.inventory.length
-);
-state.recipe.forEach(
-function(item, idx) {
-recBody.appendChild(
-recRow(item, idx)
-);
-}
-);
-let recV = 0;
-state.recipe.forEach(
-function(r) {
-recV +=
-getIngredientCost(
-r.invIndex,
-r.qty,
-r.unit
-);
-}
-);
-document.getElementById(
-"recSubV"
-).textContent =
-brl(recV);
+    recBody.innerHTML = "";
+    if (state.inventory.length === 0) {
+        recBody.innerHTML = "<tr><td colspan='5' style='text-align:center;color:var(--text-muted);padding:20px 0;'>⚠️ Adicione produtos no estoque primeiro.</td></tr>";
+        return;
+    }
+
+    // CORREÇÃO 1: Validar productId
+    state.recipe = state.recipe.filter(item => {
+        const exists = state.inventory.some(p => p.id === item.productId);
+        if (!exists) {
+            console.warn(`Removendo receita com productId inválido: ${item.productId}`);
+        }
+        return exists;
+    });
+
+    state.recipe.forEach(function(item, idx) {
+        recBody.appendChild(recRow(item, idx));
+    });
+
+    let recV = 0;
+    state.recipe.forEach(function(r) {
+        recV += getIngredientCost(r.productId, r.qty, r.unit);
+    });
+    document.getElementById("recSubV").textContent = brl(recV);
 }
 
-document.getElementById(
-"addRec"
-).addEventListener(
-"click",
-function() {
-if (
-state.inventory.length === 0
-) {
-showModal({
-icon: "⚠️",
-title: "Estoque vazio",
-message:
-"Adicione produtos no estoque antes de criar a receita.",
-confirmText: "Entendi",
-onlyOk: true
-});
-return;
-}
-const nextIndex =
-state.recipe.length;
-if (
-nextIndex >=
-state.inventory.length
-) {
-showModal({
-icon: "ℹ️",
-title:
-"Todos os produtos já foram adicionados",
-message:
-"A lista da Receita já contém todos os produtos cadastrados no Mercado.",
-confirmText: "Entendi",
-onlyOk: true
-});
-return;
-}
-const defaultInv =
-state.inventory[nextIndex];
-state.recipe.push({
-invIndex: nextIndex,
-qty: 0,
-unit: defaultRecipeUnitFor(defaultInv)
-});
-saveState();
-renderRecipe();
-render();
-}
-);
+document.getElementById("addRec").addEventListener("click", function() {
+    if (state.inventory.length === 0) {
+        showModal({
+            icon: "⚠️",
+            title: "Estoque vazio",
+            message: "Adicione produtos no estoque antes de criar a receita.",
+            confirmText: "Entendi",
+            onlyOk: true
+        });
+        return;
+    }
 
+    // Pega o primeiro produto que ainda não está na receita
+    const usedIds = new Set(state.recipe.map(r => r.productId));
+    const available = state.inventory.find(p => !usedIds.has(p.id));
+    
+    if (!available) {
+        showModal({
+            icon: "ℹ️",
+            title: "Todos os produtos já foram adicionados",
+            message: "A lista da Receita já contém todos os produtos cadastrados no Mercado.",
+            confirmText: "Entendi",
+            onlyOk: true
+        });
+        return;
+    }
+
+    state.recipe.push({
+        productId: available.id,
+        qty: 0,
+        unit: defaultRecipeUnitFor(available)
+    });
+    saveState();
+    renderRecipe();
+    render();
+});
+
+function defaultRecipeUnitFor(inv) {
+    const u = String(inv ? inv.unit : "").trim().toLowerCase();
+    if (u === "un" || u === "pote") return u;
+    if (u === "ml" || u === "l") return "ml";
+    return "g";
+}
+
+// ============================================
+// PACKAGING (sem alterações)
+// ============================================
 function pkgRow(item, idx) {
-const tr =
-document.createElement("tr");
-tr.innerHTML =
-"<td>" +
-"<input class='cell' data-f='name' " +
-"placeholder='nome' " +
-"inputmode='text'>" +
-"</td>" +
-"<td>" +
-"<input class='cell num' data-f='qty' " +
-"type='number' step='any' " +
-"inputmode='decimal' min='0'>" +
-"</td>" +
-"<td>" +
-"<input class='cell' data-f='unit' " +
-"placeholder='un' " +
-"inputmode='text'>" +
-"</td>" +
-"<td>" +
-"<input class='cell num' data-f='value' " +
-"type='number' step='any' " +
-"inputmode='decimal' min='0'>" +
-"</td>" +
-"<td>" +
-"<button class='rm-btn' title='remover'>✕</button>" +
-"</td>";
-const inputs =
-tr.querySelectorAll("input");
-inputs[0].value =
-item.name ?? "";
-inputs[1].value =
-item.qty ?? "";
-inputs[2].value =
-item.unit ?? "";
-inputs[3].value =
-item.value ?? "";
-inputs.forEach(function(inp) {
-function updatePackagingField() {
-const f =
-inp.dataset.f;
-const v =
-inp.value;
-if (
-f === "qty" ||
-f === "value"
-) {
-const numVal =
-parseFloat(v);
-state.packaging[idx][f] =
-isFinite(numVal) &&
-numVal >= 0
-? numVal
-: 0;
-} else {
-state.packaging[idx][f] =
-v;
-}
-saveState();
-render();
-}
-inp.addEventListener(
-"input",
-updatePackagingField
-);
-inp.addEventListener(
-"keydown",
-function(e) {
-if (e.key === "Enter") {
-e.preventDefault();
-inp.blur();
-}
-}
-);
-inp.addEventListener(
-"blur",
-function() {
-updatePackagingField();
-}
-);
-});
-tr.querySelector(".rm-btn")
-.addEventListener(
-"click",
-function() {
-state.packaging.splice(
-idx,
-1
-);
-saveState();
-renderPackaging();
-render();
-}
-);
-return tr;
+    const tr = document.createElement("tr");
+    tr.innerHTML =
+        "<td><input class='cell' data-f='name' placeholder='nome' inputmode='text'></td>" +
+        "<td><input class='cell num' data-f='qty' type='number' step='any' inputmode='decimal' min='0'></td>" +
+        "<td><input class='cell' data-f='unit' placeholder='un' inputmode='text'></td>" +
+        "<td><input class='cell num' data-f='value' type='number' step='any' inputmode='decimal' min='0'></td>" +
+        "<td><button class='rm-btn' title='remover'>✕</button></td>";
+
+    const inputs = tr.querySelectorAll("input");
+    inputs[0].value = item.name ?? "";
+    inputs[1].value = item.qty ?? "";
+    inputs[2].value = item.unit ?? "";
+    inputs[3].value = item.value ?? "";
+
+    inputs.forEach(function(inp) {
+        function updatePackagingField() {
+            const f = inp.dataset.f;
+            const v = inp.value;
+            if (f === "qty" || f === "value") {
+                const numVal = parseFloat(v);
+                state.packaging[idx][f] = isFinite(numVal) && numVal >= 0 ? numVal : 0;
+            } else {
+                state.packaging[idx][f] = v;
+            }
+            saveState();
+            render();
+        }
+        inp.addEventListener("input", updatePackagingField);
+        inp.addEventListener("keydown", function(e) {
+            if (e.key === "Enter") { e.preventDefault(); inp.blur(); }
+        });
+        inp.addEventListener("blur", updatePackagingField);
+    });
+
+    tr.querySelector(".rm-btn").addEventListener("click", function() {
+        state.packaging.splice(idx, 1);
+        saveState();
+        renderPackaging();
+        render();
+    });
+    return tr;
 }
 
 function renderPackaging() {
-pkgBody.innerHTML = "";
-state.packaging.forEach(
-function(item, idx) {
-pkgBody.appendChild(
-pkgRow(item, idx)
-);
-}
-);
-let pkgV = 0;
-state.packaging.forEach(
-function(i) {
-pkgV +=
-(parseFloat(i.qty) || 0) *
-(parseFloat(i.value) || 0);
-}
-);
-document.getElementById(
-"pkgSubV"
-).textContent =
-brl(pkgV);
+    pkgBody.innerHTML = "";
+    state.packaging.forEach(function(item, idx) {
+        pkgBody.appendChild(pkgRow(item, idx));
+    });
+    let pkgV = 0;
+    state.packaging.forEach(function(i) {
+        pkgV += (parseFloat(i.qty) || 0) * (parseFloat(i.value) || 0);
+    });
+    document.getElementById("pkgSubV").textContent = brl(pkgV);
 }
 
-document.getElementById(
-"addPkg"
-).addEventListener(
-"click",
-function() {
-state.packaging.push({
-name: "",
-qty: 1,
-unit: "un",
-value: 0
+document.getElementById("addPkg").addEventListener("click", function() {
+    state.packaging.push({ name: "", qty: 1, unit: "un", value: 0 });
+    saveState();
+    renderPackaging();
+    render();
 });
-saveState();
-renderPackaging();
-render();
-}
-);
 
-const modalOverlay =
-document.getElementById(
-"modalOverlay"
-);
-const modalIcon =
-document.getElementById(
-"modalIcon"
-);
-const modalTitle =
-document.getElementById(
-"modalTitle"
-);
-const modalMsg =
-document.getElementById(
-"modalMsg"
-);
-const modalCancelBtn =
-document.getElementById(
-"modalCancelBtn"
-);
-const modalConfirmBtn =
-document.getElementById(
-"modalConfirmBtn"
-);
+// ============================================
+// MODAL
+// ============================================
+const modalOverlay = document.getElementById("modalOverlay");
+const modalIcon = document.getElementById("modalIcon");
+const modalTitle = document.getElementById("modalTitle");
+const modalMsg = document.getElementById("modalMsg");
+const modalCancelBtn = document.getElementById("modalCancelBtn");
+const modalConfirmBtn = document.getElementById("modalConfirmBtn");
 
 function closeModal() {
-modalOverlay.classList.remove(
-"open"
-);
+    modalOverlay.classList.remove("open");
 }
 
-function showModal(
-options,
-onConfirm
-) {
-modalIcon.textContent =
-options.icon || "⚠️";
-modalTitle.textContent =
-options.title || "";
-modalMsg.textContent =
-options.message || "";
-modalConfirmBtn.textContent =
-options.confirmText || "OK";
-modalConfirmBtn.className =
-"modal-btn primary" +
-(options.danger
-? ""
-: " neutral");
-if (options.onlyOk) {
-modalCancelBtn.style.display =
-"none";
-} else {
-modalCancelBtn.style.display =
-"";
-modalCancelBtn.textContent =
-options.cancelText ||
-"Cancelar";
-}
-modalOverlay.classList.add(
-"open"
-);
-modalConfirmBtn.onclick =
-function() {
-closeModal();
-if (
-typeof onConfirm ===
-"function"
-) {
-onConfirm();
-}
-};
-modalCancelBtn.onclick =
-function() {
-closeModal();
-};
+function showModal(options, onConfirm) {
+    modalIcon.textContent = options.icon || "⚠️";
+    modalTitle.textContent = options.title || "";
+    modalMsg.textContent = options.message || "";
+    modalConfirmBtn.textContent = options.confirmText || "OK";
+    modalConfirmBtn.className = "modal-btn primary" + (options.danger ? "" : " neutral");
+    if (options.onlyOk) {
+        modalCancelBtn.style.display = "none";
+    } else {
+        modalCancelBtn.style.display = "";
+        modalCancelBtn.textContent = options.cancelText || "Cancelar";
+    }
+    modalOverlay.classList.add("open");
+    modalConfirmBtn.onclick = function() {
+        closeModal();
+        if (typeof onConfirm === "function") onConfirm();
+    };
+    modalCancelBtn.onclick = function() {
+        closeModal();
+    };
 }
 
-modalOverlay.addEventListener(
-"click",
-function(e) {
-if (
-e.target ===
-modalOverlay
-) {
-closeModal();
-}
-}
-);
-
-document.getElementById(
-"resetBtn"
-).addEventListener(
-"click",
-function() {
-showModal({
-icon: "↺",
-title: "Restaurar exemplo?",
-message:
-"Isso vai substituir os dados atuais pelos dados de exemplo. Essa ação não pode ser desfeita.",
-confirmText: "Restaurar",
-cancelText: "Cancelar",
-danger: true
-}, function() {
-state =
-JSON.parse(
-JSON.stringify(
-DEFAULT_STATE
-)
-);
-currentRecipeId = null;
-recipeNameEl.value =
-state.recipeName;
-weightPerPotEl.value =
-state.weightPerPot;
-profitPctEl.value =
-state.profitPct;
-document.getElementById('leftoverCosting').value = state.leftoverCosting;
-saveState();
-renderAll();
+modalOverlay.addEventListener("click", function(e) {
+    if (e.target === modalOverlay) closeModal();
 });
-}
-);
 
+// ============================================
+// RESET
+// ============================================
+document.getElementById("resetBtn").addEventListener("click", function() {
+    showModal({
+        icon: "↺",
+        title: "Restaurar exemplo?",
+        message: "Isso vai substituir os dados atuais pelos dados de exemplo. Essa ação não pode ser desfeita.",
+        confirmText: "Restaurar",
+        cancelText: "Cancelar",
+        danger: true
+    }, function() {
+        state = JSON.parse(JSON.stringify(DEFAULT_STATE));
+        state.inventory = getDefaultInventory();
+        state.recipe = getDefaultRecipe();
+        currentRecipeId = null;
+        recipeNameEl.value = state.recipeName;
+        weightPerPotEl.value = state.weightPerPot;
+        profitPctEl.value = state.profitPct;
+        document.getElementById('leftoverCosting').value = state.leftoverCosting;
+        saveState();
+        renderAll();
+    });
+});
+
+// ============================================
+// RECIPE LIST
+// ============================================
 function renderRecipeList() {
-const container = document.getElementById('recipeList');
-const countEl = document.getElementById('recipeCount');
-countEl.textContent = `(${recipesList.length})`;
-if (recipesList.length === 0) {
-container.innerHTML = `<div class="recipe-list-empty">Nenhuma receita salva ainda</div>`;
-return;
-}
-const sorted = [...recipesList].sort((a, b) => b.updatedAt - a.updatedAt);
-container.innerHTML = sorted.map(function(recipe) {
-const isActive = recipe.id === currentRecipeId ? 'active' : '';
-const date = new Date(recipe.updatedAt);
-const dateStr = date.toLocaleDateString('pt-BR') + ' ' + date.toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
-return `
-<div class="recipe-item ${isActive}" data-id="${recipe.id}">
-<div class="recipe-info">
-<div class="recipe-name">${recipe.name}</div>
-<div class="recipe-meta">Atualizado em ${dateStr}</div>
-</div>
-<div class="recipe-actions">
-<button class="load-btn" data-id="${recipe.id}" title="Carregar">📂</button>
-<button class="del-btn" data-id="${recipe.id}" title="Apagar">🗑️</button>
-</div>
-</div>
-`;
-}).join('');
-container.querySelectorAll('.load-btn').forEach(function(btn) {
-btn.addEventListener('click', function(e) {
-e.stopPropagation();
-const id = this.dataset.id;
-loadRecipeFromList(id);
-});
-});
-container.querySelectorAll('.del-btn').forEach(function(btn) {
-btn.addEventListener('click', function(e) {
-e.stopPropagation();
-const id = this.dataset.id;
-const recipe = recipesList.find(function(r) { return r.id === id; });
-if (recipe) {
-showModal({
-icon: "🗑️",
-title: "Apagar receita?",
-message: `Tem certeza que deseja apagar "${recipe.name}"?`,
-confirmText: "Apagar",
-cancelText: "Cancelar",
-danger: true
-}, function() {
-recipesList = recipesList.filter(function(r) { return r.id !== id; });
-if (currentRecipeId === id) {
-currentRecipeId = null;
-}
-saveRecipesList();
-renderRecipeList();
-updateLoadedIndicators();
-});
-}
-});
-});
-container.querySelectorAll('.recipe-item').forEach(function(item) {
-item.addEventListener('click', function() {
-const id = this.dataset.id;
-loadRecipeFromList(id);
-});
-});
+    const container = document.getElementById('recipeList');
+    const countEl = document.getElementById('recipeCount');
+    countEl.textContent = `(${recipesList.length})`;
+    if (recipesList.length === 0) {
+        container.innerHTML = `<div class="recipe-list-empty">Nenhuma receita salva ainda</div>`;
+        return;
+    }
+    const sorted = [...recipesList].sort((a, b) => b.updatedAt - a.updatedAt);
+    container.innerHTML = sorted.map(function(recipe) {
+        const isActive = recipe.id === currentRecipeId ? 'active' : '';
+        const date = new Date(recipe.updatedAt);
+        const dateStr = date.toLocaleDateString('pt-BR') + ' ' + date.toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
+        return `
+            <div class="recipe-item ${isActive}" data-id="${recipe.id}">
+                <div class="recipe-info">
+                    <div class="recipe-name">${recipe.name}</div>
+                    <div class="recipe-meta">Atualizado em ${dateStr}</div>
+                </div>
+                <div class="recipe-actions">
+                    <button class="load-btn" data-id="${recipe.id}" title="Carregar">📂</button>
+                    <button class="del-btn" data-id="${recipe.id}" title="Apagar">🗑️</button>
+                </div>
+            </div>
+        `;
+    }).join('');
+
+    container.querySelectorAll('.load-btn').forEach(function(btn) {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            loadRecipeFromList(this.dataset.id);
+        });
+    });
+
+    container.querySelectorAll('.del-btn').forEach(function(btn) {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const id = this.dataset.id;
+            const recipe = recipesList.find(function(r) { return r.id === id; });
+            if (recipe) {
+                showModal({
+                    icon: "🗑️",
+                    title: "Apagar receita?",
+                    message: `Tem certeza que deseja apagar "${recipe.name}"?`,
+                    confirmText: "Apagar",
+                    cancelText: "Cancelar",
+                    danger: true
+                }, function() {
+                    recipesList = recipesList.filter(function(r) { return r.id !== id; });
+                    if (currentRecipeId === id) currentRecipeId = null;
+                    saveRecipesList();
+                    renderRecipeList();
+                    updateLoadedIndicators();
+                });
+            }
+        });
+    });
+
+    container.querySelectorAll('.recipe-item').forEach(function(item) {
+        item.addEventListener('click', function() {
+            loadRecipeFromList(this.dataset.id);
+        });
+    });
 }
 
-function handleSaveRecipe() {
-saveCurrentRecipe();
-}
-
-function handleDeleteRecipe() {
-deleteCurrentRecipe();
-}
+// ============================================
+// ACTIONS
+// ============================================
+function handleSaveRecipe() { saveCurrentRecipe(); }
+function handleDeleteRecipe() { deleteCurrentRecipe(); }
 
 document.getElementById('goToRecipesTab').addEventListener('click', function(e) {
-e.preventDefault();
-switchTab('tab4');
+    e.preventDefault();
+    switchTab('tab4');
 });
 
 document.getElementById('saveRecipeBtn').addEventListener('click', handleSaveRecipe);
 document.getElementById('saveRecipeBtnTab4').addEventListener('click', handleSaveRecipe);
 document.getElementById('deleteCurrentRecipeBtnTab4').addEventListener('click', handleDeleteRecipe);
 
-const jarLegend =
-document.getElementById(
-"jarLegend"
-);
-const jarPots =
-document.getElementById(
-"jarPots"
-);
+// ============================================
+// CALCULATE
+// ============================================
+const jarLegend = document.getElementById("jarLegend");
+const jarPots = document.getElementById("jarPots");
 
 function calculateOperationalCost(numPots) {
-const laborHourly = parseFloat(document.getElementById('laborHourly').value) || 0;
-const prepTime = parseFloat(document.getElementById('prepTime').value) || 0;
-const utilitiesCost = parseFloat(document.getElementById('utilitiesCost').value) || 0;
+    const laborHourly = parseFloat(document.getElementById('laborHourly').value) || 0;
+    const prepTime = parseFloat(document.getElementById('prepTime').value) || 0;
+    const utilitiesCost = parseFloat(document.getElementById('utilitiesCost').value) || 0;
 
-state.laborHourly = laborHourly;
-state.prepTime = prepTime;
-state.utilitiesCost = utilitiesCost;
+    state.laborHourly = laborHourly;
+    state.prepTime = prepTime;
+    state.utilitiesCost = utilitiesCost;
 
-if (numPots <= 0) {
-document.getElementById('operationalTotal').textContent = "—";
-return { total: 0, labor: 0, utilities: 0 };
-}
+    if (numPots <= 0) {
+        document.getElementById('operationalTotal').textContent = "—";
+        return { total: 0, labor: 0, utilities: 0 };
+    }
 
-const laborPerPot = (laborHourly * (prepTime / 60)) / numPots;
-const utilitiesPerPot = utilitiesCost / numPots;
-const totalOperational = laborPerPot + utilitiesPerPot;
+    const laborPerPot = (laborHourly * (prepTime / 60)) / numPots;
+    const utilitiesPerPot = utilitiesCost / numPots;
+    const totalOperational = laborPerPot + utilitiesPerPot;
 
-document.getElementById('operationalTotal').textContent = brl(totalOperational);
-
-return {
-total: totalOperational,
-labor: laborPerPot,
-utilities: utilitiesPerPot
-};
+    document.getElementById('operationalTotal').textContent = brl(totalOperational);
+    return { total: totalOperational, labor: laborPerPot, utilities: utilitiesPerPot };
 }
 
 function render() {
-let recW = 0;
-let recV = 0;
-state.recipe.forEach(
-function(r) {
-const qty =
-parseFloat(r.qty) || 0;
-const inv =
-state.inventory[r.invIndex];
-const unit =
-r.unit ||
-(
-inv
-? inv.unit
-: "g"
-);
-recW +=
-getRecipeWeight(
-qty,
-unit,
-inv
-);
-recV +=
-getIngredientCost(
-r.invIndex,
-qty,
-unit
-);
-}
-);
-document.getElementById(
-"recSubV"
-).textContent =
-brl(recV);
+    let recW = 0;
+    let recV = 0;
+    state.recipe.forEach(function(r) {
+        const qty = parseFloat(r.qty) || 0;
+        const inv = state.inventory.find(p => p.id === r.productId);
+        const unit = r.unit || (inv ? inv.unit : "g");
+        recW += getRecipeWeight(qty, unit, inv);
+        recV += getIngredientCost(r.productId, qty, unit);
+    });
+    document.getElementById("recSubV").textContent = brl(recV);
 
-let pkgV = 0;
-state.packaging.forEach(
-function(i) {
-pkgV +=
-(parseFloat(i.qty) || 0) *
-(parseFloat(i.value) || 0);
-}
-);
-document.getElementById(
-"pkgSubV"
-).textContent =
-brl(pkgV);
+    let pkgV = 0;
+    state.packaging.forEach(function(i) {
+        pkgV += (parseFloat(i.qty) || 0) * (parseFloat(i.value) || 0);
+    });
+    document.getElementById("pkgSubV").textContent = brl(pkgV);
 
-const weightPerPotVal =
-parseFloat(
-state.weightPerPot
-);
-const weightPerPot =
-isFinite(weightPerPotVal) &&
-weightPerPotVal > 0
-? weightPerPotVal
-: 500;
+    const weightPerPotVal = parseFloat(state.weightPerPot);
+    const weightPerPot = isFinite(weightPerPotVal) && weightPerPotVal > 0 ? weightPerPotVal : 500;
 
-const numPots =
-weightPerPot > 0
-? Math.floor(
-recW /
-weightPerPot
-)
-: 0;
+    const numPots = weightPerPot > 0 ? Math.floor(recW / weightPerPot) : 0;
+    const leftoverWeight = Math.max(0, recW - (numPots * weightPerPot));
 
-const leftoverWeight =
-Math.max(
-0,
-recW -
-(
-numPots *
-weightPerPot
-)
-);
+    document.getElementById("totalWeight").textContent = num(recW, 0) + " g";
+    document.getElementById("numPots").textContent = numPots + (numPots === 1 ? " pote" : " potes");
+    document.getElementById("leftoverWeight").textContent = num(leftoverWeight, 0) + " g";
 
-document.getElementById(
-"totalWeight"
-).textContent =
-num(recW, 0) +
-" g";
-document.getElementById(
-"numPots"
-).textContent =
-numPots +
-(
-numPots === 1
-? " pote"
-: " potes"
-);
-document.getElementById(
-"leftoverWeight"
-).textContent =
-num(
-leftoverWeight,
-0
-) +
-" g";
+    const warningEl = document.getElementById("insufficientWarning");
+    const warningPotSize = document.getElementById("warningPotSize");
+    if (numPots === 0 && recW > 0) {
+        warningPotSize.textContent = num(weightPerPot, 0);
+        warningEl.classList.add("visible");
+    } else {
+        warningEl.classList.remove("visible");
+    }
 
-const warningEl =
-document.getElementById(
-"insufficientWarning"
-);
-const warningPotSize =
-document.getElementById(
-"warningPotSize"
-);
-if (
-numPots === 0 &&
-recW > 0
-) {
-warningPotSize.textContent =
-num(
-weightPerPot,
-0
-);
-warningEl.classList.add(
-"visible"
-);
-} else {
-warningEl.classList.remove(
-"visible"
-);
+    let costIngPot = 0;
+    if (numPots > 0) {
+        if (state.leftoverCosting === "proportional" && recW > 0) {
+            costIngPot = (recV / recW) * weightPerPot;
+        } else {
+            costIngPot = recV / numPots;
+        }
+    }
+
+    const costPkgPot = pkgV;
+    const operational = calculateOperationalCost(numPots);
+
+    const costTotalPot = numPots > 0 ? costIngPot + costPkgPot + operational.total : 0;
+
+    document.getElementById("costIngPot").textContent = numPots > 0 ? brl(costIngPot) : "—";
+    document.getElementById("costPkgPot").textContent = numPots > 0 ? brl(costPkgPot) : "—";
+    document.getElementById("costOpPot").textContent = numPots > 0 ? brl(operational.total) : "—";
+    document.getElementById("costTotalPot").textContent = numPots > 0 ? brl(costTotalPot) : "—";
+
+    const profitPct = Math.max(0, Math.min(parseFloat(state.profitPct) || 0, 99.99));
+    const margin = profitPct / 100;
+
+    const price = numPots > 0 && margin < 1 && costTotalPot > 0 ? costTotalPot / (1 - margin) : 0;
+    const profitValue = price > 0 ? Math.max(0, price - costTotalPot) : 0;
+    const markup = costTotalPot > 0 && price > 0 ? price / costTotalPot : 0;
+
+    document.getElementById("markup").textContent = markup > 0 ? "×" + markup.toFixed(2).replace(".", ",") : "—";
+
+    const finalPriceEl = document.getElementById("finalPrice");
+    if (numPots === 0) {
+        finalPriceEl.textContent = recW > 0 ? "Nenhum pote completo" : "Sem receita";
+        finalPriceEl.classList.add("no-price");
+        jarPots.textContent = recW > 0 ? "0 potes para vender" : "0 potes";
+    } else {
+        finalPriceEl.textContent = brl(price);
+        finalPriceEl.classList.remove("no-price");
+        jarPots.textContent = numPots + (numPots === 1 ? " pote" : " potes");
+    }
+
+    if (price > 0) {
+        const segments = [
+            { label: "Ingredientes", value: costIngPot, color: "#6bcb8a" },
+            { label: "Embalagem", value: costPkgPot, color: "#6ab0e8" },
+            { label: "Operacional", value: operational.total, color: "#e86a6a" },
+            { label: "Lucro", value: profitValue, color: "#ffd84d" }
+        ];
+        const total = price;
+        jarLegend.innerHTML = segments.map(function(seg) {
+            const pct = total > 0 ? Math.round((seg.value / total) * 100) : 0;
+            return "<div><span class='lab'><span class='sw' style='background:" + seg.color + "'></span>" + seg.label + "</span><span class='val'>" + pct + "%</span></div>";
+        }).join("");
+    } else {
+        jarLegend.innerHTML = "<div><span class='lab'>A composição do preço aparecerá quando houver pelo menos 1 pote completo.</span></div>";
+    }
+
+    let invTotal = 0;
+    state.inventory.forEach(function(i) {
+        invTotal += parseFloat(i.value) || 0;
+    });
+    document.getElementById("invTotalValue").textContent = brl(invTotal);
 }
 
-let costIngPot = 0;
-if (numPots > 0) {
-if (state.leftoverCosting === "proportional" && recW > 0) {
-costIngPot = (recV / recW) * weightPerPot;
-} else {
-costIngPot = recV / numPots;
-}
-}
-
-const costPkgPot = pkgV;
-const operational = calculateOperationalCost(numPots);
-
-const costTotalPot =
-numPots > 0
-? costIngPot + costPkgPot + operational.total
-: 0;
-
-document.getElementById(
-"costIngPot"
-).textContent =
-numPots > 0
-? brl(costIngPot)
-: "—";
-document.getElementById(
-"costPkgPot"
-).textContent =
-numPots > 0
-? brl(costPkgPot)
-: "—";
-document.getElementById(
-"costOpPot"
-).textContent =
-numPots > 0
-? brl(operational.total)
-: "—";
-document.getElementById(
-"costTotalPot"
-).textContent =
-numPots > 0
-? brl(costTotalPot)
-: "—";
-
-const profitPct =
-Math.max(
-0,
-Math.min(
-parseFloat(
-state.profitPct
-) || 0,
-99.99
-)
-);
-const margin =
-profitPct / 100;
-
-const price =
-numPots > 0 &&
-margin < 1 &&
-costTotalPot > 0
-? costTotalPot / (1 - margin)
-: 0;
-
-const profitValue =
-price > 0
-? Math.max(
-0,
-price -
-costTotalPot
-)
-: 0;
-
-const markup =
-costTotalPot > 0 &&
-price > 0
-? price /
-costTotalPot
-: 0;
-
-document.getElementById(
-"markup"
-).textContent =
-markup > 0
-? "×" +
-markup
-.toFixed(2)
-.replace(".", ",")
-: "—";
-
-const finalPriceEl =
-document.getElementById(
-"finalPrice"
-);
-if (numPots === 0) {
-finalPriceEl.textContent =
-recW > 0
-? "Nenhum pote completo"
-: "Sem receita";
-finalPriceEl.classList.add(
-"no-price"
-);
-jarPots.textContent =
-recW > 0
-? "0 potes para vender"
-: "0 potes";
-} else {
-finalPriceEl.textContent =
-brl(price);
-finalPriceEl.classList.remove(
-"no-price"
-);
-jarPots.textContent =
-numPots +
-(
-numPots === 1
-? " pote"
-: " potes"
-);
-}
-
-if (price > 0) {
-const segments = [
-{
-label: "Ingredientes",
-value: costIngPot,
-color: "#6bcb8a"
-},
-{
-label: "Embalagem",
-value: costPkgPot,
-color: "#6ab0e8"
-},
-{
-label: "Operacional",
-value: operational.total,
-color: "#e86a6a"
-},
-{
-label: "Lucro",
-value: profitValue,
-color: "#ffd84d"
-}
-];
-const total =
-price;
-jarLegend.innerHTML =
-segments.map(
-function(seg) {
-const pct =
-total > 0
-? Math.round(
-(seg.value /
-total) *
-100
-)
-: 0;
-return (
-"<div>" +
-"<span class='lab'>" +
-"<span class='sw' " +
-"style='background:" +
-seg.color +
-"'></span>" +
-seg.label +
-"</span>" +
-"<span class='val'>" +
-pct +
-"%" +
-"</span>" +
-"</div>"
-);
-}
-).join("");
-} else {
-jarLegend.innerHTML =
-"<div>" +
-"<span class='lab'>" +
-"A composição do preço aparecerá " +
-"quando houver pelo menos 1 pote completo." +
-"</span>" +
-"</div>";
-}
-
-let invTotal = 0;
-state.inventory.forEach(
-function(i) {
-invTotal +=
-parseFloat(i.value) || 0;
-}
-);
-document.getElementById(
-"invTotalValue"
-).textContent =
-brl(invTotal);
-}
-
+// ============================================
+// RENDER ALL
+// ============================================
 function renderAll() {
-renderInventory();
-renderRecipe();
-renderPackaging();
-render();
-renderRecipeList();
-updateLoadedIndicators();
+    renderInventory();
+    renderRecipe();
+    renderPackaging();
+    render();
+    renderRecipeList();
+    updateLoadedIndicators();
 }
 
 renderAll();
 
+// Encontrar receita atual
 if (recipesList.length > 0) {
-const matching = recipesList.find(function(r) {
-const data = r.data;
-return data &&
-data.recipeName === state.recipeName &&
-JSON.stringify(data.inventory) === JSON.stringify(state.inventory) &&
-JSON.stringify(data.recipe) === JSON.stringify(state.recipe) &&
-JSON.stringify(data.packaging) === JSON.stringify(state.packaging);
-});
-if (matching) {
-currentRecipeId = matching.id;
-}
+    const matching = recipesList.find(function(r) {
+        const data = r.data;
+        return data && data.recipeName === state.recipeName &&
+            JSON.stringify(data.inventory) === JSON.stringify(state.inventory) &&
+            JSON.stringify(data.recipe) === JSON.stringify(state.recipe) &&
+            JSON.stringify(data.packaging) === JSON.stringify(state.packaging);
+    });
+    if (matching) currentRecipeId = matching.id;
 }
 renderRecipeList();
 updateLoadedIndicators();
 
+// ============================================
+// OPERATIONAL FIELDS
+// ============================================
 const opFields = ['laborHourly', 'prepTime', 'utilitiesCost'];
 opFields.forEach(function(field) {
-document.getElementById(field).addEventListener('input', function() {
-saveState();
-render();
-});
+    document.getElementById(field).addEventListener('input', function() {
+        saveState();
+        render();
+    });
 });
 
+// ============================================
+// SERVICE WORKER (opcional)
+// ============================================
 if ("serviceWorker" in navigator) {
-let refreshing = false;
-navigator.serviceWorker.addEventListener(
-"controllerchange",
-function() {
-if (refreshing) {
-return;
+    let refreshing = false;
+    navigator.serviceWorker.addEventListener("controllerchange", function() {
+        if (refreshing) return;
+        refreshing = true;
+        window.location.reload();
+    });
+    window.addEventListener("load", function() {
+        navigator.serviceWorker.register("sw.js").catch(function() {});
+    });
 }
-refreshing = true;
-window.location.reload();
+
+// ============================================
+// EXPORT/IMPORT (adicional)
+// ============================================
+// Adicionar botão de export/import no footer ou na tab de receitas
+const footer = document.querySelector('.footer-note');
+if (footer) {
+    const actions = document.createElement('div');
+    actions.style.cssText = 'display:flex;gap:10px;justify-content:center;margin-top:16px;flex-wrap:wrap;';
+    actions.innerHTML = `
+        <button class="action-btn save-btn" id="exportBtn" style="width:auto;padding:6px 16px;min-height:30px;font-size:12px;">📤 Exportar Dados</button>
+        <button class="action-btn save-btn" id="importBtn" style="width:auto;padding:6px 16px;min-height:30px;font-size:12px;">📥 Importar Dados</button>
+        <input type="file" id="importFileInput" accept=".json" style="display:none;">
+    `;
+    footer.parentNode.insertBefore(actions, footer);
+
+    document.getElementById('exportBtn').addEventListener('click', function() {
+        exportData();
+    });
+
+    document.getElementById('importBtn').addEventListener('click', function() {
+        document.getElementById('importFileInput').click();
+    });
+
+    document.getElementById('importFileInput').addEventListener('change', function(e) {
+        if (this.files && this.files[0]) {
+            importData(this.files[0]);
+            this.value = '';
+        }
+    });
 }
-);
-window.addEventListener(
-"load",
-function() {
-navigator.serviceWorker
-.register("sw.js")
-.catch(function() {});
-}
-);
-}
+
 })();
 </script>
 </body>
