@@ -614,20 +614,26 @@ table th:nth-child(4), table td:nth-child(4) { width: 12% !important; }
 table th:nth-child(5), table td:nth-child(5) { width: 19% !important; }
 table th:nth-child(6), table td:nth-child(6) { width: 12% !important; }
 
-/* ===== Alinhamento Estoque x Receita (mesmas colunas visuais) ===== */
+/* ===== Alinhamento Estoque x Receita x Embalagem (mesmas colunas visuais) ===== */
 .inventory-table th:nth-child(4), .inventory-table td:nth-child(4) { display: none !important; }
 
-.inventory-table th:nth-child(1), .inventory-table td:nth-child(1) { width: 34% !important; }
+.inventory-table th:nth-child(1), .inventory-table td:nth-child(1) { width: 36% !important; }
 .inventory-table th:nth-child(2), .inventory-table td:nth-child(2) { width: 17% !important; }
 .inventory-table th:nth-child(3), .inventory-table td:nth-child(3) { width: 13% !important; }
-.inventory-table th:nth-child(5), .inventory-table td:nth-child(5) { width: 22% !important; }
+.inventory-table th:nth-child(5), .inventory-table td:nth-child(5) { width: 20% !important; }
 .inventory-table th:nth-child(6), .inventory-table td:nth-child(6) { width: 14% !important; }
 
-.recipe-table th:nth-child(1), .recipe-table td:nth-child(1) { width: 34% !important; }
+.recipe-table th:nth-child(1), .recipe-table td:nth-child(1) { width: 36% !important; }
 .recipe-table th:nth-child(2), .recipe-table td:nth-child(2) { width: 17% !important; }
 .recipe-table th:nth-child(3), .recipe-table td:nth-child(3) { width: 13% !important; }
-.recipe-table th:nth-child(4), .recipe-table td:nth-child(4) { width: 22% !important; }
+.recipe-table th:nth-child(4), .recipe-table td:nth-child(4) { width: 20% !important; }
 .recipe-table th:nth-child(5), .recipe-table td:nth-child(5) { width: 14% !important; }
+
+.packaging-table th:nth-child(1), .packaging-table td:nth-child(1) { width: 36% !important; }
+.packaging-table th:nth-child(2), .packaging-table td:nth-child(2) { width: 17% !important; }
+.packaging-table th:nth-child(3), .packaging-table td:nth-child(3) { width: 13% !important; }
+.packaging-table th:nth-child(4), .packaging-table td:nth-child(4) { width: 20% !important; }
+.packaging-table th:nth-child(5), .packaging-table td:nth-child(5) { width: 14% !important; }
 
 .total-line {
 display: flex;
@@ -1478,7 +1484,7 @@ Ajusta automático o peso e sinaliza se a receita usa mais que o lote cadastrado
 Custo fixo de cada pote da receita
 </p>
 <div class="table-scroll">
-<table>
+<table class="packaging-table">
 <thead>
 <tr>
 <th>Item</th>
