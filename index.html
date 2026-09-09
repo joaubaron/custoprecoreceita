@@ -614,6 +614,21 @@ table th:nth-child(4), table td:nth-child(4) { width: 12% !important; }
 table th:nth-child(5), table td:nth-child(5) { width: 19% !important; }
 table th:nth-child(6), table td:nth-child(6) { width: 12% !important; }
 
+/* ===== Alinhamento Estoque x Receita (mesmas colunas visuais) ===== */
+.inventory-table th:nth-child(4), .inventory-table td:nth-child(4) { display: none !important; }
+
+.inventory-table th:nth-child(1), .inventory-table td:nth-child(1) { width: 34% !important; }
+.inventory-table th:nth-child(2), .inventory-table td:nth-child(2) { width: 17% !important; }
+.inventory-table th:nth-child(3), .inventory-table td:nth-child(3) { width: 13% !important; }
+.inventory-table th:nth-child(5), .inventory-table td:nth-child(5) { width: 22% !important; }
+.inventory-table th:nth-child(6), .inventory-table td:nth-child(6) { width: 14% !important; }
+
+.recipe-table th:nth-child(1), .recipe-table td:nth-child(1) { width: 34% !important; }
+.recipe-table th:nth-child(2), .recipe-table td:nth-child(2) { width: 17% !important; }
+.recipe-table th:nth-child(3), .recipe-table td:nth-child(3) { width: 13% !important; }
+.recipe-table th:nth-child(4), .recipe-table td:nth-child(4) { width: 22% !important; }
+.recipe-table th:nth-child(5), .recipe-table td:nth-child(5) { width: 14% !important; }
+
 .total-line {
 display: flex;
 align-items: baseline;
@@ -1381,7 +1396,7 @@ font-size: 12px !important;
 Cadastre os produtos que você compra e seus valores
 </p>
 <div class="table-scroll">
-<table>
+<table class="inventory-table">
 <thead>
 <tr>
 <th>Produto</th>
@@ -1423,7 +1438,7 @@ Informe somente a quantidade usada na receita
 Ajusta automático o peso e sinaliza se a receita usa mais que o lote cadastrado.
 </div>
 <div class="table-scroll">
-<table>
+<table class="recipe-table">
 <thead>
 <tr>
 <th>Produto</th>
