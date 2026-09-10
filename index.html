@@ -1789,7 +1789,7 @@ Defina sua margem de lucro e veja o preço de venda sugerido
 <div style="flex:1;"><div><strong>ℹ️ Ex. Taxas</strong></div><ul><li>Balcão: 0%</li><li>iFood: 12-27%</li><li>Shopee: 14-20%</li><li>Mercado Livre: 10-19%</li></ul></div>
 <div style="flex:1;"><div><strong>ℹ️ Ex. Impostos</strong></div><ul><li>Autônomo: 0%</li><li>MEI: valor fixo mensal</li><li>Simples Nacional: 4-19%</li><li>Lucro Presumido: 14,83%</li></ul></div>
 </div>
-  
+
 <div class="divider"></div>
 
 <div class="k">Margem de lucro desejada</div>
@@ -1968,7 +1968,7 @@ try {
 localStorage.setItem(ONBOARDING_KEY, 'true');
 } catch(e) {}
 const overlay = document.getElementById('onboardingOverlay');
-overlay.classList.add('hidden');
+overlay.remove();
 }
 
 function showOnboarding() {
