@@ -1684,27 +1684,6 @@ Defina sua margem de lucro e veja o preço de venda sugerido
 
 <div class="jar-legend" id="jarLegend"></div>
 </section>
-
-<section class="card">
-<h2>⚡ Ações</h2>
-<p class="sub">
-Salve a sua receita para acessá-la depois
-</p>
-
-<div class="current-recipe-indicator" style="margin-bottom: 12px;">
-<span class="label">📌 Receita atual:</span>
-<span id="priceTabLoadedName" style="color:var(--gold);font-weight:600;">Nenhuma</span>
-</div>
-
-<div class="recipe-actions-bar" style="display: flex; flex-direction: row; gap: 10px;">
-<button class="action-btn save-btn" id="saveRecipeBtn" style="flex: 1;">
-💾 Salvar receita
-</button>
-<a id="goToRecipesTab" class="action-btn save-btn" style="flex: 1; text-align: center; text-decoration: none; display: inline-flex; align-items: center; justify-content: center;">
-📋 Receitas salvas
-</a>
-</div>
-</section>
 </div>
 
 <!-- ===== TAB 4: SALVAR ===== -->
@@ -2162,7 +2141,6 @@ onlyOk: true
 function updateLoadedIndicators() {
 const recipe = recipesList.find(r => r.id === currentRecipeId);
 const name = recipe ? recipe.name : "Nenhuma";
-document.getElementById('priceTabLoadedName').textContent = name;
 document.getElementById('recipesTabLoadedName').textContent = name;
 }
 
@@ -2855,8 +2833,6 @@ item.addEventListener('click', function() { loadRecipeFromList(this.dataset.id);
 function handleSaveRecipe() { saveCurrentRecipe(); }
 function handleDeleteRecipe() { deleteCurrentRecipe(); }
 
-document.getElementById('goToRecipesTab').addEventListener('click', function(e) { e.preventDefault(); switchTab('tab4'); });
-document.getElementById('saveRecipeBtn').addEventListener('click', handleSaveRecipe);
 document.getElementById('saveRecipeBtnTab4').addEventListener('click', handleSaveRecipe);
 document.getElementById('deleteCurrentRecipeBtnTab4').addEventListener('click', handleDeleteRecipe);
 
