@@ -821,12 +821,12 @@ box-shadow: 0 0 0 2px var(--red-dim);
 }
 
 .kv-grid {
-display: grid;
-grid-template-columns: 1fr minmax(0, 45%);  /* era: 1fr auto */
-gap: 12px;
-font-size: 13px;
-align-items: center;
-max-width: 100%;
+  display: grid;
+  grid-template-columns: 1fr minmax(0, 45%);
+  gap: 12px;
+  font-size: 13px;
+  align-items: center;
+  max-width: 100%;
 }
 
 .kv-grid .k,
@@ -835,9 +835,11 @@ min-width: 0;   /* garante que consigam encolher/quebrar de verdade */
 }
 
 .kv-grid .k {
-color: var(--text-secondary);
-font-weight: 500;
-min-width: 0;
+  color: var(--text-secondary);
+  font-weight: 500;
+  min-width: 0;
+  font-size: 13px;
+  line-height: 1.4;
 }
 
 .kv-grid .v {
@@ -1804,7 +1806,7 @@ Autônomo: 0%; MEI: valor fixo mensal; Simples Nacional: 4-19%; Lucro Presumido:
 
 <div class="note-info"></div>
 
-<div class="k">Margem de lucro → percentual de lucro</div>
+<div class="k">Margem de lucro desejad</div>
 <div class="v editable">
 <input type="number" id="profitPct" min="0" max="99.99" step="1" inputmode="numeric" value="35" />
 <span>%</span>
