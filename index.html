@@ -1589,6 +1589,19 @@ Rendimento da receita e o custo detalhado de cada pote
 
 <div class="divider"></div>
 
+<div class="k">Rendimento real (opcional)</div>
+<div class="v editable">
+<input type="number" id="actualPots" min="0" step="1" inputmode="numeric" placeholder="Ex: 4" />
+<span class="unit-suffix">potes</span>
+</div>
+<div class="k">Sobra após envasar (opcional)</div>
+<div class="v editable">
+<input type="number" id="actualLeftover" min="0" step="1" inputmode="numeric" placeholder="Ex: 100" />
+<span class="unit-suffix">g</span>
+</div>
+
+<div class="divider"></div>
+
 <div class="k total">Número de potes</div>
 <div class="v total" id="numPots"></div>
 
@@ -1776,7 +1789,9 @@ weightPerPot: 500,
 profitPct: 35,
 laborHourly: 8,
 prepTime: 60,
-utilitiesCost: 2
+utilitiesCost: 2,
+actualPots: null,
+actualLeftover: null
 };
 let state = loadState();
 let storageWarned = false;
@@ -1900,6 +1915,8 @@ item.density = getDensityByName(item.name);
 if (!('laborHourly' in parsed)) parsed.laborHourly = 8;
 if (!('prepTime' in parsed)) parsed.prepTime = 60;
 if (!('utilitiesCost' in parsed)) parsed.utilitiesCost = 2;
+if (!('actualPots' in parsed)) parsed.actualPots = null;
+if (!('actualLeftover' in parsed)) parsed.actualLeftover = null;
 // ✅ CORREÇÃO: NÃO converte kg/L silenciosamente
 // Mantém a unidade original do usuário
 return parsed;
@@ -1953,7 +1970,9 @@ weightPerPot: state.weightPerPot,
 profitPct: state.profitPct,
 laborHourly: state.laborHourly,
 prepTime: state.prepTime,
-utilitiesCost: state.utilitiesCost
+utilitiesCost: state.utilitiesCost,
+actualPots: state.actualPots,
+actualLeftover: state.actualLeftover
 };
 }
 
@@ -1967,10 +1986,14 @@ state.profitPct = data.profitPct || 35;
 state.laborHourly = data.laborHourly || 8;
 state.prepTime = data.prepTime || 60;
 state.utilitiesCost = data.utilitiesCost || 2;
+state.actualPots = ('actualPots' in data) ? data.actualPots : null;
+state.actualLeftover = ('actualLeftover' in data) ? data.actualLeftover : null;
 
 recipeNameEl.value = state.recipeName;
 weightPerPotEl.value = state.weightPerPot;
 profitPctEl.value = state.profitPct;
+actualPotsEl.value = state.actualPots ?? "";
+actualLeftoverEl.value = state.actualLeftover ?? "";
 
 document.getElementById('laborHourly').value = state.laborHourly;
 document.getElementById('prepTime').value = state.prepTime;
@@ -2151,6 +2174,8 @@ state.profitPct = freshState.profitPct;
 state.laborHourly = freshState.laborHourly;
 state.prepTime = freshState.prepTime;
 state.utilitiesCost = freshState.utilitiesCost;
+state.actualPots = freshState.actualPots;
+state.actualLeftover = freshState.actualLeftover;
 
 let recW = 0;
 let recV = 0;
@@ -2176,26 +2201,39 @@ const weightPerPot = weightPerPotValid ? weightPerPotVal : 0;
 const potSizeWarningEl = document.getElementById("potSizeWarning");
 potSizeWarningEl.style.display = weightPerPotValid ? "none" : "block";
 
-const numPots = weightPerPotValid ? Math.floor(recW / weightPerPot) : 0;
-const leftoverWeight = Math.max(0, recW - (numPots * weightPerPot));
+// ✅ RENDIMENTO REAL: se o usuário informou quantos potes a receita
+// realmente rendeu (após cozinhar/envasar), usamos esse número em vez
+// de calcular pela soma dos ingredientes crus — que não considera
+// perda de peso por evaporação no cozimento.
+const actualPotsVal = parseFloat(state.actualPots);
+const usingActualPots = isFinite(actualPotsVal) && actualPotsVal > 0;
+
+const calculatedPots = weightPerPotValid ? Math.floor(recW / weightPerPot) : 0;
+const numPots = usingActualPots ? Math.floor(actualPotsVal) : calculatedPots;
+
+const actualLeftoverVal = parseFloat(state.actualLeftover);
+const hasActualLeftover = isFinite(actualLeftoverVal) && actualLeftoverVal >= 0;
+const leftoverWeight = usingActualPots
+? (hasActualLeftover ? actualLeftoverVal : 0)
+: Math.max(0, recW - (numPots * weightPerPot));
 
 document.getElementById("totalWeight").textContent = num(recW, 0) + " g";
-document.getElementById("numPots").textContent = weightPerPotValid ? (numPots + (numPots === 1 ? " pote" : " potes")) : "—";
-document.getElementById("leftoverWeight").textContent = weightPerPotValid ? (num(leftoverWeight, 0) + " g") : "—";
+document.getElementById("numPots").textContent = (usingActualPots || weightPerPotValid) ? (numPots + (numPots === 1 ? " pote" : " potes")) : "—";
+document.getElementById("leftoverWeight").textContent = (usingActualPots ? hasActualLeftover : weightPerPotValid) ? (num(leftoverWeight, 0) + " g") : "—";
 
 if (numPots > 0 && leftoverWeight > 0) {
 document.getElementById("leftoverStatus").textContent = 
-`Custo rateado entre os ${numPots} potes`;
+usingActualPots ? `Rendimento informado manualmente` : `Custo rateado entre os ${numPots} potes`;
 } else if (numPots > 0) {
 document.getElementById("leftoverStatus").textContent = 
-`Sem sobra (aproveitamento total)`;
+usingActualPots ? `Rendimento informado manualmente` : `Sem sobra (aproveitamento total)`;
 } else {
 document.getElementById("leftoverStatus").textContent = 
 `Não há potes suficientes`;
 }
 
 const warningEl = document.getElementById("insufficientWarning");
-if (weightPerPotValid && numPots === 0 && recW > 0) {
+if (!usingActualPots && weightPerPotValid && numPots === 0 && recW > 0) {
 const suggestedPotSize = Math.floor(recW / 50) * 50;
 warningEl.innerHTML = `
 ⚠️ Receita rende ${num(recW, 0)}g — não fecha um pote de ${num(weightPerPot, 0)}g<br>
@@ -2333,7 +2371,6 @@ const div = document.createElement('div');
 div.textContent = String(str || "");
 return div.innerHTML;
 }
-
 
 // ===== INVENTORY =====
 function invRow(item, idx) {
@@ -2658,6 +2695,8 @@ currentRecipeId = null;
 recipeNameEl.value = state.recipeName;
 weightPerPotEl.value = state.weightPerPot;
 profitPctEl.value = state.profitPct;
+actualPotsEl.value = "";
+actualLeftoverEl.value = "";
 saveState();
 renderAll();
 });
@@ -2731,10 +2770,14 @@ const recBody = document.getElementById("recBody");
 const pkgBody = document.getElementById("pkgBody");
 const weightPerPotEl = document.getElementById("weightPerPot");
 const profitPctEl = document.getElementById("profitPct");
+const actualPotsEl = document.getElementById("actualPots");
+const actualLeftoverEl = document.getElementById("actualLeftover");
 
 recipeNameEl.value = state.recipeName || "Minha Receita";
 weightPerPotEl.value = state.weightPerPot > 0 ? state.weightPerPot : "";
 profitPctEl.value = state.profitPct;
+actualPotsEl.value = state.actualPots ?? "";
+actualLeftoverEl.value = state.actualLeftover ?? "";
 
 recipeNameEl.addEventListener("input", function() { state.recipeName = recipeNameEl.value; saveState(); });
 weightPerPotEl.addEventListener("input", function() {
@@ -2748,6 +2791,18 @@ let value = parseFloat(profitPctEl.value);
 if (!isFinite(value)) value = 0;
 value = Math.max(0, Math.min(value, 99.99));
 state.profitPct = value;
+saveState();
+render();
+});
+actualPotsEl.addEventListener("input", function() {
+const value = parseFloat(actualPotsEl.value);
+state.actualPots = (isFinite(value) && value > 0) ? value : null;
+saveState();
+render();
+});
+actualLeftoverEl.addEventListener("input", function() {
+const value = parseFloat(actualLeftoverEl.value);
+state.actualLeftover = (isFinite(value) && value >= 0) ? value : null;
 saveState();
 render();
 });
