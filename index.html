@@ -3086,6 +3086,13 @@ loadRecipeData(recipe.data);
 renderRecipeList();
 updateLoadedIndicators();
 switchTab('tab1');
+showModal({
+icon: "📂",
+title: "Receita carregada!",
+message: `"${recipe.name}" foi carregada. Você já pode editar os valores nas abas.`,
+confirmText: "OK",
+onlyOk: true
+});
 }
 
 function handleSaveRecipe() { saveCurrentRecipe(); }
@@ -3316,15 +3323,6 @@ updateLoadedIndicators();
 showOnboarding();
 
 if ("serviceWorker" in navigator) {
-let refreshing = false;
-navigator.serviceWorker.addEventListener("controllerchange", function() {
-if (refreshing) return;
-refreshing = true;
-// Só recarrega se o onboarding já foi dispensado
-if (localStorage.getItem(ONBOARDING_KEY) === 'true') {
-window.location.reload();
-}
-});
 window.addEventListener("load", function() {
 navigator.serviceWorker.register("sw.js").catch(function() {});
 });
