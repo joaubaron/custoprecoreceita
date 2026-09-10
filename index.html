@@ -3078,6 +3078,16 @@ item.addEventListener('click', function() { loadRecipeFromList(this.dataset.id);
 });
 }
 
+function loadRecipeFromList(recipeId) {
+const recipe = recipesList.find(function(r) { return r.id === recipeId; });
+if (!recipe) return;
+currentRecipeId = recipe.id;
+loadRecipeData(recipe.data);
+renderRecipeList();
+updateLoadedIndicators();
+switchTab('tab1');
+}
+
 function handleSaveRecipe() { saveCurrentRecipe(); }
 function handleDeleteRecipe() { deleteCurrentRecipe(); }
 
