@@ -820,7 +820,7 @@ box-shadow: 0 0 0 2px var(--red-dim);
 
 .kv-grid {
 display: grid;
-grid-template-columns: minmax(0, 1fr) minmax(0, auto);
+grid-template-columns: 1fr auto;
 gap: 12px;
 font-size: 13px;
 align-items: center;
@@ -1303,7 +1303,7 @@ font-size: 12px !important;
 /* ✅ CORREÇÃO: $ de Venda em mobile */
 #tab3 .kv-grid {
 display: grid !important;
-grid-template-columns: minmax(0, 1fr) minmax(0, auto) !important;
+grid-template-columns: 1fr auto !important;
 gap: 10px 12px !important;
 width: 100% !important;
 max-width: 100% !important;
@@ -1651,19 +1651,20 @@ Informe o rendimento real após o cozimento — a receita perde peso com a evapo
 <input type="number" id="weightPerPot" min="0" step="1" inputmode="numeric" value="500" placeholder="Ex: 500" />
 <span class="unit-suffix">g</span>
 </div>
-<div class="v" id="potSizeWarning" style="display:none;grid-column:1 / -1;color:var(--orange);font-size:11px;font-weight:600;text-align:left;margin-top:2px;">
+<div class="k"></div>
+<div class="v" id="potSizeWarning" style="display:none;color:var(--orange);font-size:11px;font-weight:600;text-align:right;">
 ⚠️ Informe o tamanho do pote para calcular
 </div>
 
 <div class="divider"></div>
 
-<div class="k">Rendimento se receita perde água</div>
+<div class="k">Rendimento real (se receita perde água)</div>
 <div class="v editable">
 <input type="number" id="actualPots" min="0" step="1" inputmode="numeric" placeholder="Ex. 2 potes" />
 <span class="unit-suffix">p</span>
 </div>
 
-<div class="k">Sobra após envasar</div>
+<div class="k">Sobra após envasar (registro — não altera o preço)</div>
 <div class="v editable">
 <input type="number" id="actualLeftover" min="0" step="1" inputmode="numeric" placeholder="Ex: 300" />
 <span class="unit-suffix">g</span>
@@ -1676,18 +1677,24 @@ Informe o rendimento real após o cozimento — a receita perde peso com a evapo
 
 <div class="k">Sobra da receita</div>
 <div class="v leftover-note" id="leftoverWeight"></div>
-
-<div class="k" style="grid-column: 1 / -1;">
-  <span id="leftoverStatus" style="color: var(--text-primary); font-weight: 600;">Custo rateado entre os potes</span>
+<div class="k">Aproveitamento da sobra</div>
+<div class="v" style="color: var(--text-secondary); font-weight: 400;">
+<span id="leftoverStatus">Custo rateado entre os potes</span>
 </div>
-
 <div class="k"></div>
 <div class="v" style="grid-column: 1 / -1; font-size: 11px; color: var(--text-muted); font-weight: 400; text-align: left; padding-top: 4px;">
-  💡 O custo total (ingredientes + embalagem + operacional) já está todo nos potes vendidos. A sobra não reduz nem aumenta o preço.
+💡 O custo total (ingredientes + embalagem + operacional) já está todo nos potes vendidos. A sobra não reduz nem aumenta o preço.
+</div>
+</div>
+
+<div class="warning-message" id="insufficientWarning">
+⚠️ A receita não rende um pote completo de <span id="warningPotSize"></span> g.<br />
+Reduza o tamanho do pote ou aumente a quantidade da receita para obter pelo menos 1 pote completo.
 </div>
 
 <div class="divider" style="margin: 16px 0;"></div>
 
+<div class="kv-grid">
 <div class="k">Ingredientes rateados</div>
 <div class="v" id="costIngPot"></div>
 
@@ -1701,7 +1708,7 @@ Informe o rendimento real após o cozimento — a receita perde peso com a evapo
 
 <div class="k total">Custo total por pote</div>
 <div class="v total" id="costTotalPot"></div>
-</div>  <!-- fecha o único .kv-grid aqui -->
+</div>
 </section>
 
 <section class="card">
