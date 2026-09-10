@@ -1309,14 +1309,15 @@ font-size: 12px !important;
 
 /* ✅ CORREÇÃO: primeira coluna do $ de Venda não quebra mais */
 #tab3 .kv-grid {
-grid-template-columns: 1fr auto !important;
+grid-template-columns: minmax(0, 1fr) auto !important;
 gap: 8px 10px !important;
 }
 #tab3 .kv-grid .k {
 white-space: nowrap !important;
 overflow: hidden !important;
 text-overflow: ellipsis !important;
-min-width: 0 !important;
+min-width: 140px !important;
+max-width: 60% !important;
 font-size: 12px !important;
 }
 #tab3 .kv-grid .v {
