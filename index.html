@@ -820,7 +820,7 @@ box-shadow: 0 0 0 2px var(--red-dim);
 
 .kv-grid {
 display: grid;
-grid-template-columns: 1fr auto;
+grid-template-columns: minmax(0, 1fr) minmax(0, auto);
 gap: 12px;
 font-size: 13px;
 align-items: center;
@@ -1303,7 +1303,7 @@ font-size: 12px !important;
 /* ✅ CORREÇÃO: $ de Venda em mobile */
 #tab3 .kv-grid {
 display: grid !important;
-grid-template-columns: 1fr auto !important;
+grid-template-columns: minmax(0, 1fr) minmax(0, auto) !important;
 gap: 10px 12px !important;
 width: 100% !important;
 max-width: 100% !important;
@@ -1648,12 +1648,11 @@ Informe o rendimento real após o cozimento — a receita perde peso com a evapo
 
 <div class="k">Tamanho do pote</div>
 <div class="v editable">
-<input type="number" id="weightPerPot" min="0" step="1" inputmode="numeric" value="500" placeholder="Ex: 500" />
-<span class="unit-suffix">g</span>
+  <input type="number" id="weightPerPot" min="0" step="1" inputmode="numeric" value="500" placeholder="Ex: 500" />
+  <span class="unit-suffix">g</span>
 </div>
-<div class="k"></div>
-<div class="v" id="potSizeWarning" style="display:none;color:var(--orange);font-size:11px;font-weight:600;text-align:right;">
-⚠️ Informe o tamanho do pote para calcular
+<div class="v" id="potSizeWarning" style="display:none;grid-column:1 / -1;color:var(--orange);font-size:11px;font-weight:600;text-align:left;margin-top:2px;">
+  ⚠️ Informe o tamanho do pote para calcular
 </div>
 
 <div class="divider"></div>
