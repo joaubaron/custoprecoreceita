@@ -1116,7 +1116,6 @@ transition: var(--transition);
 }
 
 .recipe-actions .load-btn:hover { color: var(--gold); background: var(--gold-soft); }
-.recipe-actions .dup-btn:hover { color: var(--blue); background: var(--blue-dim); }
 .recipe-actions .del-btn:hover { color: var(--red); background: var(--red-dim); }
 
 .recipe-actions-bar {
@@ -1641,10 +1640,6 @@ Custo por pote para entrega (sacola, caixa, gelo, etiqueta)
 <input type="number" id="transportCost" min="0" step="0.01" inputmode="decimal" value="0" placeholder="0,00" />
 <span>R$</span>
 </div>
-<div class="k"></div>
-<div class="v" style="grid-column: 1 / -1; font-size: 11px; color: var(--text-muted); font-weight: 400; text-align: left; padding-top: 0;">
-ℹ️ Média de mercado: R$ 1,50 a R$ 4,50 por pedido (sacola + lacre + sachês)
-</div>
 </div>
 </section>
 </div>
@@ -1756,19 +1751,11 @@ Defina sua margem de lucro e veja o preço de venda sugerido
 <input type="number" id="salesTaxPct" min="0" max="99.99" step="0.1" inputmode="decimal" value="0" />
 <span>%</span>
 </div>
-<div class="k"></div>
-<div class="v" style="grid-column: 1 / -1; font-size: 11px; color: var(--text-muted); font-weight: 400; text-align: left; padding-top: 0;">
-ℹ️ Balcão: 0% · iFood: 12-27% · Shopee: 14-20% · Mercado Livre: 10-19%
-</div>
 
 <div class="k">Impostos</div>
 <div class="v editable">
 <input type="number" id="taxesPct" min="0" max="99.99" step="0.1" inputmode="decimal" value="0" />
 <span>%</span>
-</div>
-<div class="k"></div>
-<div class="v" style="grid-column: 1 / -1; font-size: 11px; color: var(--text-muted); font-weight: 400; text-align: left; padding-top: 0;">
-ℹ️ Autônomo: 0% · MEI: valor fixo mensal · Simples Nacional: 4-19%
 </div>
 
 <div class="divider"></div>
@@ -2258,42 +2245,22 @@ onlyOk: true
 });
 }
 
-function duplicateRecipe(recipeId) {
-const original = recipesList.find(r => r.id === recipeId);
-if (!original) return;
-
-const baseName = (original.name || "Receita").replace(/\s*\(cópia(\s\d+)?\)$/i, "");
-let copyName = baseName + " (cópia)";
-let counter = 2;
-while (recipesList.some(r => r.name === copyName)) {
-copyName = baseName + " (cópia " + counter + ")";
-counter++;
-}
-
-const newRecipe = {
-id: 'recipe_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6),
-name: copyName,
-data: JSON.parse(JSON.stringify(original.data)),
-createdAt: Date.now(),
-updatedAt: Date.now()
-};
-
-recipesList.push(newRecipe);
-saveRecipesList();
-
-currentRecipeId = newRecipe.id;
-loadRecipeData(newRecipe.data);
+function loadRecipeFromList(recipeId) {
+const recipe = recipesList.find(r => r.id === recipeId);
+if (recipe) {
+currentRecipeId = recipe.id;
+loadRecipeData(recipe.data);
 renderRecipeList();
 updateLoadedIndicators();
-switchTab('tab4');
-
+switchTab('tab3');
 showModal({
-icon: "📋",
-title: "Receita duplicada!",
-message: `"${copyName}" foi criada. Renomeie no topo e ajuste como quiser.`,
+icon: "📂",
+title: "Receita carregada",
+message: `"${recipe.name}" foi carregada com sucesso.`,
 confirmText: "OK",
 onlyOk: true
 });
+}
 }
 
 function updateLoadedIndicators() {
@@ -3044,19 +3011,12 @@ return `<div class="recipe-item ${isActive}" data-id="${recipe.id}">
 <div class="recipe-info"><div class="recipe-name">${escapeHtml(recipe.name)}</div><div class="recipe-meta">Atualizado em ${dateStr}</div></div>
 <div class="recipe-actions">
 <button class="load-btn" data-id="${recipe.id}" title="Carregar">📂</button>
-<button class="dup-btn" data-id="${recipe.id}" title="Duplicar">📋</button>
 <button class="del-btn" data-id="${recipe.id}" title="Apagar">🗑️</button>
 </div>
 </div>`;
 }).join('');
 container.querySelectorAll('.load-btn').forEach(function(btn) {
 btn.addEventListener('click', function(e) { e.stopPropagation(); loadRecipeFromList(this.dataset.id); });
-});
-container.querySelectorAll('.dup-btn').forEach(function(btn) {
-btn.addEventListener('click', function(e) {
-e.stopPropagation();
-duplicateRecipe(this.dataset.id);
-});
 });
 container.querySelectorAll('.del-btn').forEach(function(btn) {
 btn.addEventListener('click', function(e) {
