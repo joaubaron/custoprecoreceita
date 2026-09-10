@@ -1608,6 +1608,11 @@ Informe o rendimento real após o cozimento — a receita perde peso com a evapo
 <input type="number" id="actualPots" min="0" step="1" inputmode="numeric" placeholder="Quantos potes rendeu de verdade" />
 <span class="unit-suffix">potes</span>
 </div>
+
+<div id="evapWarning" class="warning-message" style="margin-top: 8px;">
+⚠️ Sem o rendimento real, o cálculo assume que <strong>não há perda por evaporação</strong>. Se a receita cozinha e perde água, informe quantos potes rendeu de verdade para o preço sair correto.
+</div>
+
 <div class="k">Sobra após envasar (opcional)</div>
 <div class="v editable">
 <input type="number" id="actualLeftover" min="0" step="1" inputmode="numeric" placeholder="Ex: 100" />
@@ -1734,6 +1739,25 @@ Gerencie suas receitas. Clique para carregar e editar
 </p>
 </div>
 </section>
+
+<section class="card">
+<h2>📤 Backup</h2>
+<p class="sub">
+Exporte suas receitas para um arquivo ou restaure de um backup
+</p>
+<div class="recipe-actions-bar" style="display: flex; flex-direction: row; gap: 10px;">
+<button class="action-btn save-btn" id="exportBtn" style="flex: 1;">
+📤 Exportar
+</button>
+<button class="action-btn" id="importBtn" style="flex: 1;">
+📥 Importar
+</button>
+</div>
+<input type="file" id="importFileInput" accept="application/json,.json" style="display:none;" />
+<p class="sub" style="margin-top:16px;font-size:11px;color:var(--text-muted);">
+💡 A importação <strong>mescla</strong> com as receitas existentes (não apaga nada)
+</p>
+</section>
 </div>
 
 </div>
@@ -1846,14 +1870,24 @@ const n = String(name || "")
 // Mapeamento completo de densidades
 const densityMap = {
 // Óleos
-'azeite': 0.91, 'oleo de milho': 0.92, 'oleo': 0.92, 'gergelim': 0.92,
+'azeite': 0.91, 'azeite extra virgem': 0.91, 'oleo de milho': 0.92, 'oleo': 0.92, 'gergelim': 0.92,
 'canola': 0.92, 'girassol': 0.92, 'soja': 0.92,
-'coco': 0.92, 'palma': 0.90, 'linhaca': 0.93,
+'coco': 0.92, 'oleo de coco': 0.92, 'palma': 0.90, 'linhaca': 0.93,
+'gordura vegetal': 0.90,
 // Líquidos densos
 'shoyu': 1.18, 'molho de soja': 1.18, 'melaco': 1.40, 'mel': 1.42,
 'xarope': 1.35, 'glucose': 1.35,
-'creme de leite': 1.01, 'leite': 1.03, 'iogurte': 1.04,
+'creme de leite': 1.01, 'creme de leite fresco': 1.01, 'leite': 1.03, 'iogurte': 1.04,
+'requeijao': 1.02,
+'leite condensado': 1.30, 'doce de leite': 1.30,
 'vinagre': 1.01, 'acucar': 1.59, 'acúcar': 1.59,
+'mostarda': 1.05, 'ketchup': 1.10, 'maionese': 0.95,
+'extrato de tomate': 1.10, 'polpa de tomate': 1.05,
+'geleia': 1.30, 'compota': 1.30, 'nutella': 1.20,
+'pasta de amendoim': 1.10, 'tahine': 1.10,
+// Bebidas
+'vinho': 0.99, 'cerveja': 1.01, 'cachaça': 0.95, 'cachaca': 0.95,
+'cafe': 1.00, 'cha': 1.00, 'suco de limao': 1.02, 'suco de limão': 1.02,
 // Água e similares
 'agua': 1.00, 'água': 1.00, 'caldo': 1.00, 'brodo': 1.00,
 // Farinhas e pós (densidade aparente)
@@ -1862,7 +1896,7 @@ const densityMap = {
 'fermento': 0.60, 'cacau': 0.50, 'chocolate': 0.50,
 'sal': 1.20,
 // Outros
-'manteiga': 0.91, 'margarina': 0.91, 'banha': 0.90
+'manteiga': 0.91, 'manteiga derretida': 0.91, 'margarina': 0.91, 'banha': 0.90
 };
 
 const entries = Object.entries(densityMap).sort((a, b) => b[0].length - a[0].length);
@@ -1980,6 +2014,19 @@ function saveRecipesList() {
 try {
 localStorage.setItem(RECIPES_STORAGE_KEY, JSON.stringify(recipesList));
 } catch (e) {}
+}
+
+// ✅ NOVO: valida estrutura de uma receita importada
+function isValidRecipe(r) {
+if (!r || typeof r !== "object") return false;
+if (typeof r.id !== "string" || !r.id) return false;
+if (typeof r.name !== "string") return false;
+if (!r.data || typeof r.data !== "object") return false;
+const d = r.data;
+if (!Array.isArray(d.inventory)) return false;
+if (!Array.isArray(d.recipe)) return false;
+if (!Array.isArray(d.packaging)) return false;
+return true;
 }
 
 function getRecipeData() {
@@ -2229,6 +2276,10 @@ potSizeWarningEl.style.display = weightPerPotValid ? "none" : "block";
 // perda de peso por evaporação no cozimento.
 const actualPotsVal = parseFloat(state.actualPots);
 const usingActualPots = isFinite(actualPotsVal) && actualPotsVal > 0;
+
+// ✅ NOVO: aviso de evaporação quando rendimento real não foi informado
+const evapWarningEl = document.getElementById("evapWarning");
+evapWarningEl.style.display = usingActualPots ? "none" : "block";
 
 const calculatedPots = weightPerPotValid ? Math.floor(recW / weightPerPot) : 0;
 const numPots = usingActualPots ? Math.floor(actualPotsVal) : calculatedPots;
@@ -2816,6 +2867,115 @@ document.getElementById('goToRecipesTab').addEventListener('click', function(e) 
 document.getElementById('saveRecipeBtn').addEventListener('click', handleSaveRecipe);
 document.getElementById('saveRecipeBtnTab4').addEventListener('click', handleSaveRecipe);
 document.getElementById('deleteCurrentRecipeBtnTab4').addEventListener('click', handleDeleteRecipe);
+
+// ===== EXPORTAR / IMPORTAR JSON =====
+function exportRecipes() {
+try {
+const payload = {
+app: "precificacao",
+version: 1,
+exportedAt: new Date().toISOString(),
+recipesList: recipesList,
+currentState: state
+};
+const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+const url = URL.createObjectURL(blob);
+const a = document.createElement("a");
+const stamp = new Date().toISOString().slice(0, 10);
+a.href = url;
+a.download = "precificacao-backup-" + stamp + ".json";
+document.body.appendChild(a);
+a.click();
+document.body.removeChild(a);
+setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
+showModal({
+icon: "📤",
+title: "Backup exportado",
+message: `${recipesList.length} receita(s) exportada(s) para o arquivo.`,
+confirmText: "OK",
+onlyOk: true
+});
+} catch (err) {
+showModal({
+icon: "⚠️",
+title: "Falha ao exportar",
+message: "Não foi possível gerar o arquivo. Tente novamente.",
+confirmText: "OK",
+onlyOk: true
+});
+}
+}
+
+function importRecipes(file) {
+if (!file) return;
+const MAX_SIZE = 5 * 1024 * 1024;
+if (file.size > MAX_SIZE) {
+showModal({
+icon: "⚠️",
+title: "Arquivo muito grande",
+message: "O arquivo excede 5 MB. Escolha um backup menor.",
+confirmText: "OK",
+onlyOk: true
+});
+return;
+}
+const reader = new FileReader();
+reader.onload = function(e) {
+try {
+const data = JSON.parse(e.target.result);
+if (!data || !Array.isArray(data.recipesList)) {
+throw new Error("Formato inválido");
+}
+const valid = data.recipesList.filter(isValidRecipe);
+if (valid.length === 0) {
+throw new Error("Nenhuma receita válida encontrada");
+}
+// ✅ MESCLA: mantém existentes, substitui por id em caso de conflito
+const map = new Map();
+recipesList.forEach(function(r) { map.set(r.id, r); });
+valid.forEach(function(r) { map.set(r.id, r); });
+recipesList = Array.from(map.values());
+saveRecipesList();
+renderRecipeList();
+updateLoadedIndicators();
+showModal({
+icon: "📥",
+title: "Backup importado",
+message: `${valid.length} receita(s) importada(s) com sucesso. As receitas existentes foram mantidas.`,
+confirmText: "OK",
+onlyOk: true
+});
+} catch (err) {
+showModal({
+icon: "⚠️",
+title: "Arquivo inválido",
+message: "O arquivo não é um backup válido do app ou está corrompido.",
+confirmText: "OK",
+onlyOk: true
+});
+}
+};
+reader.onerror = function() {
+showModal({
+icon: "⚠️",
+title: "Falha ao ler arquivo",
+message: "Não foi possível ler o arquivo selecionado.",
+confirmText: "OK",
+onlyOk: true
+});
+};
+reader.readAsText(file);
+}
+
+document.getElementById('exportBtn').addEventListener('click', exportRecipes);
+document.getElementById('importBtn').addEventListener('click', function() {
+document.getElementById('importFileInput').click();
+});
+document.getElementById('importFileInput').addEventListener('change', function(e) {
+const file = e.target.files && e.target.files[0];
+if (file) importRecipes(file);
+e.target.value = "";
+});
 
 // ===== ELEMENTOS =====
 const recipeNameEl = document.getElementById("recipeName");
