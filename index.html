@@ -1609,9 +1609,9 @@ Informe o rendimento real após o cozimento — a receita perde peso com a evapo
 <span class="unit-suffix">p</span>
 </div>
 
-<div class="k">Sobra após envasar (opcional)</div>
+<div class="k">Sobra após envasar (registro — não altera o preço)</div>
 <div class="v editable">
-<input type="number" id="actualLeftover" min="0" step="1" inputmode="numeric" placeholder="Ex: 100" />
+<input type="number" id="actualLeftover" min="0" step="1" inputmode="numeric" placeholder="Ex: 300" />
 <span class="unit-suffix">g</span>
 </div>
 
@@ -1625,6 +1625,10 @@ Informe o rendimento real após o cozimento — a receita perde peso com a evapo
 <div class="k">Aproveitamento da sobra</div>
 <div class="v" style="color: var(--text-secondary); font-weight: 400;">
 <span id="leftoverStatus">Custo rateado entre os potes</span>
+</div>
+<div class="k"></div>
+<div class="v" style="grid-column: 1 / -1; font-size: 11px; color: var(--text-muted); font-weight: 400; text-align: left; padding-top: 4px;">
+💡 O custo total (ingredientes + embalagem + operacional) já está todo nos potes vendidos. A sobra não reduz nem aumenta o preço.
 </div>
 </div>
 
@@ -2265,11 +2269,14 @@ document.getElementById("numPots").textContent = (usingActualPots || weightPerPo
 document.getElementById("leftoverWeight").textContent = (usingActualPots ? hasActualLeftover : weightPerPotValid) ? (num(leftoverWeight, 0) + " g") : "—";
 
 if (numPots > 0 && leftoverWeight > 0) {
+const totalProduzido = (numPots * weightPerPot) + leftoverWeight;
+const pctPote = totalProduzido > 0 ? Math.round(((numPots * weightPerPot) / totalProduzido) * 100) : 0;
+const pctSobra = 100 - pctPote;
 document.getElementById("leftoverStatus").textContent = 
-usingActualPots ? `Rendimento informado manualmente` : `Custo rateado entre os ${numPots} potes`;
+`${pctPote}% virou pote · ${pctSobra}% virou sobra (absorvida pelos ${numPots} potes)`;
 } else if (numPots > 0) {
 document.getElementById("leftoverStatus").textContent = 
-usingActualPots ? `Rendimento informado manualmente` : `Sem sobra (aproveitamento total)`;
+`Sem sobra — aproveitamento total`;
 } else {
 document.getElementById("leftoverStatus").textContent = 
 `Não há potes suficientes`;
