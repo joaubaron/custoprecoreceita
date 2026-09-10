@@ -897,6 +897,36 @@ font-size: 15px;
 #costOpPot { color: var(--red) !important; font-weight: 700; }
 #costTotalPot { color: var(--gold) !important; font-weight: 800; }
 
+/* ===== ONDA 2: barra visual da sobra ===== */
+.leftover-bar {
+display: flex;
+width: 100%;
+height: 8px;
+border-radius: 4px;
+overflow: hidden;
+background: var(--bg-input);
+border: 1px solid var(--border);
+}
+.leftover-bar .seg-pote {
+background: var(--green);
+transition: width 0.3s ease;
+}
+.leftover-bar .seg-sobra {
+background: var(--orange);
+transition: width 0.3s ease;
+}
+
+/* ===== ONDA 2: nome de produto clicável na receita ===== */
+.product-name.editable-name {
+cursor: pointer;
+border-bottom: 1px dashed transparent;
+transition: var(--transition);
+}
+.product-name.editable-name:hover {
+border-bottom-color: var(--gold);
+color: var(--gold);
+}
+
 .price-tag {
 background: var(--bg-secondary);
 border: 1px solid var(--gold-border);
@@ -1086,6 +1116,7 @@ transition: var(--transition);
 }
 
 .recipe-actions .load-btn:hover { color: var(--gold); background: var(--gold-soft); }
+.recipe-actions .dup-btn:hover { color: var(--blue); background: var(--blue-dim); }
 .recipe-actions .del-btn:hover { color: var(--red); background: var(--red-dim); }
 
 .recipe-actions-bar {
@@ -1238,6 +1269,27 @@ min-height: 42px;
 background: var(--gold);
 border-color: var(--gold);
 color: #0b0a14;
+}
+
+/* ===== ONDA 2: input do modal de editar nome ===== */
+.modal-input {
+width: 100%;
+height: 44px;
+background: var(--bg-input);
+border: 1px solid var(--border);
+color: var(--text-primary);
+font-family: inherit;
+font-size: 14px;
+font-weight: 600;
+padding: 0 12px;
+border-radius: var(--radius-sm);
+margin-bottom: 20px;
+transition: var(--transition);
+}
+.modal-input:focus {
+outline: none;
+border-color: var(--gold);
+box-shadow: 0 0 0 2px var(--gold-soft);
 }
 
 .footer-note {
@@ -1577,6 +1629,20 @@ Inclui mão de obra, energia, água e estrutura
 </table>
 </div>
 </section>
+
+<section class="card">
+<h2>🚚 Embalagem de Transporte</h2>
+<p class="sub">
+Custo por pote para entrega (sacola, caixa, gelo, etiqueta)
+</p>
+<div class="kv-grid">
+<div class="k">Embalagem de transporte</div>
+<div class="v editable">
+<input type="number" id="transportCost" min="0" step="0.01" inputmode="decimal" value="0" placeholder="0,00" />
+<span>R$</span>
+</div>
+</div>
+</section>
 </div>
 
 <!-- ===== TAB 3: PREÇO DE VENDA ===== -->
@@ -1609,6 +1675,11 @@ Informe o rendimento real após o cozimento — a receita perde peso com a evapo
 <span class="unit-suffix">p</span>
 </div>
 
+<div class="k"></div>
+<div class="v" style="grid-column: 1 / -1; font-size: 11px; color: var(--text-muted); font-weight: 400; text-align: left; padding-top: 0;">
+ℹ️ Se pesou os potes prontos, informe aqui. Se não, deixe em branco — calculamos pela soma dos ingredientes.
+</div>
+
 <div class="k">Sobra após envasar (registro — não altera o preço)</div>
 <div class="v editable">
 <input type="number" id="actualLeftover" min="0" step="1" inputmode="numeric" placeholder="Ex: 300" />
@@ -1625,6 +1696,13 @@ Informe o rendimento real após o cozimento — a receita perde peso com a evapo
 <div class="k">Aproveitamento da sobra</div>
 <div class="v" style="color: var(--text-secondary); font-weight: 400;">
 <span id="leftoverStatus">Custo rateado entre os potes</span>
+</div>
+<div class="k"></div>
+<div class="v" style="grid-column: 1 / -1; padding-top: 4px;">
+<div class="leftover-bar" id="leftoverBar" style="display:none;">
+<div class="seg-pote" id="leftoverBarPote" style="width:100%;"></div>
+<div class="seg-sobra" id="leftoverBarSobra" style="width:0%;"></div>
+</div>
 </div>
 <div class="k"></div>
 <div class="v" style="grid-column: 1 / -1; font-size: 11px; color: var(--text-muted); font-weight: 400; text-align: left; padding-top: 4px;">
@@ -1669,6 +1747,20 @@ Defina sua margem de lucro e veja o preço de venda sugerido
 </div>
 
 <div class="kv-grid">
+<div class="k">Taxas de venda</div>
+<div class="v editable">
+<input type="number" id="salesTaxPct" min="0" max="99.99" step="0.1" inputmode="decimal" value="0" />
+<span>%</span>
+</div>
+
+<div class="k">Impostos</div>
+<div class="v editable">
+<input type="number" id="taxesPct" min="0" max="99.99" step="0.1" inputmode="decimal" value="0" />
+<span>%</span>
+</div>
+
+<div class="divider"></div>
+
 <div class="k">Margem de lucro desejada</div>
 <div class="v editable">
 <input type="number" id="profitPct" min="0" max="99.99" step="1" inputmode="numeric" value="35" />
@@ -1761,6 +1853,20 @@ Funciona para qualquer receita — ajuste como quiser.
 </div>
 </div>
 
+<!-- ===== ONDA 2: MODAL EDITAR NOME ===== -->
+<div class="modal-overlay" id="editNameOverlay">
+<div class="modal-box">
+<div class="modal-icon">✏️</div>
+<p class="modal-title">Editar nome do produto</p>
+<p class="modal-msg">O nome será atualizado no Estoque e na Receita.</p>
+<input type="text" class="modal-input" id="editNameInput" spellcheck="false" placeholder="Nome do produto" />
+<div class="modal-actions">
+<button class="modal-btn" id="editNameCancelBtn">Cancelar</button>
+<button class="modal-btn primary" id="editNameConfirmBtn">Salvar</button>
+</div>
+</div>
+</div>
+
 <script>
 (function() {
 "use strict";
@@ -1808,12 +1914,16 @@ laborHourly: 8,
 prepTime: 60,
 utilitiesCost: 2,
 actualPots: null,
-actualLeftover: null
+actualLeftover: null,
+salesTaxPct: 0,
+taxesPct: 0,
+transportCost: 0
 };
 let state = loadState();
 let storageWarned = false;
 let currentRecipeId = null;
 let recipesList = loadRecipesList();
+let editingInvIndex = null;
 
 // ===== ONBOARDING =====
 function isOnboardingDismissed() {
@@ -1952,6 +2062,9 @@ if (!('prepTime' in parsed)) parsed.prepTime = 60;
 if (!('utilitiesCost' in parsed)) parsed.utilitiesCost = 2;
 if (!('actualPots' in parsed)) parsed.actualPots = null;
 if (!('actualLeftover' in parsed)) parsed.actualLeftover = null;
+if (!('salesTaxPct' in parsed) || !isFinite(parseFloat(parsed.salesTaxPct))) parsed.salesTaxPct = 0;
+if (!('taxesPct' in parsed) || !isFinite(parseFloat(parsed.taxesPct))) parsed.taxesPct = 0;
+if (!('transportCost' in parsed) || !isFinite(parseFloat(parsed.transportCost))) parsed.transportCost = 0;
 // ✅ CORREÇÃO: NÃO converte kg/L silenciosamente
 // Mantém a unidade original do usuário
 return parsed;
@@ -2020,7 +2133,10 @@ laborHourly: state.laborHourly,
 prepTime: state.prepTime,
 utilitiesCost: state.utilitiesCost,
 actualPots: state.actualPots,
-actualLeftover: state.actualLeftover
+actualLeftover: state.actualLeftover,
+salesTaxPct: state.salesTaxPct,
+taxesPct: state.taxesPct,
+transportCost: state.transportCost
 };
 }
 
@@ -2036,12 +2152,18 @@ state.prepTime = data.prepTime || 60;
 state.utilitiesCost = data.utilitiesCost || 2;
 state.actualPots = ('actualPots' in data) ? data.actualPots : null;
 state.actualLeftover = ('actualLeftover' in data) ? data.actualLeftover : null;
+state.salesTaxPct = ('salesTaxPct' in data) ? data.salesTaxPct : 0;
+state.taxesPct = ('taxesPct' in data) ? data.taxesPct : 0;
+state.transportCost = ('transportCost' in data) ? data.transportCost : 0;
 
 recipeNameEl.value = state.recipeName;
 weightPerPotEl.value = state.weightPerPot;
 profitPctEl.value = state.profitPct;
 actualPotsEl.value = state.actualPots ?? "";
 actualLeftoverEl.value = state.actualLeftover ?? "";
+document.getElementById('salesTaxPct').value = state.salesTaxPct;
+document.getElementById('taxesPct').value = state.taxesPct;
+document.getElementById('transportCost').value = state.transportCost;
 
 document.getElementById('laborHourly').value = state.laborHourly;
 document.getElementById('prepTime').value = state.prepTime;
@@ -2124,22 +2246,42 @@ onlyOk: true
 });
 }
 
-function loadRecipeFromList(recipeId) {
-const recipe = recipesList.find(r => r.id === recipeId);
-if (recipe) {
-currentRecipeId = recipe.id;
-loadRecipeData(recipe.data);
+function duplicateRecipe(recipeId) {
+const original = recipesList.find(r => r.id === recipeId);
+if (!original) return;
+
+const baseName = (original.name || "Receita").replace(/\s*\(cópia(\s\d+)?\)$/i, "");
+let copyName = baseName + " (cópia)";
+let counter = 2;
+while (recipesList.some(r => r.name === copyName)) {
+copyName = baseName + " (cópia " + counter + ")";
+counter++;
+}
+
+const newRecipe = {
+id: 'recipe_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6),
+name: copyName,
+data: JSON.parse(JSON.stringify(original.data)),
+createdAt: Date.now(),
+updatedAt: Date.now()
+};
+
+recipesList.push(newRecipe);
+saveRecipesList();
+
+currentRecipeId = newRecipe.id;
+loadRecipeData(newRecipe.data);
 renderRecipeList();
 updateLoadedIndicators();
-switchTab('tab3');
+switchTab('tab4');
+
 showModal({
-icon: "📂",
-title: "Receita carregada",
-message: `"${recipe.name}" foi carregada com sucesso.`,
+icon: "📋",
+title: "Receita duplicada!",
+message: `"${copyName}" foi criada. Renomeie no topo e ajuste como quiser.`,
 confirmText: "OK",
 onlyOk: true
 });
-}
 }
 
 function updateLoadedIndicators() {
@@ -2204,7 +2346,7 @@ const profitEl = document.getElementById('quickProfit');
 if (numPots > 0 && costTotalPot > 0) {
 costEl.textContent = brl(costTotalPot);
 priceEl.textContent = price > 0 ? brl(price) : '—';
-const profit = price > 0 ? Math.max(0, price - costTotalPot) : 0;
+const profit = price > 0 ? Math.max(0, price - costTotalPot - (price * ((parseFloat(state.salesTaxPct) || 0) / 100)) - (price * ((parseFloat(state.taxesPct) || 0) / 100))) : 0;
 profitEl.textContent = profit > 0 ? brl(profit) : '—';
 } else {
 costEl.textContent = '—';
@@ -2223,6 +2365,9 @@ state.prepTime = freshState.prepTime;
 state.utilitiesCost = freshState.utilitiesCost;
 state.actualPots = freshState.actualPots;
 state.actualLeftover = freshState.actualLeftover;
+state.salesTaxPct = freshState.salesTaxPct;
+state.taxesPct = freshState.taxesPct;
+state.transportCost = freshState.transportCost;
 
 let recW = 0;
 let recV = 0;
@@ -2268,18 +2413,36 @@ document.getElementById("totalWeight").textContent = num(recW, 0) + " g";
 document.getElementById("numPots").textContent = (usingActualPots || weightPerPotValid) ? (numPots + (numPots === 1 ? " pote" : " potes")) : "—";
 document.getElementById("leftoverWeight").textContent = (usingActualPots ? hasActualLeftover : weightPerPotValid) ? (num(leftoverWeight, 0) + " g") : "—";
 
+// ===== ONDA 2: barra visual da sobra =====
+const leftoverBarEl = document.getElementById("leftoverBar");
+const leftoverBarPoteEl = document.getElementById("leftoverBarPote");
+const leftoverBarSobraEl = document.getElementById("leftoverBarSobra");
+
 if (numPots > 0 && leftoverWeight > 0) {
 const totalProduzido = (numPots * weightPerPot) + leftoverWeight;
 const pctPote = totalProduzido > 0 ? Math.round(((numPots * weightPerPot) / totalProduzido) * 100) : 0;
 const pctSobra = 100 - pctPote;
 document.getElementById("leftoverStatus").textContent = 
 `${pctPote}% virou pote · ${pctSobra}% virou sobra (absorvida pelos ${numPots} potes)`;
+if (leftoverBarEl) {
+leftoverBarEl.style.display = "flex";
+leftoverBarPoteEl.style.width = pctPote + "%";
+leftoverBarSobraEl.style.width = pctSobra + "%";
+}
 } else if (numPots > 0) {
 document.getElementById("leftoverStatus").textContent = 
 `Sem sobra — aproveitamento total`;
+if (leftoverBarEl) {
+leftoverBarEl.style.display = "flex";
+leftoverBarPoteEl.style.width = "100%";
+leftoverBarSobraEl.style.width = "0%";
+}
 } else {
 document.getElementById("leftoverStatus").textContent = 
 `Não há potes suficientes`;
+if (leftoverBarEl) {
+leftoverBarEl.style.display = "none";
+}
 }
 
 const warningEl = document.getElementById("insufficientWarning");
@@ -2303,7 +2466,8 @@ costIngPot = recV / numPots;
 
 const costPkgPot = pkgV;
 const operational = calculateOperationalCost(numPots);
-const costTotalPot = numPots > 0 ? costIngPot + costPkgPot + operational.total : 0;
+const transportCost = parseFloat(state.transportCost) || 0;
+const costTotalPot = numPots > 0 ? costIngPot + costPkgPot + operational.total + transportCost : 0;
 
 document.getElementById("costIngPot").textContent = numPots > 0 ? brl(costIngPot) : "—";
 document.getElementById("costPkgPot").textContent = numPots > 0 ? brl(costPkgPot) : "—";
@@ -2311,9 +2475,14 @@ document.getElementById("costOpPot").textContent = numPots > 0 ? brl(operational
 document.getElementById("costTotalPot").textContent = numPots > 0 ? brl(costTotalPot) : "—";
 
 const profitPct = Math.max(0, Math.min(parseFloat(state.profitPct) || 0, 99.99));
+const salesTaxPct = Math.max(0, Math.min(parseFloat(state.salesTaxPct) || 0, 99.99));
+const taxesPct = Math.max(0, Math.min(parseFloat(state.taxesPct) || 0, 99.99));
+const totalDeductions = (profitPct + salesTaxPct + taxesPct) / 100;
 const margin = profitPct / 100;
-const price = numPots > 0 && margin < 1 && costTotalPot > 0 ? costTotalPot / (1 - margin) : 0;
-const profitValue = price > 0 ? Math.max(0, price - costTotalPot) : 0;
+const price = numPots > 0 && totalDeductions < 1 && costTotalPot > 0 ? costTotalPot / (1 - totalDeductions) : 0;
+const taxValueCalc = price > 0 ? price * (salesTaxPct / 100) : 0;
+const impostosValueCalc = price > 0 ? price * (taxesPct / 100) : 0;
+const profitValue = price > 0 ? Math.max(0, price - costTotalPot - taxValueCalc - impostosValueCalc) : 0;
 const markup = costTotalPot > 0 && price > 0 ? price / costTotalPot : 0;
 
 document.getElementById("markup").textContent = markup > 0 ? "×" + markup.toFixed(2).replace(".", ",") : "—";
@@ -2323,7 +2492,14 @@ const jarPotsEl = document.getElementById("jarPots");
 
 // ✅ CORREÇÃO: Alerta visual para margens altas
 const marginWarningEl = document.getElementById("marginWarning");
-if (profitPct >= 90) {
+if (profitPct + salesTaxPct + taxesPct >= 100) {
+marginWarningEl.style.display = "block";
+marginWarningEl.style.background = "var(--red-dim)";
+marginWarningEl.style.border = "1px solid var(--red-border)";
+marginWarningEl.style.color = "var(--red)";
+marginWarningEl.textContent = `⚠️ Margem + Taxas + Impostos = ${(profitPct + salesTaxPct + taxesPct).toFixed(1)}% — o total não pode chegar a 100%. Reduza algum valor.`;
+finalPriceEl.classList.add("very-high-margin-warning");
+} else if (profitPct >= 90) {
 marginWarningEl.style.display = "block";
 marginWarningEl.style.background = "var(--red-dim)";
 marginWarningEl.style.border = "1px solid var(--red-border)";
@@ -2360,8 +2536,10 @@ updateQuickSummary(costTotalPot, price, numPots);
 if (price > 0 && numPots > 0) {
 const segments = [
 { label: "Ingredientes", value: costIngPot, color: "#6bcb8a" },
-{ label: "Embalagem", value: costPkgPot, color: "#6ab0e8" },
+{ label: "Embalagem", value: costPkgPot + transportCost, color: "#6ab0e8" },
 { label: "Operacional", value: operational.total, color: "#e86a6a" },
+{ label: "Taxas", value: taxValueCalc, color: "#f5a84a" },
+{ label: "Impostos", value: impostosValueCalc, color: "#c97ad6" },
 { label: "Lucro", value: profitValue, color: "#ffd84d" }
 ];
 const total = price;
@@ -2520,8 +2698,9 @@ const productName = inv ? (inv.name || "Produto " + (item.invIndex + 1)) : "Prod
 const invUnit = String(inv ? inv.unit : "").trim().toLowerCase();
 
 // ✅ NOVO: badge de aviso visível no toque (substitui tooltip title)
+// ✅ ONDA 2: nome clicável para editar
 tr.innerHTML =
-"<td><div class='product-display'><span class='product-name'>" + productName + "</span><span class='warn-badge' aria-hidden='true'>⚠️</span></div></td>" +
+"<td><div class='product-display'><span class='product-name editable-name' data-inv-index='" + item.invIndex + "' title='Clique para editar o nome'>" + escapeHtml(productName) + "</span><span class='warn-badge' aria-hidden='true'>⚠️</span></div></td>" +
 "<td><input class='cell num' data-f='qty' type='number' step='any' inputmode='decimal' min='0' placeholder='5500'></td>" +
 "<td><select class='cell' data-f='unit'><option value='g'>g</option><option value='ml'>ml</option><option value='kg'>kg</option><option value='L'>L</option></select></td>" +
 "<td class='num'><div class='cost-display' data-f='cost'>0,00</div></td>" +
@@ -2530,8 +2709,17 @@ const qtyInput = tr.querySelector('input[data-f="qty"]');
 const unitInput = tr.querySelector('[data-f="unit"]');
 const costCell = tr.querySelector(".cost-display");
 const warnBadge = tr.querySelector(".warn-badge");
+const nameEl = tr.querySelector(".editable-name");
 qtyInput.value = item.qty ?? "";
 unitInput.value = item.unit ?? "";
+
+// ✅ ONDA 2: clique no nome abre modal de edição
+if (nameEl) {
+nameEl.addEventListener("click", function(e) {
+e.stopPropagation();
+openEditNameModal(item.invIndex);
+});
+}
 
 function currentUnit() { return unitInput ? unitInput.value : ""; }
 
@@ -2762,6 +2950,45 @@ modalCancelBtn.onclick = function() { closeModal(); };
 
 modalOverlay.addEventListener("click", function(e) { if (e.target === modalOverlay) closeModal(); });
 
+// ===== ONDA 2: MODAL EDITAR NOME =====
+const editNameOverlay = document.getElementById("editNameOverlay");
+const editNameInput = document.getElementById("editNameInput");
+const editNameCancelBtn = document.getElementById("editNameCancelBtn");
+const editNameConfirmBtn = document.getElementById("editNameConfirmBtn");
+
+function openEditNameModal(invIndex) {
+if (invIndex < 0 || invIndex >= state.inventory.length) return;
+editingInvIndex = invIndex;
+editNameInput.value = state.inventory[invIndex].name || "";
+editNameOverlay.classList.add("open");
+setTimeout(function() { editNameInput.focus(); editNameInput.select(); }, 50);
+}
+
+function closeEditNameModal() {
+editNameOverlay.classList.remove("open");
+editingInvIndex = null;
+}
+
+function confirmEditName() {
+if (editingInvIndex === null) { closeEditNameModal(); return; }
+const newName = editNameInput.value.trim();
+if (!newName) { editNameInput.focus(); return; }
+state.inventory[editingInvIndex].name = newName;
+saveState();
+renderInventory();
+renderRecipe();
+render();
+closeEditNameModal();
+}
+
+editNameConfirmBtn.addEventListener("click", confirmEditName);
+editNameCancelBtn.addEventListener("click", closeEditNameModal);
+editNameOverlay.addEventListener("click", function(e) { if (e.target === editNameOverlay) closeEditNameModal(); });
+editNameInput.addEventListener("keydown", function(e) {
+if (e.key === "Enter") { e.preventDefault(); confirmEditName(); }
+if (e.key === "Escape") { e.preventDefault(); closeEditNameModal(); }
+});
+
 // ===== RESET =====
 document.getElementById("resetBtn").addEventListener("click", function() {
 showModal({
@@ -2779,6 +3006,9 @@ weightPerPotEl.value = state.weightPerPot;
 profitPctEl.value = state.profitPct;
 actualPotsEl.value = "";
 actualLeftoverEl.value = "";
+document.getElementById('salesTaxPct').value = state.salesTaxPct;
+document.getElementById('taxesPct').value = state.taxesPct;
+document.getElementById('transportCost').value = state.transportCost;
 saveState();
 renderAll();
 });
@@ -2802,12 +3032,19 @@ return `<div class="recipe-item ${isActive}" data-id="${recipe.id}">
 <div class="recipe-info"><div class="recipe-name">${escapeHtml(recipe.name)}</div><div class="recipe-meta">Atualizado em ${dateStr}</div></div>
 <div class="recipe-actions">
 <button class="load-btn" data-id="${recipe.id}" title="Carregar">📂</button>
+<button class="dup-btn" data-id="${recipe.id}" title="Duplicar">📋</button>
 <button class="del-btn" data-id="${recipe.id}" title="Apagar">🗑️</button>
 </div>
 </div>`;
 }).join('');
 container.querySelectorAll('.load-btn').forEach(function(btn) {
 btn.addEventListener('click', function(e) { e.stopPropagation(); loadRecipeFromList(this.dataset.id); });
+});
+container.querySelectorAll('.dup-btn').forEach(function(btn) {
+btn.addEventListener('click', function(e) {
+e.stopPropagation();
+duplicateRecipe(this.dataset.id);
+});
 });
 container.querySelectorAll('.del-btn').forEach(function(btn) {
 btn.addEventListener('click', function(e) {
@@ -2967,6 +3204,9 @@ weightPerPotEl.value = state.weightPerPot > 0 ? state.weightPerPot : "";
 profitPctEl.value = state.profitPct;
 actualPotsEl.value = state.actualPots ?? "";
 actualLeftoverEl.value = state.actualLeftover ?? "";
+document.getElementById('salesTaxPct').value = state.salesTaxPct ?? 0;
+document.getElementById('taxesPct').value = state.taxesPct ?? 0;
+document.getElementById('transportCost').value = state.transportCost ?? 0;
 
 recipeNameEl.addEventListener("input", function() { state.recipeName = recipeNameEl.value; saveState(); });
 weightPerPotEl.addEventListener("input", function() {
@@ -2999,6 +3239,30 @@ render();
 const opFields = ['laborHourly', 'prepTime', 'utilitiesCost'];
 opFields.forEach(function(field) {
 document.getElementById(field).addEventListener('input', function() { saveState(); render(); });
+});
+
+document.getElementById('salesTaxPct').addEventListener('input', function() {
+let v = parseFloat(this.value);
+if (!isFinite(v) || v < 0) v = 0;
+v = Math.min(v, 99.99);
+state.salesTaxPct = v;
+saveState();
+render();
+});
+document.getElementById('taxesPct').addEventListener('input', function() {
+let v = parseFloat(this.value);
+if (!isFinite(v) || v < 0) v = 0;
+v = Math.min(v, 99.99);
+state.taxesPct = v;
+saveState();
+render();
+});
+document.getElementById('transportCost').addEventListener('input', function() {
+let v = parseFloat(this.value);
+if (!isFinite(v) || v < 0) v = 0;
+state.transportCost = v;
+saveState();
+render();
 });
 
 // ===== TABS =====
