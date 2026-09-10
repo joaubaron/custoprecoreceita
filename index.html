@@ -607,6 +607,20 @@ tr.excess-warning input.cell {
 border-color: rgba(245, 168, 74, 0.4);
 }
 
+/* ===== NOVO: badge de aviso visível no toque ===== */
+.warn-badge {
+display: none;
+margin-left: 6px;
+font-size: 12px;
+line-height: 1;
+vertical-align: middle;
+cursor: help;
+}
+
+.warn-badge.visible {
+display: inline;
+}
+
 table th:nth-child(1), table td:nth-child(1) { width: 30% !important; }
 table th:nth-child(2), table td:nth-child(2) { width: 15% !important; }
 table th:nth-child(3), table td:nth-child(3) { width: 12% !important; }
@@ -1570,7 +1584,7 @@ Inclui mão de obra, energia, água e estrutura
 <section class="card">
 <h2>🫙 Rendimento e Custo por Pote</h2>
 <p class="sub">
-Rendimento da receita e o custo detalhado de cada pote
+Informe o rendimento real após o cozimento — a receita perde peso com a evaporação
 </p>
 
 <div class="kv-grid">
@@ -1591,7 +1605,7 @@ Rendimento da receita e o custo detalhado de cada pote
 
 <div class="k">Rendimento real (opcional)</div>
 <div class="v editable">
-<input type="number" id="actualPots" min="0" step="1" inputmode="numeric" placeholder="Ex: 4" />
+<input type="number" id="actualPots" min="0" step="1" inputmode="numeric" placeholder="Quantos potes rendeu de verdade" />
 <span class="unit-suffix">potes</span>
 </div>
 <div class="k">Sobra após envasar (opcional)</div>
@@ -1856,6 +1870,14 @@ for (const [key, value] of entries) {
 if (n.includes(key)) return value;
 }
 return 1.00;
+}
+
+// ✅ NOVO: identifica a família da unidade (massa x volume x outro)
+function unitFamily(unit) {
+const u = String(unit || "").trim().toLowerCase();
+if (u === "g" || u === "kg") return "massa";
+if (u === "ml" || u === "l") return "volume";
+return "outro";
 }
 
 function toGrams(qty, unit, inv) {
@@ -2469,8 +2491,9 @@ const inv = state.inventory[item.invIndex];
 const productName = inv ? (inv.name || "Produto " + (item.invIndex + 1)) : "Produto";
 const invUnit = String(inv ? inv.unit : "").trim().toLowerCase();
 
+// ✅ NOVO: badge de aviso visível no toque (substitui tooltip title)
 tr.innerHTML =
-"<td><div class='product-display'>" + productName + "</div></td>" +
+"<td><div class='product-display'><span class='product-name'>" + productName + "</span><span class='warn-badge' aria-hidden='true'>⚠️</span></div></td>" +
 "<td><input class='cell num' data-f='qty' type='number' step='any' inputmode='decimal' min='0' placeholder='5500'></td>" +
 "<td><select class='cell' data-f='unit'><option value='g'>g</option><option value='ml'>ml</option><option value='kg'>kg</option><option value='L'>L</option></select></td>" +
 "<td class='num'><div class='cost-display' data-f='cost'>0,00</div></td>" +
@@ -2478,23 +2501,54 @@ tr.innerHTML =
 const qtyInput = tr.querySelector('input[data-f="qty"]');
 const unitInput = tr.querySelector('[data-f="unit"]');
 const costCell = tr.querySelector(".cost-display");
+const warnBadge = tr.querySelector(".warn-badge");
 qtyInput.value = item.qty ?? "";
 unitInput.value = item.unit ?? "";
 
 function currentUnit() { return unitInput ? unitInput.value : ""; }
 
+// ✅ NOVO: valida família da unidade (massa x volume) + excesso de lote
 function updateCostAndWarning() {
 const cost = getIngredientCost(item.invIndex, qtyInput.value, currentUnit());
 costCell.textContent = cost.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-if (inv) {
+
+if (!inv) {
+tr.classList.remove("excess-warning");
+if (warnBadge) { warnBadge.classList.remove("visible"); warnBadge.removeAttribute("title"); }
+return;
+}
+
 const invTotalGrams = toGrams(inv.total, inv.unit, inv);
 const usedGrams = toGrams(qtyInput.value, currentUnit(), inv);
-if (invTotalGrams > 0 && usedGrams > invTotalGrams) {
+
+// ✅ NOVO: detecta incompatibilidade massa x volume
+const familyInv = unitFamily(inv.unit);
+const familyUse = unitFamily(currentUnit());
+const incompatible = familyInv !== "outro" && familyUse !== "outro" && familyInv !== familyUse;
+
+// ✅ NOVO: excesso de lote
+const excess = invTotalGrams > 0 && usedGrams !== null && usedGrams > invTotalGrams;
+
+if (incompatible) {
 tr.classList.add("excess-warning");
-tr.setAttribute("title", "Atenção: A quantidade informada excede o lote comprado cadastrado no Estoque!");
+if (warnBadge) {
+warnBadge.classList.add("visible");
+warnBadge.setAttribute("title", "Unidade incompatível: o produto foi comprado em " + inv.unit + " (massa) e está sendo usado em " + currentUnit() + " (volume). O custo pode estar incorreto.");
+warnBadge.setAttribute("aria-label", "Unidade incompatível com a compra");
+}
+} else if (excess) {
+tr.classList.add("excess-warning");
+if (warnBadge) {
+warnBadge.classList.add("visible");
+warnBadge.setAttribute("title", "A quantidade informada excede o lote comprado cadastrado no Estoque!");
+warnBadge.setAttribute("aria-label", "Quantidade excede o lote comprado");
+}
 } else {
 tr.classList.remove("excess-warning");
-tr.removeAttribute("title");
+if (warnBadge) {
+warnBadge.classList.remove("visible");
+warnBadge.removeAttribute("title");
+warnBadge.removeAttribute("aria-label");
 }
 }
 }
