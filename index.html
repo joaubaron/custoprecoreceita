@@ -1116,6 +1116,7 @@ transition: var(--transition);
 }
 
 .recipe-actions .load-btn:hover { color: var(--gold); background: var(--gold-soft); }
+.recipe-actions .dup-btn:hover { color: var(--blue); background: var(--blue-dim); }
 .recipe-actions .del-btn:hover { color: var(--red); background: var(--red-dim); }
 
 .recipe-actions-bar {
@@ -2245,22 +2246,42 @@ onlyOk: true
 });
 }
 
-function loadRecipeFromList(recipeId) {
-const recipe = recipesList.find(r => r.id === recipeId);
-if (recipe) {
-currentRecipeId = recipe.id;
-loadRecipeData(recipe.data);
+function duplicateRecipe(recipeId) {
+const original = recipesList.find(r => r.id === recipeId);
+if (!original) return;
+
+const baseName = (original.name || "Receita").replace(/\s*\(cópia(\s\d+)?\)$/i, "");
+let copyName = baseName + " (cópia)";
+let counter = 2;
+while (recipesList.some(r => r.name === copyName)) {
+copyName = baseName + " (cópia " + counter + ")";
+counter++;
+}
+
+const newRecipe = {
+id: 'recipe_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6),
+name: copyName,
+data: JSON.parse(JSON.stringify(original.data)),
+createdAt: Date.now(),
+updatedAt: Date.now()
+};
+
+recipesList.push(newRecipe);
+saveRecipesList();
+
+currentRecipeId = newRecipe.id;
+loadRecipeData(newRecipe.data);
 renderRecipeList();
 updateLoadedIndicators();
-switchTab('tab3');
+switchTab('tab4');
+
 showModal({
-icon: "📂",
-title: "Receita carregada",
-message: `"${recipe.name}" foi carregada com sucesso.`,
+icon: "📋",
+title: "Receita duplicada!",
+message: `"${copyName}" foi criada. Renomeie no topo e ajuste como quiser.`,
 confirmText: "OK",
 onlyOk: true
 });
-}
 }
 
 function updateLoadedIndicators() {
@@ -3011,12 +3032,19 @@ return `<div class="recipe-item ${isActive}" data-id="${recipe.id}">
 <div class="recipe-info"><div class="recipe-name">${escapeHtml(recipe.name)}</div><div class="recipe-meta">Atualizado em ${dateStr}</div></div>
 <div class="recipe-actions">
 <button class="load-btn" data-id="${recipe.id}" title="Carregar">📂</button>
+<button class="dup-btn" data-id="${recipe.id}" title="Duplicar">📋</button>
 <button class="del-btn" data-id="${recipe.id}" title="Apagar">🗑️</button>
 </div>
 </div>`;
 }).join('');
 container.querySelectorAll('.load-btn').forEach(function(btn) {
 btn.addEventListener('click', function(e) { e.stopPropagation(); loadRecipeFromList(this.dataset.id); });
+});
+container.querySelectorAll('.dup-btn').forEach(function(btn) {
+btn.addEventListener('click', function(e) {
+e.stopPropagation();
+duplicateRecipe(this.dataset.id);
+});
 });
 container.querySelectorAll('.del-btn').forEach(function(btn) {
 btn.addEventListener('click', function(e) {
