@@ -1984,7 +1984,12 @@ try {
 localStorage.setItem(ONBOARDING_KEY, 'true');
 } catch(e) {}
 const overlay = document.getElementById('onboardingOverlay');
-overlay.remove();
+if (overlay) {
+overlay.classList.add('hidden'); // usa a classe CSS em vez de remover
+setTimeout(function() {
+if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+}, 400); // espera a transição de 0.4s
+}
 }
 
 function showOnboarding() {
@@ -3313,7 +3318,10 @@ let refreshing = false;
 navigator.serviceWorker.addEventListener("controllerchange", function() {
 if (refreshing) return;
 refreshing = true;
+// Só recarrega se o onboarding já foi dispensado
+if (localStorage.getItem(ONBOARDING_KEY) === 'true') {
 window.location.reload();
+}
 });
 window.addEventListener("load", function() {
 navigator.serviceWorker.register("sw.js").catch(function() {});
