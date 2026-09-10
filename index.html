@@ -821,12 +821,17 @@ box-shadow: 0 0 0 2px var(--red-dim);
 }
 
 .kv-grid {
-display: grid;
-grid-template-columns: 1fr auto;
-gap: 12px;
-font-size: 13px;
-align-items: center;
-max-width: 100%;
+  display: grid;
+  grid-template-columns: 1fr minmax(0, 45%);  /* era: 1fr auto */
+  gap: 12px;
+  font-size: 13px;
+  align-items: center;
+  max-width: 100%;
+}
+
+.kv-grid .k,
+.kv-grid .v {
+min-width: 0;   /* garante que consigam encolher/quebrar de verdade */
 }
 
 .kv-grid .k {
@@ -1708,10 +1713,12 @@ Informe o rendimento real após o cozimento — a receita perde peso com a evapo
 
 <div class="k">Sobra da receita</div>
 <div class="v leftover-note" id="leftoverWeight"></div>
+
 <div class="k">Aproveitamento da sobra</div>
-<div class="v" style="color: var(--text-secondary); font-weight: 400;">
+<div class="v" style="grid-column: 1 / -1; text-align:left; color: var(--text-secondary); font-weight: 400;">
 <span id="leftoverStatus">Custo rateado entre os potes</span>
 </div>
+  
 <div class="k"></div>
 <div class="v" style="grid-column: 1 / -1; padding-top: 4px;">
 <div class="leftover-bar" id="leftoverBar" style="display:none;">
