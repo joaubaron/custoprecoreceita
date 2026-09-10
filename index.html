@@ -1817,26 +1817,27 @@ const n = String(name || "")
 // Mapeamento completo de densidades
 const densityMap = {
 // Óleos
-'azeite': 0.91, 'oleo': 0.92, 'oleo': 0.92, 'gergelim': 0.92,
-'canola': 0.92, 'girassol': 0.92, 'milho': 0.92, 'soja': 0.92,
+'azeite': 0.91, 'oleo de milho': 0.92, 'oleo': 0.92, 'gergelim': 0.92,
+'canola': 0.92, 'girassol': 0.92, 'soja': 0.92,
 'coco': 0.92, 'palma': 0.90, 'linhaca': 0.93,
 // Líquidos densos
-'shoyu': 1.18, 'molho de soja': 1.18, 'mel': 1.42,
-'melaco': 1.40, 'xarope': 1.35, 'glucose': 1.35,
-'leite': 1.03, 'creme de leite': 1.01, 'iogurte': 1.04,
+'shoyu': 1.18, 'molho de soja': 1.18, 'melaco': 1.40, 'mel': 1.42,
+'xarope': 1.35, 'glucose': 1.35,
+'creme de leite': 1.01, 'leite': 1.03, 'iogurte': 1.04,
 'vinagre': 1.01, 'acucar': 1.59, 'acúcar': 1.59,
 // Água e similares
 'agua': 1.00, 'água': 1.00, 'caldo': 1.00, 'brodo': 1.00,
 // Farinhas e pós (densidade aparente)
-'farinha': 0.59, 'trigo': 0.59, 'milho': 0.60,
+'farinha de trigo': 0.59, 'farinha': 0.59, 'trigo': 0.59, 'farinha de milho': 0.60,
 'amido': 0.60, 'maizena': 0.60, 'polvilho': 0.60,
 'fermento': 0.60, 'cacau': 0.50, 'chocolate': 0.50,
-'acucar': 0.85, 'acúcar': 0.85, 'sal': 1.20,
+'sal': 1.20,
 // Outros
 'manteiga': 0.91, 'margarina': 0.91, 'banha': 0.90
 };
 
-for (const [key, value] of Object.entries(densityMap)) {
+const entries = Object.entries(densityMap).sort((a, b) => b[0].length - a[0].length);
+for (const [key, value] of entries) {
 if (n.includes(key)) return value;
 }
 return 1.00;
@@ -2327,6 +2328,13 @@ if (totalGrams === null || usedGrams === null || totalGrams <= 0 || usedGrams < 
 return (usedGrams / totalGrams) * value;
 }
 
+function escapeHtml(str) {
+const div = document.createElement('div');
+div.textContent = String(str || "");
+return div.innerHTML;
+}
+
+
 // ===== INVENTORY =====
 function invRow(item, idx) {
 const tr = document.createElement("tr");
@@ -2670,7 +2678,7 @@ const isActive = recipe.id === currentRecipeId ? 'active' : '';
 const date = new Date(recipe.updatedAt);
 const dateStr = date.toLocaleDateString('pt-BR') + ' ' + date.toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'});
 return `<div class="recipe-item ${isActive}" data-id="${recipe.id}">
-<div class="recipe-info"><div class="recipe-name">${recipe.name}</div><div class="recipe-meta">Atualizado em ${dateStr}</div></div>
+<div class="recipe-info"><div class="recipe-name">${escapeHtml(recipe.name)}</div><div class="recipe-meta">Atualizado em ${dateStr}</div></div>
 <div class="recipe-actions">
 <button class="load-btn" data-id="${recipe.id}" title="Carregar">📂</button>
 <button class="del-btn" data-id="${recipe.id}" title="Apagar">🗑️</button>
