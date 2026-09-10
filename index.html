@@ -1670,7 +1670,7 @@ Custo por pote para entrega (sacola, caixa, gelo, etiqueta)
 <section class="card">
 <h2>🫙 Rendimento e Custo por Pote</h2>
 <p class="sub">
-Informe o rendimento real após o cozimento — a receita perde peso com a evaporação
+Informe o rendimento real após o cozimento
 </p>
 
 <div class="kv-grid">
@@ -1700,7 +1700,7 @@ Informe o rendimento real após o cozimento — a receita perde peso com a evapo
 ℹ️ Se pesou os potes prontos, informe aqui. Se não, deixe em branco — calculamos pela soma dos ingredientes.
 </div>
 
-<div class="k">Sobra após envasar (registro — não altera o preço)</div>
+<div class="k">Sobra após envasar (não altera o preço)</div>
 <div class="v editable">
 <input type="number" id="actualLeftover" min="0" step="1" inputmode="numeric" placeholder="Ex: 300" />
 <span class="unit-suffix">g</span>
@@ -1728,7 +1728,7 @@ Informe o rendimento real após o cozimento — a receita perde peso com a evapo
 </div>
 <div class="k"></div>
 <div class="note-info">
-💡 O custo total (ingredientes + embalagem + operacional) já está todo nos potes vendidos. A sobra não reduz nem aumenta o preço.
+💡 O custo total (ingredientes + embalagem + operacional) já está todo nos potes vendidos. A sobra não reduz nem aumenta o preço
 </div>
 </div>
 
@@ -1781,11 +1781,7 @@ Defina sua margem de lucro e veja o preço de venda sugerido
 <span>%</span>
 </div>
 
-<div class="k"></div>
-<div class="note-info">
-ℹ️ Taxas — Balcão: 0% · iFood: 12-27% · Shopee: 14-20% · Mercado Livre: 10-19%<br>
-ℹ️ Impostos — Autônomo: 0% · MEI: valor fixo mensal · Simples Nacional: 4-19%
-</div>
+<div class="k"></div> <div class="note-info"> <div><strong>ℹ️ Taxas</strong></div> <ul> <li>Balcão: 0%</li> <li>iFood: 12-27%</li> <li>Shopee: 14-20%</li> <li>Mercado Livre: 10-19%</li> </ul> <div style="margin-top: 16px;"><strong>ℹ️ Impostos</strong></div> <ul> <li>Autônomo: 0%</li> <li>MEI: valor fixo mensal</li> <li>Simples Nacional: 4-19%</li> </ul> </div>
 
 <div class="divider"></div>
 
@@ -2431,7 +2427,7 @@ const totalProduzido = (numPots * weightPerPot) + leftoverWeight;
 const pctPote = totalProduzido > 0 ? Math.round(((numPots * weightPerPot) / totalProduzido) * 100) : 0;
 const pctSobra = 100 - pctPote;
 document.getElementById("leftoverStatus").textContent = 
-`${pctPote}% virou pote · ${pctSobra}% virou sobra (absorvida pelos ${numPots} potes)`;
+`${pctPote}% virou pote · ${pctSobra}% foi absorvida por ${numPots} potes)`;
 if (leftoverBarEl) {
 leftoverBarEl.style.display = "flex";
 leftoverBarPoteEl.style.width = pctPote + "%";
