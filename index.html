@@ -2347,7 +2347,8 @@ return "R$ " + n.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFrac
 
 function num(n, digits) {
 if (!isFinite(n)) n = 0;
-return n.toLocaleString("pt-BR", { minimumFractionDigits: digits || 0, maximumFractionDigits: digits || 2 });
+const d = (digits === undefined) ? 2 : digits;
+return n.toLocaleString("pt-BR", { minimumFractionDigits: d, maximumFractionDigits: d });
 }
 
 function updateProgressBar(tabId) {
@@ -2386,18 +2387,6 @@ profitEl.textContent = '—';
 }
 
 function render() {
-const freshState = loadState();
-state.weightPerPot = freshState.weightPerPot;
-state.profitPct = freshState.profitPct;
-state.laborHourly = freshState.laborHourly;
-state.prepTime = freshState.prepTime;
-state.utilitiesCost = freshState.utilitiesCost;
-state.actualPots = freshState.actualPots;
-state.actualLeftover = freshState.actualLeftover;
-state.salesTaxPct = freshState.salesTaxPct;
-state.taxesPct = freshState.taxesPct;
-state.transportCost = freshState.transportCost;
-
 let recW = 0;
 let recV = 0;
 state.recipe.forEach(function(r) {
@@ -2407,6 +2396,7 @@ const unit = r.unit || (inv ? inv.unit : "g");
 recW += getRecipeWeight(qty, unit, inv);
 recV += getIngredientCost(r.invIndex, qty, unit);
 });
+
 document.getElementById("recSubV").textContent = brl(recV);
 
 let pkgV = 0;
@@ -2447,7 +2437,7 @@ const totalProduzido = (numPots * weightPerPot) + leftoverWeight;
 const pctPote = totalProduzido > 0 ? Math.round(((numPots * weightPerPot) / totalProduzido) * 100) : 0;
 const pctSobra = 100 - pctPote;
 document.getElementById("leftoverStatus").textContent = 
-`${pctPote}% virou pote · ${pctSobra}% foi absorvida por ${numPots} potes)`;
+`${pctPote}% virou pote · ${pctSobra}% foi absorvida por ${numPots} potes`;
 if (leftoverBarEl) {
 leftoverBarEl.style.display = "flex";
 leftoverBarPoteEl.style.width = pctPote + "%";
