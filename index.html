@@ -1306,6 +1306,25 @@ width: 26px !important;
 height: 26px !important;
 font-size: 12px !important;
 }
+
+/* ✅ CORREÇÃO: primeira coluna do $ de Venda não quebra mais */
+#tab3 .kv-grid {
+grid-template-columns: 1fr auto !important;
+gap: 8px 10px !important;
+}
+#tab3 .kv-grid .k {
+white-space: nowrap !important;
+overflow: hidden !important;
+text-overflow: ellipsis !important;
+min-width: 0 !important;
+font-size: 12px !important;
+}
+#tab3 .kv-grid .v {
+white-space: nowrap !important;
+}
+#tab3 .kv-grid .v.editable input {
+width: 80px !important;
+}
 }
 </style>
 </head>
