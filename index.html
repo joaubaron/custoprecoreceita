@@ -1603,15 +1603,10 @@ Informe o rendimento real após o cozimento — a receita perde peso com a evapo
 
 <div class="divider"></div>
 
-<div class="k">Rendimento real (opcional)</div>
+<div class="k">Rendimento real (se receita perde água)</div>
 <div class="v editable">
 <input type="number" id="actualPots" min="0" step="1" inputmode="numeric" placeholder="Ex. 2" />
 <span class="unit-suffix">potes</span>
-</div>
-
-<!-- O aviso de evaporação agora ocupa a linha toda, sem empurrar a sobra -->
-<div id="evapWarning" class="warning-message" style="grid-column: 1 / -1; margin: 8px 0;">
-⚠️ Se a receita perde água, quantos potes rendeu de verdade
 </div>
 
 <div class="k">Sobra após envasar (opcional)</div>
@@ -2277,10 +2272,6 @@ potSizeWarningEl.style.display = weightPerPotValid ? "none" : "block";
 // perda de peso por evaporação no cozimento.
 const actualPotsVal = parseFloat(state.actualPots);
 const usingActualPots = isFinite(actualPotsVal) && actualPotsVal > 0;
-
-// ✅ NOVO: aviso de evaporação quando rendimento real não foi informado
-const evapWarningEl = document.getElementById("evapWarning");
-evapWarningEl.style.display = usingActualPots ? "none" : "block";
 
 const calculatedPots = weightPerPotValid ? Math.floor(recW / weightPerPot) : 0;
 const numPots = usingActualPots ? Math.floor(actualPotsVal) : calculatedPots;
