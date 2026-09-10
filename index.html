@@ -1530,7 +1530,7 @@ Informe somente a quantidade usada na receita
 </p>
 <div class="conversion-note">
 ⚠️ <strong>Conversão g ↔ ml e Alertas de Insumo</strong><br>
-Ajusta automático o peso e sinaliza se a receita usa mais que o lote cadastrado.
+Ajusta automático o peso e sinaliza se a receita usa mais que o lote cadastrado
 </div>
 <div class="table-scroll">
 <table class="recipe-table">
@@ -1783,7 +1783,7 @@ Defina sua margem de lucro e veja o preço de venda sugerido
 <div class="note-info" style="grid-column: 1 / -1; padding-left: 0; margin-top: -4px; margin-bottom: 12px;">
 <div><strong>ℹ️ Ex. Taxas</strong></div>
 <p style="margin: 4px 0 0 0;">
-Balcão: 0%; iFood: 12-27%; Shopee: 14-20%; Mercado Livre: 10-19%.
+Balcão: 0%; iFood: 12-27%; Shopee: 14-20%; Mercado Livre: 10-19%
 </p>
 </div>
 
@@ -1798,7 +1798,7 @@ Balcão: 0%; iFood: 12-27%; Shopee: 14-20%; Mercado Livre: 10-19%.
 <div class="note-info" style="grid-column: 1 / -1; padding-left: 0; margin-top: -4px; margin-bottom: 12px;">
 <div><strong>ℹ️ Ex. Impostos</strong></div>
 <p style="margin: 4px 0 0 0;">
-Autônomo: 0%; MEI: valor fixo mensal; Simples Nacional: 4-19%; Lucro Presumido: 14-17%.
+Autônomo: 0%; MEI: valor fixo mensal; Simples Nacional: 4-19%; Lucro Presumido: 14-17%
 </p>
 </div>
 
@@ -1875,7 +1875,7 @@ Gerencie suas receitas. Clique para carregar e editar
 
 <p class="footer-note">
 ✨ Tudo fica salvo neste dispositivo.<br />
-Funciona para qualquer receita — ajuste como quiser.
+Funciona para qualquer receita — ajuste como quiser
 </p>
 </div>
 
@@ -2510,21 +2510,21 @@ marginWarningEl.style.display = "block";
 marginWarningEl.style.background = "var(--red-dim)";
 marginWarningEl.style.border = "1px solid var(--red-border)";
 marginWarningEl.style.color = "var(--red)";
-marginWarningEl.textContent = `⚠️ Margem + Taxas + Impostos = ${(profitPct + salesTaxPct + taxesPct).toFixed(1)}% — o total não pode chegar a 100%. Reduza algum valor.`;
+marginWarningEl.textContent = `⚠️ Margem + Taxas + Impostos = ${(profitPct + salesTaxPct + taxesPct).toFixed(1)}% — o total não pode chegar a 100%. Reduza algum valor`;
 finalPriceEl.classList.add("very-high-margin-warning");
 } else if (profitPct >= 90) {
 marginWarningEl.style.display = "block";
 marginWarningEl.style.background = "var(--red-dim)";
 marginWarningEl.style.border = "1px solid var(--red-border)";
 marginWarningEl.style.color = "var(--red)";
-marginWarningEl.textContent = `⚠️ Margem de ${profitPct}% é muito alta! O preço pode ficar inviável para o mercado.`;
+marginWarningEl.textContent = `⚠️ Margem de ${profitPct}% é muito alta! O preço pode ficar inviável para o mercado`;
 finalPriceEl.classList.add("very-high-margin-warning");
 } else if (profitPct >= 70) {
 marginWarningEl.style.display = "block";
 marginWarningEl.style.background = "var(--orange-dim)";
 marginWarningEl.style.border = "1px solid rgba(245, 168, 74, 0.3)";
 marginWarningEl.style.color = "var(--orange)";
-marginWarningEl.textContent = `⚠️ Margem de ${profitPct}% está alta. Verifique se o preço é competitivo.`;
+marginWarningEl.textContent = `⚠️ Margem de ${profitPct}% está alta. Verifique se o preço é competitivo`;
 finalPriceEl.classList.add("high-margin-warning");
 } else {
 marginWarningEl.style.display = "none";
