@@ -2533,7 +2533,7 @@ if (incompatible) {
 tr.classList.add("excess-warning");
 if (warnBadge) {
 warnBadge.classList.add("visible");
-warnBadge.setAttribute("title", "Unidade incompatível: o produto foi comprado em " + inv.unit + " (massa) e está sendo usado em " + currentUnit() + " (volume). O custo pode estar incorreto.");
+warnBadge.setAttribute("title", "Unidade incompatível: o produto foi comprado em " + inv.unit + " e está sendo usado em " + currentUnit() + ". Como as unidades são de grandezas diferentes (massa × volume), o custo pode estar incorreto.");
 warnBadge.setAttribute("aria-label", "Unidade incompatível com a compra");
 }
 } else if (excess) {
