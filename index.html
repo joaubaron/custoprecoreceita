@@ -1319,6 +1319,26 @@ margin-top: 30px;
 line-height: 1.6;
 }
 
+.quick-chips-row {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: -4px;
+    margin-bottom: 8px;
+}
+
+.chip {
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
+    font-size: 11px;
+    font-weight: 600;
+    padding: 6px 12px;
+    border-radius: 999px;
+    white-space: nowrap;
+}
+  
 @media screen and (max-width:600px) {
 body { padding: 10px 6px 80px; }
 section.card { padding: 14px 8px; }
@@ -1784,10 +1804,17 @@ Defina sua margem de lucro e veja o preço de venda sugerido
 <span>%</span>
 </div>
 
-<div class="k"></div>
-<div class="note-info" style="display:flex; gap:20px; text-align:left;">
-<div style="flex:1;"><div><strong>ℹ️ Ex. Taxas</strong></div><ul><li>Balcão: 0%</li><li>iFood: 12-27%</li><li>Shopee: 14-20%</li><li>Mercado Livre: 10-19%</li></ul></div>
-<div style="flex:1;"><div><strong>ℹ️ Ex. Impostos</strong></div><ul><li>Autônomo: 0%</li><li>MEI: valor fixo mensal</li><li>Simples Nacional: 4-19%</li><li>Lucro Presumido: 14-17%</li></ul></div>
+<div class="quick-chips-row">
+    <span class="chip">Balcão 0%</span>
+    <span class="chip">iFood 12%</span>
+    <span class="chip">Shopee 14%</span>
+    <span class="chip">Mercado Livre 10%</span>
+</div>
+
+<div class="quick-chips-row">
+    <span class="chip">Autônomo 0%</span>
+    <span class="chip">Simples 4%</span>
+    <span class="chip">Lucro Presumido 14%</span>
 </div>
 
 <div class="divider"></div>
