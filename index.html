@@ -1577,6 +1577,20 @@ Inclui mão de obra, energia, água e estrutura
 </table>
 </div>
 </section>
+
+<section class="card">
+<h2>🚚 Embalagem de Transporte</h2>
+<p class="sub">
+Custo por pote para entrega (sacola, caixa, gelo, etiqueta)
+</p>
+<div class="kv-grid">
+<div class="k">Embalagem de transporte</div>
+<div class="v editable">
+<input type="number" id="transportCost" min="0" step="0.01" inputmode="decimal" value="0" placeholder="0,00" />
+<span>R$</span>
+</div>
+</div>
+</section>
 </div>
 
 <!-- ===== TAB 3: PREÇO DE VENDA ===== -->
@@ -1669,6 +1683,20 @@ Defina sua margem de lucro e veja o preço de venda sugerido
 </div>
 
 <div class="kv-grid">
+<div class="k">Taxas de venda</div>
+<div class="v editable">
+<input type="number" id="salesTaxPct" min="0" max="99.99" step="0.1" inputmode="decimal" value="0" />
+<span>%</span>
+</div>
+
+<div class="k">Impostos</div>
+<div class="v editable">
+<input type="number" id="taxesPct" min="0" max="99.99" step="0.1" inputmode="decimal" value="0" />
+<span>%</span>
+</div>
+
+<div class="divider"></div>
+
 <div class="k">Margem de lucro desejada</div>
 <div class="v editable">
 <input type="number" id="profitPct" min="0" max="99.99" step="1" inputmode="numeric" value="35" />
@@ -1808,7 +1836,10 @@ laborHourly: 8,
 prepTime: 60,
 utilitiesCost: 2,
 actualPots: null,
-actualLeftover: null
+actualLeftover: null,
+salesTaxPct: 0,
+taxesPct: 0,
+transportCost: 0
 };
 let state = loadState();
 let storageWarned = false;
@@ -1952,6 +1983,9 @@ if (!('prepTime' in parsed)) parsed.prepTime = 60;
 if (!('utilitiesCost' in parsed)) parsed.utilitiesCost = 2;
 if (!('actualPots' in parsed)) parsed.actualPots = null;
 if (!('actualLeftover' in parsed)) parsed.actualLeftover = null;
+if (!('salesTaxPct' in parsed) || !isFinite(parseFloat(parsed.salesTaxPct))) parsed.salesTaxPct = 0;
+if (!('taxesPct' in parsed) || !isFinite(parseFloat(parsed.taxesPct))) parsed.taxesPct = 0;
+if (!('transportCost' in parsed) || !isFinite(parseFloat(parsed.transportCost))) parsed.transportCost = 0;
 // ✅ CORREÇÃO: NÃO converte kg/L silenciosamente
 // Mantém a unidade original do usuário
 return parsed;
@@ -2020,7 +2054,10 @@ laborHourly: state.laborHourly,
 prepTime: state.prepTime,
 utilitiesCost: state.utilitiesCost,
 actualPots: state.actualPots,
-actualLeftover: state.actualLeftover
+actualLeftover: state.actualLeftover,
+salesTaxPct: state.salesTaxPct,
+taxesPct: state.taxesPct,
+transportCost: state.transportCost
 };
 }
 
@@ -2036,12 +2073,18 @@ state.prepTime = data.prepTime || 60;
 state.utilitiesCost = data.utilitiesCost || 2;
 state.actualPots = ('actualPots' in data) ? data.actualPots : null;
 state.actualLeftover = ('actualLeftover' in data) ? data.actualLeftover : null;
+state.salesTaxPct = ('salesTaxPct' in data) ? data.salesTaxPct : 0;
+state.taxesPct = ('taxesPct' in data) ? data.taxesPct : 0;
+state.transportCost = ('transportCost' in data) ? data.transportCost : 0;
 
 recipeNameEl.value = state.recipeName;
 weightPerPotEl.value = state.weightPerPot;
 profitPctEl.value = state.profitPct;
 actualPotsEl.value = state.actualPots ?? "";
 actualLeftoverEl.value = state.actualLeftover ?? "";
+document.getElementById('salesTaxPct').value = state.salesTaxPct;
+document.getElementById('taxesPct').value = state.taxesPct;
+document.getElementById('transportCost').value = state.transportCost;
 
 document.getElementById('laborHourly').value = state.laborHourly;
 document.getElementById('prepTime').value = state.prepTime;
@@ -2204,7 +2247,7 @@ const profitEl = document.getElementById('quickProfit');
 if (numPots > 0 && costTotalPot > 0) {
 costEl.textContent = brl(costTotalPot);
 priceEl.textContent = price > 0 ? brl(price) : '—';
-const profit = price > 0 ? Math.max(0, price - costTotalPot) : 0;
+const profit = price > 0 ? Math.max(0, price - costTotalPot - (price * ((parseFloat(state.salesTaxPct) || 0) / 100)) - (price * ((parseFloat(state.taxesPct) || 0) / 100))) : 0;
 profitEl.textContent = profit > 0 ? brl(profit) : '—';
 } else {
 costEl.textContent = '—';
@@ -2223,6 +2266,9 @@ state.prepTime = freshState.prepTime;
 state.utilitiesCost = freshState.utilitiesCost;
 state.actualPots = freshState.actualPots;
 state.actualLeftover = freshState.actualLeftover;
+state.salesTaxPct = freshState.salesTaxPct;
+state.taxesPct = freshState.taxesPct;
+state.transportCost = freshState.transportCost;
 
 let recW = 0;
 let recV = 0;
@@ -2303,7 +2349,8 @@ costIngPot = recV / numPots;
 
 const costPkgPot = pkgV;
 const operational = calculateOperationalCost(numPots);
-const costTotalPot = numPots > 0 ? costIngPot + costPkgPot + operational.total : 0;
+const transportCost = parseFloat(state.transportCost) || 0;
+const costTotalPot = numPots > 0 ? costIngPot + costPkgPot + operational.total + transportCost : 0;
 
 document.getElementById("costIngPot").textContent = numPots > 0 ? brl(costIngPot) : "—";
 document.getElementById("costPkgPot").textContent = numPots > 0 ? brl(costPkgPot) : "—";
@@ -2311,9 +2358,14 @@ document.getElementById("costOpPot").textContent = numPots > 0 ? brl(operational
 document.getElementById("costTotalPot").textContent = numPots > 0 ? brl(costTotalPot) : "—";
 
 const profitPct = Math.max(0, Math.min(parseFloat(state.profitPct) || 0, 99.99));
+const salesTaxPct = Math.max(0, Math.min(parseFloat(state.salesTaxPct) || 0, 99.99));
+const taxesPct = Math.max(0, Math.min(parseFloat(state.taxesPct) || 0, 99.99));
+const totalDeductions = (profitPct + salesTaxPct + taxesPct) / 100;
 const margin = profitPct / 100;
-const price = numPots > 0 && margin < 1 && costTotalPot > 0 ? costTotalPot / (1 - margin) : 0;
-const profitValue = price > 0 ? Math.max(0, price - costTotalPot) : 0;
+const price = numPots > 0 && totalDeductions < 1 && costTotalPot > 0 ? costTotalPot / (1 - totalDeductions) : 0;
+const taxValueCalc = price > 0 ? price * (salesTaxPct / 100) : 0;
+const impostosValueCalc = price > 0 ? price * (taxesPct / 100) : 0;
+const profitValue = price > 0 ? Math.max(0, price - costTotalPot - taxValueCalc - impostosValueCalc) : 0;
 const markup = costTotalPot > 0 && price > 0 ? price / costTotalPot : 0;
 
 document.getElementById("markup").textContent = markup > 0 ? "×" + markup.toFixed(2).replace(".", ",") : "—";
@@ -2323,7 +2375,14 @@ const jarPotsEl = document.getElementById("jarPots");
 
 // ✅ CORREÇÃO: Alerta visual para margens altas
 const marginWarningEl = document.getElementById("marginWarning");
-if (profitPct >= 90) {
+if (profitPct + salesTaxPct + taxesPct >= 100) {
+marginWarningEl.style.display = "block";
+marginWarningEl.style.background = "var(--red-dim)";
+marginWarningEl.style.border = "1px solid var(--red-border)";
+marginWarningEl.style.color = "var(--red)";
+marginWarningEl.textContent = `⚠️ Margem + Taxas + Impostos = ${(profitPct + salesTaxPct + taxesPct).toFixed(1)}% — o total não pode chegar a 100%. Reduza algum valor.`;
+finalPriceEl.classList.add("very-high-margin-warning");
+} else if (profitPct >= 90) {
 marginWarningEl.style.display = "block";
 marginWarningEl.style.background = "var(--red-dim)";
 marginWarningEl.style.border = "1px solid var(--red-border)";
@@ -2360,8 +2419,10 @@ updateQuickSummary(costTotalPot, price, numPots);
 if (price > 0 && numPots > 0) {
 const segments = [
 { label: "Ingredientes", value: costIngPot, color: "#6bcb8a" },
-{ label: "Embalagem", value: costPkgPot, color: "#6ab0e8" },
+{ label: "Embalagem", value: costPkgPot + transportCost, color: "#6ab0e8" },
 { label: "Operacional", value: operational.total, color: "#e86a6a" },
+{ label: "Taxas", value: taxValueCalc, color: "#f5a84a" },
+{ label: "Impostos", value: impostosValueCalc, color: "#c97ad6" },
 { label: "Lucro", value: profitValue, color: "#ffd84d" }
 ];
 const total = price;
@@ -2779,6 +2840,9 @@ weightPerPotEl.value = state.weightPerPot;
 profitPctEl.value = state.profitPct;
 actualPotsEl.value = "";
 actualLeftoverEl.value = "";
+document.getElementById('salesTaxPct').value = state.salesTaxPct;
+document.getElementById('taxesPct').value = state.taxesPct;
+document.getElementById('transportCost').value = state.transportCost;
 saveState();
 renderAll();
 });
@@ -2967,6 +3031,9 @@ weightPerPotEl.value = state.weightPerPot > 0 ? state.weightPerPot : "";
 profitPctEl.value = state.profitPct;
 actualPotsEl.value = state.actualPots ?? "";
 actualLeftoverEl.value = state.actualLeftover ?? "";
+document.getElementById('salesTaxPct').value = state.salesTaxPct ?? 0;
+document.getElementById('taxesPct').value = state.taxesPct ?? 0;
+document.getElementById('transportCost').value = state.transportCost ?? 0;
 
 recipeNameEl.addEventListener("input", function() { state.recipeName = recipeNameEl.value; saveState(); });
 weightPerPotEl.addEventListener("input", function() {
@@ -2999,6 +3066,30 @@ render();
 const opFields = ['laborHourly', 'prepTime', 'utilitiesCost'];
 opFields.forEach(function(field) {
 document.getElementById(field).addEventListener('input', function() { saveState(); render(); });
+});
+
+document.getElementById('salesTaxPct').addEventListener('input', function() {
+let v = parseFloat(this.value);
+if (!isFinite(v) || v < 0) v = 0;
+v = Math.min(v, 99.99);
+state.salesTaxPct = v;
+saveState();
+render();
+});
+document.getElementById('taxesPct').addEventListener('input', function() {
+let v = parseFloat(this.value);
+if (!isFinite(v) || v < 0) v = 0;
+v = Math.min(v, 99.99);
+state.taxesPct = v;
+saveState();
+render();
+});
+document.getElementById('transportCost').addEventListener('input', function() {
+let v = parseFloat(this.value);
+if (!isFinite(v) || v < 0) v = 0;
+state.transportCost = v;
+saveState();
+render();
 });
 
 // ===== TABS =====
