@@ -303,7 +303,7 @@ padding: 16px 20px;
 margin-bottom: 16px;
 box-shadow: var(--shadow-sm);
 display: grid;
-grid-template-columns: 1fr 1fr 1fr;
+grid-template-columns: 1fr 1fr 1fr 1fr;
 gap: 8px;
 }
 
@@ -333,8 +333,8 @@ margin-top: 2px;
 
 @media screen and (max-width: 500px) {
 .summary-card {
-grid-template-columns: 1fr;
-gap: 6px;
+grid-template-columns: 1fr 1fr;
+gap: 6px 12px;
 padding: 12px 14px;
 }
 .summary-card .summary-item {
@@ -1468,6 +1468,10 @@ font-size: 12px !important;
 <div class="label">Lucro por pote</div>
 <div class="value green" id="quickProfit">—</div>
 </div>
+<div class="summary-item">
+<div class="label">Lucro total</div>
+<div class="value" style="color: var(--roxo);" id="quickTotalProfit">—</div>
+</div>
 </div>
 
 <!-- ===== TABS ===== -->
@@ -2399,16 +2403,19 @@ function updateQuickSummary(costTotalPot, price, numPots) {
 const costEl = document.getElementById('quickCostPot');
 const priceEl = document.getElementById('quickPrice');
 const profitEl = document.getElementById('quickProfit');
+const totalProfitEl = document.getElementById('quickTotalProfit');
 
 if (numPots > 0 && costTotalPot > 0) {
 costEl.textContent = brl(costTotalPot);
 priceEl.textContent = price > 0 ? brl(price) : '—';
 const profit = price > 0 ? Math.max(0, price - costTotalPot - (price * ((parseFloat(state.salesTaxPct) || 0) / 100)) - (price * ((parseFloat(state.taxesPct) || 0) / 100))) : 0;
 profitEl.textContent = profit > 0 ? brl(profit) : '—';
+totalProfitEl.textContent = profit > 0 ? brl(profit * numPots) : '—';
 } else {
 costEl.textContent = '—';
 priceEl.textContent = '—';
 profitEl.textContent = '—';
+totalProfitEl.textContent = '—';
 }
 }
 
@@ -2573,6 +2580,7 @@ jarPotsEl.textContent = "0 potes para vender";
 document.getElementById('quickCostPot').textContent = '—';
 document.getElementById('quickPrice').textContent = '—';
 document.getElementById('quickProfit').textContent = '—';
+document.getElementById('quickTotalProfit').textContent = '—';
 } else {
 finalPriceEl.textContent = brl(price);
 finalPriceEl.classList.remove("no-price");
