@@ -1,81 +1,40 @@
 https://joaubaron.github.io/custoprecoreceita/
 
-Calculadora de preço para produção artesanal de alimentos.
+# Precificação 🫙
 
-O Custo do Pote é um aplicativo web progressivo (PWA) desenvolvido para ajudar pequenos produtores, chefs e entusiastas da culinária artesanal a calcular o preço de venda de seus produtos de forma precisa e profissional.
+Calculadora de preço de venda para quem produz e vende em potes (conservas, doces, receitas artesanais em geral). PWA single-file, roda 100% no navegador, sem servidor.
 
-Com uma interface intuitiva e moderna, você pode cadastrar todos os ingredientes e seus custos, montar receitas com proporções exatas, calcular custos de embalagem, definir margem de lucro desejada e obter o preço de venda final por unidade.
+## O que faz
 
-FUNCIONALIDADES:
+- **Estoque**: cadastra os ingredientes que você compra e o preço pago
+- **Receita**: informa quanto usa de cada ingrediente (com conversão automática g/ml por densidade)
+- **Embalagem**: custo de pote, rótulo, decoração etc.
+- **Custos operacionais**: mão de obra, energia, custo fixo rateado (aluguel, depreciação, maquininha)
+- **$ de Venda**: calcula o preço sugerido a partir de margem de lucro, taxas de venda (marketplace) e impostos
+- **Salvar**: múltiplas receitas, com exportação/importação de backup em JSON
 
-🛒 Mercado - Cadastre produtos com quantidade total, unidade e valor, suporte para múltiplas unidades (g, ml, kg, L, un), detecção automática de densidade para conversão g ↔ ml.
+Tudo fica salvo localmente no dispositivo (localStorage) — não envia dados pra nenhum servidor.
 
-🧺 Receita - Selecione ingredientes do mercado para sua receita, informe apenas a quantidade usada, cálculo automático do custo de cada ingrediente, conversão inteligente entre peso e volume.
+## Como usar
 
-📦 Embalagem - Registre todos os itens de embalagem (vidros, rótulos, etiquetas), custo fixo por pote, valores atualizados automaticamente.
+1. **Estoque** → cadastre o que você compra e quanto pagou
+2. **Receita** → informe as quantidades usadas de cada ingrediente
+3. **Embalagem** → custo dos potes/rótulos + custos operacionais do lote
+4. **$ de Venda** → informe rendimento em potes, margem desejada, taxas e impostos → veja o preço sugerido
+5. **Salvar** → guarde a receita pra reusar depois, exporte um backup se quiser
 
-💰 Preço - Calcule o rendimento da receita em potes, visualize custos rateados por pote, defina a margem de lucro desejada, veja o markup equivalente, composição do preço: ingredientes, embalagem e lucro.
+## Fórmula de precificação
 
-📚 Salvas - Salve receitas completas localmente, gerencie múltiplas receitas, carregue, edite e apague receitas salvas, armazenamento local permanente (localStorage).
+```
+preço = custo total por pote / (1 - margem% - taxas de venda% - impostos%)
+```
 
-TECNOLOGIAS:
+A margem é calculada sobre o **preço de venda**, não sobre o custo — por isso o app também mostra o markup equivalente (o mesmo número, só que multiplicando o custo).
 
-HTML5, CSS3 com design moderno temas escuros, JavaScript Vanilla, Google Fonts (Inter e Plus Jakarta Sans), PWA - Progressive Web App instalável, localStorage para persistência de dados.
+## Rodando localmente
 
-COMPATIBILIDADE:
+Abra o `index.html` direto no navegador, ou sirva a pasta via GitHub Pages.
 
-Navegadores modernos (Chrome, Firefox, Safari, Edge), dispositivos móveis (iOS, Android), funciona offline com service worker, design responsivo adaptado para todas as telas.
+## Tecnologia
 
-INSTALAÇÃO:
-
-Como PWA - acesse a aplicação no navegador, clique no menu do navegador, selecione "Adicionar à tela inicial" ou "Instalar aplicativo", o app será instalado como um aplicativo nativo.
-
-Como página web - salve o arquivo index.html em seu computador e abra diretamente no navegador, tudo funciona offline automaticamente.
-
-PERSISTÊNCIA DE DADOS:
-
-Todos os dados são salvos localmente no seu dispositivo através do localStorage. Chave principal: caponata-calc-v2. Chave de receitas: caponata-recipes-list. Importante: os dados são específicos do navegador/dispositivo. Não há sincronização na nuvem.
-
-COMO USAR:
-
-Passo 1 - Cadastre os Ingredientes na aba Mercado, adicione todos os produtos que você compra com suas quantidades e valores.
-
-Passo 2 - Monte a Receita na aba Receita, selecione os ingredientes que fazem parte da sua receita e informe as quantidades utilizadas.
-
-Passo 3 - Adicione a Embalagem na aba Embalagem, registre todos os custos fixos por pote (vidro, rótulo, etiqueta, etc.).
-
-Passo 4 - Calcule o Preço na aba Preço, defina o tamanho do pote e a margem de lucro desejada. O aplicativo calculará automaticamente o número de potes produzidos, o custo por pote e o preço de venda sugerido.
-
-Passo 5 - Salve sua Receita na aba Salvas, salve sua receita para uso futuro. Você pode ter quantas receitas quiser.
-
-DESIGN:
-
-Tema escuro para reduzir cansaço visual, cores em destaque dourado (#ffd84d) para elementos principais, feedback visual com animações suaves, botões grandes otimizados para toque em dispositivos móveis, tipografia moderna e legível.
-
-CÁLCULOS:
-
-Custo por ingrediente = (quantidade_usada / quantidade_total) * valor_total.
-
-Peso da receita = Σ(quantidade_usada * densidade).
-
-Número de potes = Math.floor(peso_receita / tamanho_pote).
-
-Preço de venda = custo_total_por_pote / (1 - margem_lucro).
-
-PRIVACIDADE:
-
-Todos os dados ficam exclusivamente no seu dispositivo, não há coleta de informações pessoais, não há comunicação com servidores externos (exceto fontes), funciona offline completamente.
-
-SUPORTE:
-
-Para dúvidas, sugestões ou problemas, abra uma issue no repositório ou envie um pull request com melhorias.
-
-LICENÇA:
-
-Este projeto é open-source. Sinta-se livre para usar, modificar e distribuir.
-
-DICA EXTRA:
-
-O aplicativo suporta conversão automática entre gramas e mililitros usando densidades pré-definidas para azeite (0.91 g/ml), shoyu (1.18 g/ml), vinagre (1.01 g/ml), mel (1.42 g/ml), óleos em geral (0.92 g/ml), leite (1.03 g/ml) e água (1.00 g/ml). Isso significa que você pode misturar unidades livremente em sua receita.
-
-Desenvolvido para quem faz com amor e quer precificar com precisão. Custo do Pote - Calculando o valor do seu trabalho artesanal 🫙✨
+HTML/CSS/JS puro, sem build, sem dependências externas (exceto fontes do Google Fonts).
