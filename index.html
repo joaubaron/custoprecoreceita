@@ -1640,6 +1640,11 @@ Informe os valores totais do lote — o app calcula sozinho o custo por pote
 <td class="num"><input type="number" id="utilitiesCost" step="0.50" value="2" /></td>
 <td>R$</td>
 </tr>
+<tr>
+<td>Custo fixo/lote</td>
+<td class="num"><input type="number" id="fixedCostPerBatch" step="1" value="0" /></td>
+<td>R$</td>
+</tr>
 </tbody>
 <tfoot>
 <tr>
@@ -1653,6 +1658,9 @@ Informe os valores totais do lote — o app calcula sozinho o custo por pote
 </tfoot>
 </table>
 </div>
+<p class="note-info" style="margin-top:8px;">
+ℹ️ Custo fixo/lote → aluguel, depreciação de equipamento, taxa de maquininha etc., já dividido pelo nº de lotes do mês (ex: aluguel R$ 600/mês ÷ 20 lotes = R$ 30)
+</p>
 </section>
 
 <section class="card">
@@ -1804,7 +1812,7 @@ Balcão: 0%; iFood: 12-27%; Shopee: 14-20%; Mercado Livre: 10-19%
 <div class="note-info" style="grid-column: 1 / -1; padding-left: 0; margin-top: -4px; margin-bottom: 12px;">
 <div><strong>ℹ️ Impostos → percentual destinado aos impostos</strong></div>
 <p style="margin: 4px 0 0 0;">
-Autônomo: 0%; MEI: valor fixo mensal; Simples Nacional: 4-19%; Lucro Presumido: 14-17%
+Autônomo: 0%; MEI: taxa fixa mensal (não entra aqui — deixe 0% e trate como custo fixo à parte); Simples Nacional: 4-19%; Lucro Presumido: 14-17%
 </p>
 </div>
 
@@ -1950,6 +1958,7 @@ profitPct: 35,
 laborHourly: 8,
 prepTime: 60,
 utilitiesCost: 2,
+fixedCostPerBatch: 0,
 actualPots: null,
 actualLeftover: null,
 salesTaxPct: 0,
@@ -2101,6 +2110,7 @@ item.density = getDensityByName(item.name);
 if (!('laborHourly' in parsed)) parsed.laborHourly = 8;
 if (!('prepTime' in parsed)) parsed.prepTime = 60;
 if (!('utilitiesCost' in parsed)) parsed.utilitiesCost = 2;
+if (!('fixedCostPerBatch' in parsed) || !isFinite(parseFloat(parsed.fixedCostPerBatch)) || parseFloat(parsed.fixedCostPerBatch) < 0) parsed.fixedCostPerBatch = 0;
 if (!('actualPots' in parsed)) parsed.actualPots = null;
 if (!('actualLeftover' in parsed)) parsed.actualLeftover = null;
 if (!('salesTaxPct' in parsed) || !isFinite(parseFloat(parsed.salesTaxPct))) parsed.salesTaxPct = 0;
@@ -2170,6 +2180,7 @@ profitPct: state.profitPct,
 laborHourly: state.laborHourly,
 prepTime: state.prepTime,
 utilitiesCost: state.utilitiesCost,
+fixedCostPerBatch: state.fixedCostPerBatch,
 actualPots: state.actualPots,
 actualLeftover: state.actualLeftover,
 salesTaxPct: state.salesTaxPct,
@@ -2188,6 +2199,7 @@ state.profitPct = data.profitPct || 35;
 state.laborHourly = data.laborHourly || 8;
 state.prepTime = data.prepTime || 60;
 state.utilitiesCost = data.utilitiesCost || 2;
+state.fixedCostPerBatch = ('fixedCostPerBatch' in data) ? data.fixedCostPerBatch : 0;
 state.actualPots = ('actualPots' in data) ? data.actualPots : null;
 state.actualLeftover = ('actualLeftover' in data) ? data.actualLeftover : null;
 state.salesTaxPct = ('salesTaxPct' in data) ? data.salesTaxPct : 0;
@@ -2206,6 +2218,7 @@ document.getElementById('transportCost').value = state.transportCost;
 document.getElementById('laborHourly').value = state.laborHourly;
 document.getElementById('prepTime').value = state.prepTime;
 document.getElementById('utilitiesCost').value = state.utilitiesCost;
+document.getElementById('fixedCostPerBatch').value = state.fixedCostPerBatch;
 
 saveState();
 renderAll();
@@ -2534,6 +2547,13 @@ marginWarningEl.style.border = "1px solid rgba(245, 168, 74, 0.3)";
 marginWarningEl.style.color = "var(--orange)";
 marginWarningEl.textContent = `⚠️ Margem de ${profitPct}% está alta. Verifique se o preço é competitivo`;
 finalPriceEl.classList.add("high-margin-warning");
+} else if (profitPct <= 0) {
+marginWarningEl.style.display = "block";
+marginWarningEl.style.background = "var(--red-dim)";
+marginWarningEl.style.border = "1px solid var(--red-border)";
+marginWarningEl.style.color = "var(--red)";
+marginWarningEl.textContent = `⚠️ Margem de 0% — você não terá lucro nesse preço`;
+finalPriceEl.classList.remove("high-margin-warning", "very-high-margin-warning");
 } else {
 marginWarningEl.style.display = "none";
 finalPriceEl.classList.remove("high-margin-warning", "very-high-margin-warning");
@@ -2580,22 +2600,25 @@ function calculateOperationalCost(numPots) {
 const laborHourly = parseFloat(document.getElementById('laborHourly').value) || 0;
 const prepTime = parseFloat(document.getElementById('prepTime').value) || 0;
 const utilitiesCost = parseFloat(document.getElementById('utilitiesCost').value) || 0;
+const fixedCostPerBatch = parseFloat(document.getElementById('fixedCostPerBatch').value) || 0;
 
 state.laborHourly = laborHourly;
 state.prepTime = prepTime;
 state.utilitiesCost = utilitiesCost;
+state.fixedCostPerBatch = fixedCostPerBatch;
 
 if (numPots <= 0) {
 document.getElementById('operationalTotal').textContent = "—";
-return { total: 0, labor: 0, utilities: 0 };
+return { total: 0, labor: 0, utilities: 0, fixed: 0 };
 }
 
 const laborPerPot = (laborHourly * (prepTime / 60)) / numPots;
 const utilitiesPerPot = utilitiesCost / numPots;
-const totalOperational = laborPerPot + utilitiesPerPot;
+const fixedPerPot = fixedCostPerBatch / numPots;
+const totalOperational = laborPerPot + utilitiesPerPot + fixedPerPot;
 
 document.getElementById('operationalTotal').textContent = brl(totalOperational);
-return { total: totalOperational, labor: laborPerPot, utilities: utilitiesPerPot };
+return { total: totalOperational, labor: laborPerPot, utilities: utilitiesPerPot, fixed: fixedPerPot };
 }
 
 function getIngredientCost(invIndex, qty, recipeUnit) {
@@ -3253,7 +3276,7 @@ saveState();
 render();
 });
 
-const opFields = ['laborHourly', 'prepTime', 'utilitiesCost'];
+const opFields = ['laborHourly', 'prepTime', 'utilitiesCost', 'fixedCostPerBatch'];
 opFields.forEach(function(field) {
 document.getElementById(field).addEventListener('input', function() { saveState(); render(); });
 });
