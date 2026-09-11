@@ -2395,7 +2395,7 @@ return n.toLocaleString("pt-BR", { minimumFractionDigits: d, maximumFractionDigi
 }
 
 function updateProgressBar(tabId) {
-const stepMap = { 'tab0': 0, 'tab1': 1, 'tab2': 2, 'tab3': 3, 'tab4': 3 };
+const stepMap = { 'tab0': 0, 'tab1': 1, 'tab2': 2, 'tab3': 3, 'tab4': 4 };
 const currentStep = stepMap[tabId] !== undefined ? stepMap[tabId] : 0;
 const steps = document.querySelectorAll('.progress-bar .step');
 const lines = document.querySelectorAll('.progress-bar .step-line');
