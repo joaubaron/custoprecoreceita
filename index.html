@@ -2519,12 +2519,9 @@ const warningParts = [];
 // A) Receita não fecha 1 pote (comportamento antigo, mantido)
 if (!usingActualPots && weightPerPotValid && numPots === 0 && recW > 0) {
 const suggestedPotSize = Math.floor(recW / 50) * 50;
-const detalhe = sobraGrams > 0
-? `Potes (${num(potesGrams, 0)}g) + sobra (${num(sobraGrams, 0)}g) = ${num(totalInformado, 0)}g`
-: `Potes: ${num(potesGrams, 0)}g`;
 warningParts.push(
-`⚠️ ${detalhe}, mas a receita só rende ${num(recW, 0)}g.<br>` +
-`💡 Reduza o nº de potes ou o tamanho do pote — ou confira o peso da receita.`
+`⚠️ Receita rende ${num(recW, 0)}g — não fecha um pote de ${num(weightPerPot, 0)}g<br>` +
+`💡 Use um pote de até ~${num(suggestedPotSize, 0)}g, ou aumente a receita`
 );
 }
 
