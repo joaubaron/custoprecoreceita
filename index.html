@@ -1861,13 +1861,18 @@ Gerencie suas receitas. Clique para carregar e editar
 <span id="recipesTabLoadedName" style="color:var(--gold);font-weight:600;">Nenhuma</span>
 </div>
 
-<!-- Botões Salvar / Apagar (movidos para cima) -->
-<div class="recipe-actions-bar" style="margin-bottom:20px;">
+<!-- Botões Salvar / Apagar -->
+<div class="recipe-actions-bar" style="margin-bottom:8px;">
 <button class="action-btn save-btn" id="saveRecipeBtnTab4">💾 Salvar receita</button>
 <button class="action-btn delete-btn" id="deleteCurrentRecipeBtnTab4">🗑️ Apagar receita</button>
 </div>
 
-<!-- Lista de receitas (agora vem depois dos botões) -->
+<!-- Dica logo após os botões -->
+<p class="sub" style="margin-top:0; margin-bottom:20px; font-size:11px; color:var(--text-muted);">
+💡 Dica: As receitas são salvas localmente neste dispositivo
+</p>
+
+<!-- Lista de receitas -->
 <div class="recipe-list-container">
 <div class="recipe-list-title" style="font-size:14px; font-weight:700; margin-bottom:10px;">
 📋 Lista de receitas
@@ -1876,11 +1881,25 @@ Gerencie suas receitas. Clique para carregar e editar
 <div class="recipe-list" id="recipeList">
 <div class="recipe-list-empty">Nenhuma receita salva ainda</div>
 </div>
-<p class="sub" style="margin-top:16px;font-size:11px;color:var(--text-muted);">
-💡 Dica: As receitas são salvas localmente neste dispositivo
-</p>
 </div>
 </section>
+
+<!-- CARD 2: EXPORTAR / IMPORTAR -->
+<section class="card">
+<div class="recipe-actions-bar" style="display: flex; flex-direction: row; gap: 10px;">
+<button class="action-btn save-btn" id="exportBtn" style="flex: 1;">
+📤 Exportar
+</button>
+<button class="action-btn" id="importBtn" style="flex: 1;">
+📥 Importar
+</button>
+</div>
+<input type="file" id="importFileInput" accept="application/json,.json" style="display:none;" />
+<p class="sub" style="margin-top:16px;font-size:11px;color:var(--text-muted);">
+💡 A importação <strong>mescla</strong> com as receitas existentes (não apaga nada)
+</p>
+</section>
+</div>
 
 <!-- CARD 2: EXPORTAR / IMPORTAR (permanece separado, mas na ordem correta) -->
 <section class="card">
