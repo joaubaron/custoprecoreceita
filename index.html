@@ -1532,7 +1532,8 @@ Informe somente a quantidade usada na receita
 </p>
 <div class="conversion-note">
 ⚠️ <strong>Conversão g ↔ ml e Alertas de Insumo</strong><br>
-Ajusta automático o peso e sinaliza se a receita usa mais que o lote cadastrado
+Ajusta automático o peso e sinaliza se a receita usa mais que o lote cadastrado<br>
+ℹ️ X (xícara) = 240ml · Cs (colher sopa) = 15ml · Cc (colher chá) = 5ml — medidas de referência, podem variar conforme sua xícara/colher
 </div>
 <div class="table-scroll">
 <table class="recipe-table">
@@ -1574,6 +1575,9 @@ Ajusta automático o peso e sinaliza se a receita usa mais que o lote cadastrado
 <p class="sub">
 Custo fixo de cada pote da receita
 </p>
+<div class="note-info" style="margin-bottom:10px;">
+ℹ️ Informe o valor já de <strong>1 unidade</strong> (ex: 1 tampa = R$ 0,45), não o valor do pacote/caixa comprado
+</div>
 <div class="table-scroll">
 <table class="packaging-table">
 <thead>
@@ -1606,10 +1610,10 @@ Custo fixo de cada pote da receita
 <section class="card">
 <h2>
 ⚙️ Custos Operacionais
-<span class="badge">por pote</span>
+<span class="badge">resultado: por pote</span>
 </h2>
 <p class="sub">
-Inclui mão de obra, energia, água e estrutura
+Informe os valores totais do lote — o app calcula sozinho o custo por pote
 </p>
 <div class="table-scroll">
 <table class="operational-table">
@@ -1812,16 +1816,16 @@ Autônomo: 0%; MEI: valor fixo mensal; Simples Nacional: 4-19%; Lucro Presumido:
 <span>%</span>
 </div>
 
+<div class="note-info" style="grid-column: 1 / -1; padding-left: 0; margin-top: -4px; margin-bottom: 4px;">
+💡 Essa margem é calculada sobre o preço de venda (não sobre o custo) — por isso o "Markup" abaixo aparece como um número diferente, é só a mesma margem em outra forma de contar
+</div>
+
 <div class="k">Markup equivalente</div>
 <div class="v" id="markup"></div>
 </div>
 
 <div id="marginWarning" style="display:none;margin-top:12px;padding:10px;border-radius:var(--radius-sm);font-size:13px;font-weight:600;text-align:center;">
 </div>
-
-<p class="sub" style="margin-top: 24px; margin-bottom: 0; font-size: 12px;">
-💡 Margem de lucro calculada sobre o preço de venda
-</p>
 
 <div class="jar-legend" id="jarLegend"></div>
 </section>
@@ -1916,32 +1920,24 @@ const RECIPES_STORAGE_KEY = "caponata-recipes-list";
 const ONBOARDING_KEY = "caponata-onboarding-dismissed";
 
 const DEFAULT_STATE = {
-recipeName: "Minha Receita",
+recipeName: "Tomate Seco",
 inventory: [
-{ name: "Azeite oliva", total: 500, unit: "ml", value: 27.90, density: 0.91 },
-{ name: "Shoyu", total: 500, unit: "ml", value: 18.90, density: 1.18 },
-{ name: "Vinagre arroz", total: 500, unit: "ml", value: 12.50, density: 1.01 },
-{ name: "Berinjela", total: 1, unit: "kg", value: 6.00, density: 1.00 },
-{ name: "Abobrinha italiana", total: 1, unit: "kg", value: 4.00, density: 1.00 },
-{ name: "Cebola", total: 1, unit: "kg", value: 4.50, density: 1.00 },
-{ name: "Pimentão vermelho", total: 500, unit: "g", value: 4.50, density: 1.00 },
-{ name: "Pimentão amarelo", total: 500, unit: "g", value: 5.60, density: 1.00 },
-{ name: "Tomate", total: 1, unit: "kg", value: 5.50, density: 1.00 },
-{ name: "Uva passa", total: 200, unit: "g", value: 15.78, density: 1.00 },
-{ name: "Manjericão seco", total: 50, unit: "g", value: 12.85, density: 1.00 }
+{ name: "Tomate italiano", total: 2, unit: "kg", value: 24.00, density: 1.00 },
+{ name: "Açúcar", total: 1, unit: "kg", value: 4.50, density: 1.59 },
+{ name: "Sal", total: 1, unit: "kg", value: 3.00, density: 1.20 },
+{ name: "Alho", total: 200, unit: "g", value: 6.00, density: 1.00 },
+{ name: "Azeite oliva extra virgem", total: 500, unit: "ml", value: 27.90, density: 0.91 },
+{ name: "Azeitona verde fatiada", total: 200, unit: "g", value: 17.00, density: 1.00 },
+{ name: "Orégano seco", total: 30, unit: "g", value: 8.00, density: 1.00 }
 ],
 recipe: [
-{ invIndex: 0, qty: 120, unit: "ml" },
-{ invIndex: 1, qty: 120, unit: "ml" },
-{ invIndex: 2, qty: 120, unit: "ml" },
-{ invIndex: 3, qty: 700, unit: "g" },
-{ invIndex: 4, qty: 700, unit: "g" },
-{ invIndex: 5, qty: 180, unit: "g" },
-{ invIndex: 6, qty: 100, unit: "g" },
-{ invIndex: 7, qty: 100, unit: "g" },
-{ invIndex: 8, qty: 300, unit: "g" },
-{ invIndex: 9, qty: 100, unit: "g" },
-{ invIndex: 10, qty: 6, unit: "g" }
+{ invIndex: 0, qty: 1800, unit: "g" },
+{ invIndex: 1, qty: 0.5, unit: "X" },
+{ invIndex: 2, qty: 1, unit: "Cs" },
+{ invIndex: 3, qty: 50, unit: "g" },
+{ invIndex: 4, qty: 200, unit: "ml" },
+{ invIndex: 5, qty: 100, unit: "g" },
+{ invIndex: 6, qty: 5, unit: "g" }
 ],
 packaging: [
 { name: "Vidro/tampa", qty: 1, unit: "un", value: 4.5 },
@@ -2037,7 +2033,7 @@ return 1.00;
 function unitFamily(unit) {
 const u = String(unit || "").trim().toLowerCase();
 if (u === "g" || u === "kg") return "massa";
-if (u === "ml" || u === "l") return "volume";
+if (u === "ml" || u === "l" || u === "x" || u === "cs" || u === "cc") return "volume";
 return "outro";
 }
 
@@ -2060,6 +2056,14 @@ if (!isFinite(density) || density <= 0) {
 density = getDensityByName(inv ? inv.name : "");
 }
 return q * 1000 * density;
+}
+if (u === "x" || u === "cs" || u === "cc") {
+const mlPerUnit = u === "x" ? 240 : (u === "cs" ? 15 : 5);
+let density = parseFloat(inv && inv.density);
+if (!isFinite(density) || density <= 0) {
+density = getDensityByName(inv ? inv.name : "");
+}
+return q * mlPerUnit * density;
 }
 return null;
 }
@@ -2438,8 +2442,10 @@ if (numPots > 0 && leftoverWeight > 0) {
 const totalProduzido = (numPots * weightPerPot) + leftoverWeight;
 const pctPote = totalProduzido > 0 ? Math.round(((numPots * weightPerPot) / totalProduzido) * 100) : 0;
 const pctSobra = 100 - pctPote;
+const leftoverCostShare = recW > 0 ? (leftoverWeight / recW) * recV : 0;
+const leftoverCostPerPot = leftoverCostShare / numPots;
 document.getElementById("leftoverStatus").textContent = 
-`${pctPote}% virou pote · ${pctSobra}% foi absorvida por ${numPots} potes`;
+`${pctPote}% virou pote · ${pctSobra}% foi absorvida por ${numPots} potes (${brl(leftoverCostPerPot)} de ingredientes por pote referente à sobra)`;
 if (leftoverBarEl) {
 leftoverBarEl.style.display = "flex";
 leftoverBarPoteEl.style.width = pctPote + "%";
@@ -2711,7 +2717,7 @@ const invUnit = String(inv ? inv.unit : "").trim().toLowerCase();
 tr.innerHTML =
 "<td><div class='product-display'><span class='product-name editable-name' data-inv-index='" + item.invIndex + "' title='Clique para editar o nome'>" + escapeHtml(productName) + "</span><span class='warn-badge' aria-hidden='true'>⚠️</span></div></td>" +
 "<td><input class='cell num' data-f='qty' type='number' step='any' inputmode='decimal' min='0' placeholder='5500'></td>" +
-"<td><select class='cell' data-f='unit'><option value='g'>g</option><option value='ml'>ml</option><option value='kg'>kg</option><option value='L'>L</option></select></td>" +
+"<td><select class='cell' data-f='unit'><option value='g'>g</option><option value='ml'>ml</option><option value='kg'>kg</option><option value='L'>L</option><option value='X'>X (xícara)</option><option value='Cs'>Cs (colher sopa)</option><option value='Cc'>Cc (colher chá)</option></select></td>" +
 "<td class='num'><div class='cost-display' data-f='cost'>0,00</div></td>" +
 "<td><button class='rm-btn' title='remover'>✕</button></td>";
 const qtyInput = tr.querySelector('input[data-f="qty"]');
@@ -2744,9 +2750,10 @@ return;
 const invTotalGrams = toGrams(inv.total, inv.unit, inv);
 const usedGrams = toGrams(qtyInput.value, currentUnit(), inv);
 
+const householdUnit = ["x", "cs", "cc"].includes(String(currentUnit() || "").trim().toLowerCase());
 const familyInv = unitFamily(inv.unit);
 const familyUse = unitFamily(currentUnit());
-const incompatible = familyInv !== "outro" && familyUse !== "outro" && familyInv !== familyUse;
+const incompatible = !householdUnit && familyInv !== "outro" && familyUse !== "outro" && familyInv !== familyUse;
 
 const excess = invTotalGrams > 0 && usedGrams !== null && usedGrams > invTotalGrams;
 
