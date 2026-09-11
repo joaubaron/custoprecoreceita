@@ -1848,15 +1848,26 @@ Autônomo: 0%; MEI: taxa fixa mensal (não entra aqui — deixe 0% e trate como 
 
 <!-- ===== TAB 4: SALVAR ===== -->
 <div class="tab-content" id="tab4">
+<!-- CARD 1: MINHAS RECEITAS -->
 <section class="card">
 <h2>💾 Minhas Receitas</h2>
 <p class="sub">
 Gerencie suas receitas. Clique para carregar e editar
 </p>
+
+<!-- Indicador da receita atual -->
 <div class="current-recipe-indicator" style="margin-bottom:16px;">
 <span class="label">📌 Receita atual:</span>
 <span id="recipesTabLoadedName" style="color:var(--gold);font-weight:600;">Nenhuma</span>
 </div>
+
+<!-- Botões Salvar / Apagar (movidos para cima) -->
+<div class="recipe-actions-bar" style="margin-bottom:20px;">
+<button class="action-btn save-btn" id="saveRecipeBtnTab4">💾 Salvar receita</button>
+<button class="action-btn delete-btn" id="deleteCurrentRecipeBtnTab4">🗑️ Apagar receita</button>
+</div>
+
+<!-- Lista de receitas (agora vem depois dos botões) -->
 <div class="recipe-list-container">
 <div class="recipe-list-title" style="font-size:14px; font-weight:700; margin-bottom:10px;">
 📋 Lista de receitas
@@ -1865,16 +1876,13 @@ Gerencie suas receitas. Clique para carregar e editar
 <div class="recipe-list" id="recipeList">
 <div class="recipe-list-empty">Nenhuma receita salva ainda</div>
 </div>
-<div class="recipe-actions-bar">
-<button class="action-btn save-btn" id="saveRecipeBtnTab4">💾 Salvar receita</button>
-<button class="action-btn delete-btn" id="deleteCurrentRecipeBtnTab4">🗑️ Apagar receita</button>
-</div>
 <p class="sub" style="margin-top:16px;font-size:11px;color:var(--text-muted);">
 💡 Dica: As receitas são salvas localmente neste dispositivo
 </p>
 </div>
 </section>
 
+<!-- CARD 2: EXPORTAR / IMPORTAR (permanece separado, mas na ordem correta) -->
 <section class="card">
 <div class="recipe-actions-bar" style="display: flex; flex-direction: row; gap: 10px;">
 <button class="action-btn save-btn" id="exportBtn" style="flex: 1;">
