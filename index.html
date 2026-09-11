@@ -1696,7 +1696,7 @@ Informe o rendimento real após o cozimento
 
 <div class="k">Tamanho do pote</div>
 <div class="v editable">
-<input type="number" id="weightPerPot" min="0" step="1" inputmode="numeric" value="500" placeholder="Ex: 500" />
+<input type="number" id="weightPerPot" min="0" step="1" inputmode="numeric" value="240" placeholder="Ex: 240" />
 <span class="unit-suffix">g</span>
 </div>
 <div class="k"></div>
@@ -1953,7 +1953,7 @@ packaging: [
 { name: "Decoração", qty: 1, unit: "un", value: 2 },
 { name: "Cordinha", qty: 1, unit: "un", value: .8 }
 ],
-weightPerPot: 500,
+weightPerPot: 240,
 profitPct: 35,
 laborHourly: 8,
 prepTime: 60,
@@ -2094,7 +2094,7 @@ const raw = localStorage.getItem(STORAGE_KEY);
 if (raw) {
 const parsed = JSON.parse(raw);
 if (parsed && Array.isArray(parsed.inventory) && Array.isArray(parsed.recipe) && Array.isArray(parsed.packaging)) {
-if (!isFinite(parsed.weightPerPot) || parsed.weightPerPot < 0) parsed.weightPerPot = 500;
+if (!isFinite(parsed.weightPerPot) || parsed.weightPerPot < 0) parsed.weightPerPot = 240;
 if (!isFinite(parsed.profitPct) || parsed.profitPct < 0 || parsed.profitPct > 99.99) parsed.profitPct = 35;
 parsed.inventory.forEach(function(item) {
 if (item && (String(item.unit || "").trim().toLowerCase() === "ml" || String(item.unit || "").trim().toLowerCase() === "l")) {
@@ -2194,7 +2194,7 @@ state.recipeName = data.recipeName || "Minha Receita";
 state.inventory = data.inventory || [];
 state.recipe = data.recipe || [];
 state.packaging = data.packaging || [];
-state.weightPerPot = data.weightPerPot || 500;
+state.weightPerPot = data.weightPerPot || 240;
 state.profitPct = data.profitPct || 35;
 state.laborHourly = data.laborHourly || 8;
 state.prepTime = data.prepTime || 60;
