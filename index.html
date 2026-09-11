@@ -2830,16 +2830,25 @@ warnBadge.removeAttribute("aria-label");
 qtyInput.addEventListener("input", function() {
 const v = parseFloat(qtyInput.value);
 state.recipe[idx].qty = isFinite(v) && v >= 0 ? v : 0;
+state.actualPots = null;
+state.actualLeftover = null;
+actualPotsEl.value = "";
+actualLeftoverEl.value = "";
 saveState();
 updateCostAndWarning();
 render();
 });
 unitInput.addEventListener("input", function() {
 state.recipe[idx].unit = unitInput.value;
+state.actualPots = null;
+state.actualLeftover = null;
+actualPotsEl.value = "";
+actualLeftoverEl.value = "";
 saveState();
 updateCostAndWarning();
 render();
 });
+
 qtyInput.addEventListener("keydown", function(e) { if (e.key === "Enter") { e.preventDefault(); qtyInput.blur(); } });
 unitInput.addEventListener("keydown", function(e) { if (e.key === "Enter") { e.preventDefault(); unitInput.blur(); } });
 
