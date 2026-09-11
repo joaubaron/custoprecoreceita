@@ -2694,10 +2694,8 @@ state.inventory[idx][f] = v;
 if (f === "name" || f === "unit") {
 const currentUnit = String(state.inventory[idx].unit || "").trim().toLowerCase();
 if (currentUnit === "ml" || currentUnit === "l") {
-const density = parseFloat(state.inventory[idx].density);
-if (!isFinite(density) || density <= 0) {
 state.inventory[idx].density = getDensityByName(state.inventory[idx].name);
-}
+if (densityInput) densityInput.value = state.inventory[idx].density;
 }
 }
 if (f === "unit") {
