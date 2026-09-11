@@ -1386,6 +1386,9 @@ font-size: 12px !important;
 }
 }
 </style>
+<meta property="og:image" content="https://bolt.new/static/og_default.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://bolt.new/static/og_default.png">
 </head>
 <body>
 
@@ -2697,7 +2700,12 @@ state.inventory[idx].density = getDensityByName(state.inventory[idx].name);
 }
 }
 }
-if (f === "unit") renderRecipe();
+if (f === "unit") {
+saveState();
+renderRecipe();
+render();
+return;
+}
 saveState();
 renderRecipe();
 render();
@@ -2856,6 +2864,19 @@ return tr;
 }
 
 function renderRecipe() {
+const active = document.activeElement;
+let focusInfo = null;
+if (active && active.closest && active.closest('#recBody') && active.dataset && active.dataset.f) {
+const row = active.closest('tr');
+const rows = Array.from(recBody.children);
+focusInfo = {
+rowIndex: rows.indexOf(row),
+field: active.dataset.f,
+selectionStart: active.selectionStart,
+selectionEnd: active.selectionEnd
+};
+}
+
 recBody.innerHTML = "";
 if (state.inventory.length === 0) {
 recBody.innerHTML = "<tr><td colspan='5' style='text-align:center;color:var(--text-muted);padding:20px 0;'>⚠️ Adicione produtos no estoque primeiro.</td></tr>";
@@ -2866,6 +2887,18 @@ state.recipe.forEach(function(item, idx) { recBody.appendChild(recRow(item, idx)
 let recV = 0;
 state.recipe.forEach(function(r) { recV += getIngredientCost(r.invIndex, r.qty, r.unit); });
 document.getElementById("recSubV").textContent = brl(recV);
+
+if (focusInfo) {
+const newRows = Array.from(recBody.children);
+const targetRow = newRows[focusInfo.rowIndex];
+if (targetRow) {
+const targetInput = targetRow.querySelector('[data-f="' + focusInfo.field + '"]');
+if (targetInput) {
+targetInput.focus();
+try { targetInput.setSelectionRange(focusInfo.selectionStart, focusInfo.selectionEnd); } catch(e) {}
+}
+}
+}
 }
 
 document.getElementById("addRec").addEventListener("click", function() {
