@@ -1,12 +1,14 @@
 // Service Worker
 // A versão é atualizada automaticamente pelo deploy.yml a cada push no GitHub Pages.
-const CACHE_VERSION = '11.09.2026-0946';
+const CACHE_VERSION = '11.09.2026-1000';
 const CACHE_NAME = `custo-pote-${CACHE_VERSION}`;
 
 const ASSETS = [
   "./",
   "index.html",
-  "manifest.json"
+  "manifest.json",
+  "icon-192.png",
+  "icon-512.png"
 ];
 
 self.addEventListener("install", (e) => {
@@ -28,20 +30,48 @@ self.addEventListener("activate", (e) => {
 });
 
 self.addEventListener("fetch", (e) => {
-  // Para navegação (HTML), tenta a rede primeiro pra sempre pegar a versão mais nova;
-  // cai pro cache só se estiver offline.
-  if (e.request.mode === "navigate") {
+  const req = e.request;
+
+  // Ignora métodos que não são GET (POST, PUT etc.) e esquemas não-http(s)
+  // (chrome-extension://, moz-extension://, etc.) — cache só faz sentido pra GET http(s).
+  if (req.method !== "GET" || !req.url.startsWith("http")) {
+    return;
+  }
+
+  // Navegação (HTML): network-first, cai pro cache só se estiver offline.
+  if (req.mode === "navigate") {
     e.respondWith(
-      fetch(e.request).catch(() => caches.match("index.html"))
+      fetch(req).catch(() => caches.match("index.html"))
     );
     return;
   }
-  // Para os demais arquivos, cache-first com atualização em segundo plano.
+
+  // Fontes do Google: cache-first com atualização em background (runtime caching).
+  // Sem isso, offline quebra o visual (fontes não carregam).
+  if (req.url.includes("fonts.googleapis.com") || req.url.includes("fonts.gstatic.com")) {
+    e.respondWith(
+      caches.match(req).then((cached) => {
+        const fetchPromise = fetch(req)
+          .then((networkRes) => {
+            caches.open(CACHE_NAME).then((cache) => cache.put(req, networkRes.clone()));
+            return networkRes;
+          })
+          .catch(() => cached);
+        return cached || fetchPromise;
+      })
+    );
+    return;
+  }
+
+  // Demais arquivos (mesmo domínio): cache-first com atualização em segundo plano.
   e.respondWith(
-    caches.match(e.request).then((cached) => {
-      const fetchPromise = fetch(e.request)
+    caches.match(req).then((cached) => {
+      const fetchPromise = fetch(req)
         .then((networkRes) => {
-          caches.open(CACHE_NAME).then((cache) => cache.put(e.request, networkRes.clone()));
+          // Só guarda respostas válidas (status 200, same-origin ou CORS ok)
+          if (networkRes && networkRes.status === 200 && networkRes.type !== "opaque") {
+            caches.open(CACHE_NAME).then((cache) => cache.put(req, networkRes.clone()));
+          }
           return networkRes;
         })
         .catch(() => cached);
