@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover, orientation=portrait">
-<title>Precificação</title>
+<title>Custo do Pote</title>
 <meta name="theme-color" content="#112854" />
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%231a1a2e'/%3E%3Ctext x='50' y='68' font-size='59' text-anchor='middle' fill='%23f7c948'%3E%F0%9F%AB%99%3C/text%3E%3C/svg%3E" />
 <link rel="manifest" href="manifest.json" />
@@ -1386,9 +1386,6 @@ font-size: 12px !important;
 }
 }
 </style>
-<meta property="og:image" content="https://bolt.new/static/og_default.png">
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="https://bolt.new/static/og_default.png">
 </head>
 <body>
 
@@ -1762,10 +1759,7 @@ Informe o rendimento real após o cozimento
 </div>
 </div>
 
-<div class="warning-message" id="insufficientWarning">
-⚠️ A receita não rende um pote completo de <span id="warningPotSize"></span> g.<br />
-Reduza o tamanho do pote ou aumente a quantidade da receita para obter pelo menos 1 pote completo.
-</div>
+<div class="warning-message" id="insufficientWarning"></div>
 
 <div class="divider" style="margin: 16px 0;"></div>
 
@@ -1936,9 +1930,26 @@ Funciona para qualquer receita — ajuste como quiser
 <script>
 (function() {
 "use strict";
-const STORAGE_KEY = "caponata-calc-v4";
-const RECIPES_STORAGE_KEY = "caponata-recipes-list";
-const ONBOARDING_KEY = "caponata-onboarding-dismissed";
+const STORAGE_KEY = "custo-pote-calc-v5";
+const RECIPES_STORAGE_KEY = "custo-pote-recipes-list";
+const ONBOARDING_KEY = "custo-pote-onboarding-dismissed";
+
+// Chaves antigas (para migração)
+const OLD_STORAGE_KEY = "caponata-calc-v4";
+const OLD_RECIPES_STORAGE_KEY = "caponata-recipes-list";
+const OLD_ONBOARDING_KEY = "caponata-onboarding-dismissed";
+
+// Migração: copia dados da chave antiga para a nova, se a nova ainda não existir
+function migrateKey(oldKey, newKey) {
+try {
+if (!localStorage.getItem(newKey) && localStorage.getItem(oldKey)) {
+localStorage.setItem(newKey, localStorage.getItem(oldKey));
+}
+} catch (e) {}
+}
+migrateKey(OLD_STORAGE_KEY, STORAGE_KEY);
+migrateKey(OLD_RECIPES_STORAGE_KEY, RECIPES_STORAGE_KEY);
+migrateKey(OLD_ONBOARDING_KEY, ONBOARDING_KEY);
 
 const DEFAULT_STATE = {
 recipeName: "Tomate Seco",
@@ -2421,16 +2432,22 @@ totalProfitEl.textContent = '—';
 }
 }
 
-function render() {
-let recW = 0;
-let recV = 0;
+function calcRecipeTotals() {
+let weight = 0, cost = 0;
 state.recipe.forEach(function(r) {
 const qty = parseFloat(r.qty) || 0;
 const inv = state.inventory[r.invIndex];
 const unit = r.unit || (inv ? inv.unit : "g");
-recW += getRecipeWeight(qty, unit, inv);
-recV += getIngredientCost(r.invIndex, qty, unit);
+weight += getRecipeWeight(qty, unit, inv);
+cost += getIngredientCost(r.invIndex, qty, unit);
 });
+return { weight: weight, cost: cost };
+}
+
+function render() {
+const totals = calcRecipeTotals();
+let recW = totals.weight;
+let recV = totals.cost;
 
 document.getElementById("recSubV").textContent = brl(recV);
 
@@ -2891,9 +2908,7 @@ return;
 }
 state.recipe = state.recipe.filter(item => item.invIndex >= 0 && item.invIndex < state.inventory.length);
 state.recipe.forEach(function(item, idx) { recBody.appendChild(recRow(item, idx)); });
-let recV = 0;
-state.recipe.forEach(function(r) { recV += getIngredientCost(r.invIndex, r.qty, r.unit); });
-document.getElementById("recSubV").textContent = brl(recV);
+document.getElementById("recSubV").textContent = brl(calcRecipeTotals().cost);
 
 if (focusInfo) {
 const newRows = Array.from(recBody.children);
