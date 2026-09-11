@@ -2699,6 +2699,7 @@ state.inventory[idx].density = getDensityByName(state.inventory[idx].name);
 }
 if (f === "unit") renderRecipe();
 saveState();
+renderRecipe();
 render();
 }
 inp.addEventListener("input", updateInventoryField);
