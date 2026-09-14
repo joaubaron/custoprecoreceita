@@ -1063,6 +1063,57 @@ word-break: break-word;
 display: block;
 }
 
+.backup-reminder {
+display: none;
+align-items: center;
+justify-content: space-between;
+gap: 10px;
+font-size: 12px;
+color: var(--orange);
+background: var(--orange-dim);
+padding: 10px 12px;
+border-radius: var(--radius-sm);
+border: 1px solid rgba(245, 168, 74, 0.3);
+margin-bottom: 14px;
+line-height: 1.4;
+}
+
+.backup-reminder.visible {
+display: flex;
+}
+
+.backup-reminder .brtxt {
+flex: 1;
+}
+
+.backup-reminder .bract {
+display: flex;
+align-items: center;
+gap: 6px;
+flex-shrink: 0;
+}
+
+.backup-reminder button {
+font: inherit;
+font-weight: 700;
+font-size: 12px;
+border: none;
+border-radius: 8px;
+padding: 6px 10px;
+cursor: pointer;
+}
+
+.backup-reminder .br-export {
+background: var(--orange);
+color: #1a1206;
+}
+
+.backup-reminder .br-dismiss {
+background: transparent;
+color: var(--text-muted);
+padding: 6px 8px;
+}
+
 .conversion-note {
 font-size: 12px;
 color: var(--blue);
@@ -1446,6 +1497,15 @@ color: var(--gold-strong);
 </div>
 <button class="reset-btn" id="resetBtn">↺ Restaurar</button>
 </header>
+
+<!-- ===== LEMBRETE DE BACKUP ===== -->
+<div class="backup-reminder" id="backupReminder">
+<span class="brtxt" id="backupReminderText">⚠️ Faz tempo que você não exporta um backup. Seus dados ficam só neste aparelho.</span>
+<span class="bract">
+<button class="br-export" id="backupReminderExport">Exportar agora</button>
+<button class="br-dismiss" id="backupReminderDismiss" title="Lembrar depois" aria-label="Lembrar depois">✕</button>
+</span>
+</div>
 
 <!-- ===== PROGRESS BAR ===== -->
 <div class="progress-bar" id="progressBar">
@@ -1961,6 +2021,11 @@ Funciona para qualquer receita — ajuste como quiser<br />
 const STORAGE_KEY = "custo-pote-calc-v5";
 const RECIPES_STORAGE_KEY = "custo-pote-recipes-list";
 const ONBOARDING_KEY = "custo-pote-onboarding-dismissed";
+const LAST_EXPORT_KEY = "custo-pote-last-export";
+const FIRST_USE_KEY = "custo-pote-first-use";
+const BACKUP_SNOOZE_KEY = "custo-pote-backup-snooze";
+const BACKUP_REMINDER_DAYS = 14;
+const BACKUP_SNOOZE_DAYS = 3;
 
 // Chaves antigas (para migração)
 const OLD_STORAGE_KEY = "caponata-calc-v4";
@@ -2051,6 +2116,87 @@ overlay.classList.remove('hidden');
 }
 
 document.getElementById('onboardingBtn').addEventListener('click', dismissOnboarding);
+
+// ===== LEMBRETE DE BACKUP =====
+function daysSince(timestamp) {
+const ms = Date.now() - timestamp;
+return ms / (1000 * 60 * 60 * 24);
+}
+
+function hasDataWorthBacking() {
+return recipesList.length > 0 ||
+(state.inventory && state.inventory.length > 0) ||
+(state.recipe && state.recipe.length > 0);
+}
+
+function initBackupReminder() {
+try {
+if (!localStorage.getItem(FIRST_USE_KEY)) {
+localStorage.setItem(FIRST_USE_KEY, String(Date.now()));
+}
+} catch (e) {}
+updateBackupReminder();
+
+document.getElementById('backupReminderExport').addEventListener('click', function() {
+exportRecipes();
+});
+document.getElementById('backupReminderDismiss').addEventListener('click', function() {
+try { localStorage.setItem(BACKUP_SNOOZE_KEY, String(Date.now())); } catch (e) {}
+document.getElementById('backupReminder').classList.remove('visible');
+});
+}
+
+function updateBackupReminder() {
+const el = document.getElementById('backupReminder');
+if (!el) return;
+
+if (!hasDataWorthBacking()) {
+el.classList.remove('visible');
+return;
+}
+
+let lastExport = null, firstUse = null, snoozedAt = null;
+try {
+const le = localStorage.getItem(LAST_EXPORT_KEY);
+lastExport = le ? parseInt(le, 10) : null;
+const fu = localStorage.getItem(FIRST_USE_KEY);
+firstUse = fu ? parseInt(fu, 10) : null;
+const sn = localStorage.getItem(BACKUP_SNOOZE_KEY);
+snoozedAt = sn ? parseInt(sn, 10) : null;
+} catch (e) {}
+
+if (snoozedAt && isFinite(snoozedAt) && daysSince(snoozedAt) < BACKUP_SNOOZE_DAYS) {
+el.classList.remove('visible');
+return;
+}
+
+const referenceTs = (lastExport && isFinite(lastExport)) ? lastExport : firstUse;
+if (!referenceTs || !isFinite(referenceTs)) {
+el.classList.remove('visible');
+return;
+}
+
+const days = daysSince(referenceTs);
+if (days >= BACKUP_REMINDER_DAYS) {
+const textEl = document.getElementById('backupReminderText');
+if (lastExport && isFinite(lastExport)) {
+textEl.textContent = `⚠️ Já se passaram ${Math.floor(days)} dias desde o último backup. Seus dados ficam só neste aparelho.`;
+} else {
+textEl.textContent = `⚠️ Você ainda não exportou um backup. Seus dados ficam só neste aparelho.`;
+}
+el.classList.add('visible');
+} else {
+el.classList.remove('visible');
+}
+}
+
+function markBackupDone() {
+try {
+localStorage.setItem(LAST_EXPORT_KEY, String(Date.now()));
+localStorage.removeItem(BACKUP_SNOOZE_KEY);
+} catch (e) {}
+updateBackupReminder();
+}
 
 // ===== FUNÇÕES AUXILIARES =====
 function getDensityByName(name) {
@@ -3275,6 +3421,7 @@ document.body.appendChild(a);
 a.click();
 document.body.removeChild(a);
 setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
+markBackupDone();
 showModal({
 icon: "📤",
 title: "Backup exportado",
@@ -3541,6 +3688,7 @@ renderRecipeList();
 updateLoadedIndicators();
 
 showOnboarding();
+initBackupReminder();
 
 if ("serviceWorker" in navigator) {
 window.addEventListener("load", function() {
