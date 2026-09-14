@@ -53,7 +53,8 @@ self.addEventListener("fetch", (e) => {
       caches.match(req).then((cached) => {
         const fetchPromise = fetch(req)
           .then((networkRes) => {
-            caches.open(CACHE_NAME).then((cache) => cache.put(req, networkRes.clone()));
+            const resClone = networkRes.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(req, resClone));
             return networkRes;
           })
           .catch(() => cached);
@@ -68,9 +69,10 @@ self.addEventListener("fetch", (e) => {
     caches.match(req).then((cached) => {
       const fetchPromise = fetch(req)
         .then((networkRes) => {
+          const resClone = networkRes.clone();
           // Só guarda respostas válidas (status 200, same-origin ou CORS ok)
           if (networkRes && networkRes.status === 200 && networkRes.type !== "opaque") {
-            caches.open(CACHE_NAME).then((cache) => cache.put(req, networkRes.clone()));
+            caches.open(CACHE_NAME).then((cache) => cache.put(req, resClone));
           }
           return networkRes;
         })
