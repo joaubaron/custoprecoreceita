@@ -2923,31 +2923,33 @@ inputs.forEach(function(inp) {
 function updateInventoryField() {
 const f = inp.dataset.f;
 const v = inp.value;
+
 if (f === "total" || f === "value" || f === "density") {
 const numVal = parseFloat(v);
-state.inventory[idx][f] = isFinite(numVal) && numVal >= 0 ? numVal : (f === "density" ? 1.00 : 0);
+state.inventory[idx][f] = isFinite(numVal) && numVal >= 0
+? numVal
+: (f === "density" ? 1.00 : 0);
 } else {
 state.inventory[idx][f] = v;
 }
+
 if (f === "name" || f === "unit") {
-const currentUnit = String(state.inventory[idx].unit || "").trim().toLowerCase();
-if (currentUnit === "ml" || currentUnit === "l") {
+const u = String(state.inventory[idx].unit || "").trim().toLowerCase();
+if (u === "ml" || u === "l") {
 state.inventory[idx].density = getDensityByName(state.inventory[idx].name);
-if (densityInput) densityInput.value = state.inventory[idx].density;
+densityInput.value = state.inventory[idx].density;
 }
 }
-if (f === "unit") {
+
 saveState();
-renderRecipe();
-render();
-return;
-}
-saveState();
-renderRecipe();
+if (f === "unit" || f === "name") renderRecipe();
 render();
 }
+
 inp.addEventListener("input", updateInventoryField);
-inp.addEventListener("keydown", function(e) { if (e.key === "Enter") { e.preventDefault(); inp.blur(); } });
+inp.addEventListener("keydown", function(e) {
+if (e.key === "Enter") { e.preventDefault(); inp.blur(); }
+});
 inp.addEventListener("blur", updateInventoryField);
 inp.addEventListener("change", updateInventoryField);
 });
