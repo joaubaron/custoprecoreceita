@@ -3208,6 +3208,7 @@ render();
 inp.addEventListener("input", updatePackagingField);
 inp.addEventListener("keydown", function(e) { if (e.key === "Enter") { e.preventDefault(); inp.blur(); } });
 inp.addEventListener("blur", updatePackagingField);
+inp.addEventListener("change", updatePackagingField);
 });
 
 tr.querySelector(".rm-btn").addEventListener("click", function() {
