@@ -3118,6 +3118,7 @@ qtyInput.addEventListener("input", handleQtyChange);
 qtyInput.addEventListener("blur", handleQtyChange);
 qtyInput.addEventListener("change", handleQtyChange);
 unitInput.addEventListener("input", handleUnitChange);
+unitInput.addEventListener("blur", handleUnitChange);
 unitInput.addEventListener("change", handleUnitChange);
 
 qtyInput.addEventListener("keydown", function(e) { if (e.key === "Enter") { e.preventDefault(); qtyInput.blur(); } });
