@@ -1,5 +1,3 @@
-NAO REMOVA UM SIMBOLO SEQUER
-
 https://joaubaron.github.io/precifica/
 
 # Precificação 🫙
