@@ -1801,7 +1801,7 @@ Informe o rendimento real após o cozimento
 
 <div class="k"></div>
 <div class="note-info">
-ℹ️ Se pesou os potes prontos, informe aqui. Se não, deixe em branco
+ℹ️ Fez uma receita que reduz/perde água no fogo (refogados, geleias, molhos cozidos)? Pese os potes prontos e informe aqui — sem isso, o preço é calculado sobre o peso cru da receita.
 </div>
 
 <div class="k">Sobra após envasar (não altera o preço)</div>
@@ -2725,6 +2725,17 @@ warningParts.push(
 `💡 O máximo realista é ~${maxPots} pote(s).`
 );
 }
+}
+
+// D) Lembrete de rendimento real — receita fechou pote(s) pelo peso cru,
+// mas o usuário nunca informou quantos potes realmente saíram (ex: receita
+// que reduz/perde água no cozimento). Não bloqueia, só orienta.
+if (!usingActualPots && weightPerPotValid && numPots > 0) {
+warningParts.push(
+`💡 Preço calculado sobre o peso cru da receita. Se ela perde água no cozimento ` +
+`(refogados, geleias, molhos), pese os potes prontos e preencha "Rendimento real" ` +
+`acima para um preço mais preciso.`
+);
 }
 
 // C) Aplica (alerta, não bloqueia)
