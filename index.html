@@ -3065,7 +3065,7 @@ warnBadge.removeAttribute("aria-label");
 }
 }
 
-qtyInput.addEventListener("input", function() {
+function updateRecipeQty() {
 const v = parseFloat(qtyInput.value);
 state.recipe[idx].qty = isFinite(v) && v >= 0 ? v : 0;
 state.actualPots = null;
@@ -3075,17 +3075,25 @@ actualLeftoverEl.value = "";
 saveState();
 updateCostAndWarning();
 render();
-});
-unitInput.addEventListener("input", function() {
+}
+qtyInput.addEventListener("input", updateRecipeQty);
+qtyInput.addEventListener("blur", updateRecipeQty);
+qtyInput.addEventListener("change", updateRecipeQty);
+
+function updateRecipeUnit() {
 state.recipe[idx].unit = unitInput.value;
 state.actualPots = null;
 state.actualLeftover = null;
 actualPotsEl.value = "";
 actualLeftoverEl.value = "";
 saveState();
+renderRecipe();
 updateCostAndWarning();
 render();
-});
+}
+unitInput.addEventListener("input", updateRecipeUnit);
+unitInput.addEventListener("blur", updateRecipeUnit);
+unitInput.addEventListener("change", updateRecipeUnit);
 
 qtyInput.addEventListener("keydown", function(e) { if (e.key === "Enter") { e.preventDefault(); qtyInput.blur(); } });
 unitInput.addEventListener("keydown", function(e) { if (e.key === "Enter") { e.preventDefault(); unitInput.blur(); } });
