@@ -626,6 +626,7 @@ cursor: help;
 
 .warn-badge.visible {
 display: inline;
+cursor: pointer;
 }
 
 table th:nth-child(1), table td:nth-child(1) { width: 30% !important; }
@@ -3027,7 +3028,12 @@ costCell.textContent = cost.toLocaleString("pt-BR", { minimumFractionDigits: 2, 
 
 if (!inv) {
 tr.classList.remove("excess-warning");
-if (warnBadge) { warnBadge.classList.remove("visible"); warnBadge.removeAttribute("title"); }
+if (warnBadge) {
+warnBadge.classList.remove("visible");
+warnBadge.removeAttribute("title");
+delete warnBadge.dataset.modalTitle;
+delete warnBadge.dataset.modalMessage;
+}
 return;
 }
 
@@ -3047,6 +3053,8 @@ if (warnBadge) {
 warnBadge.classList.add("visible");
 warnBadge.setAttribute("title", "Unidade incompatível: o produto foi comprado em " + inv.unit + " e está sendo usado em " + currentUnit() + ". Como as unidades são de grandezas diferentes (massa × volume), o custo pode estar incorreto.");
 warnBadge.setAttribute("aria-label", "Unidade incompatível com a compra");
+warnBadge.dataset.modalTitle = "Unidade incompatível";
+warnBadge.dataset.modalMessage = "O produto foi comprado em " + inv.unit + " e está sendo usado em " + currentUnit() + ". Como são unidades de grandezas diferentes (massa × volume), o custo calculado pode estar errado.";
 }
 } else if (excess) {
 tr.classList.add("excess-warning");
@@ -3054,6 +3062,8 @@ if (warnBadge) {
 warnBadge.classList.add("visible");
 warnBadge.setAttribute("title", "A quantidade informada excede o lote comprado cadastrado no Estoque!");
 warnBadge.setAttribute("aria-label", "Quantidade excede o lote comprado");
+warnBadge.dataset.modalTitle = "Quantidade excede o estoque";
+warnBadge.dataset.modalMessage = "Você está usando mais " + currentUnit() + " do que o lote comprado registrado no Estoque para esse produto.";
 }
 } else {
 tr.classList.remove("excess-warning");
@@ -3061,11 +3071,27 @@ if (warnBadge) {
 warnBadge.classList.remove("visible");
 warnBadge.removeAttribute("title");
 warnBadge.removeAttribute("aria-label");
+delete warnBadge.dataset.modalTitle;
+delete warnBadge.dataset.modalMessage;
 }
 }
 }
 
-qtyInput.addEventListener("input", function() {
+if (warnBadge) {
+warnBadge.addEventListener("click", function(e) {
+e.stopPropagation();
+if (!warnBadge.classList.contains("visible")) return;
+showModal({
+icon: "⚠️",
+title: warnBadge.dataset.modalTitle || "Aviso",
+message: warnBadge.dataset.modalMessage || "",
+confirmText: "OK",
+onlyOk: true
+});
+});
+}
+
+function handleQtyChange() {
 const v = parseFloat(qtyInput.value);
 state.recipe[idx].qty = isFinite(v) && v >= 0 ? v : 0;
 state.actualPots = null;
@@ -3075,17 +3101,24 @@ actualLeftoverEl.value = "";
 saveState();
 updateCostAndWarning();
 render();
-});
-unitInput.addEventListener("input", function() {
+}
+function handleUnitChange() {
 state.recipe[idx].unit = unitInput.value;
 state.actualPots = null;
 state.actualLeftover = null;
 actualPotsEl.value = "";
 actualLeftoverEl.value = "";
 saveState();
+renderRecipe();
 updateCostAndWarning();
 render();
-});
+}
+
+qtyInput.addEventListener("input", handleQtyChange);
+qtyInput.addEventListener("blur", handleQtyChange);
+qtyInput.addEventListener("change", handleQtyChange);
+unitInput.addEventListener("input", handleUnitChange);
+unitInput.addEventListener("change", handleUnitChange);
 
 qtyInput.addEventListener("keydown", function(e) { if (e.key === "Enter") { e.preventDefault(); qtyInput.blur(); } });
 unitInput.addEventListener("keydown", function(e) { if (e.key === "Enter") { e.preventDefault(); unitInput.blur(); } });
