@@ -1,4 +1,4 @@
-https://joaubaron.github.io/custoprecoreceita/
+https://joaubaron.github.io/precifica/
 
 # Precificação 🫙
 
