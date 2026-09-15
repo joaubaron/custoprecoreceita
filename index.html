@@ -2768,7 +2768,6 @@ const profitPct = Math.max(0, Math.min(parseFloat(state.profitPct) || 0, 99.99))
 const salesTaxPct = Math.max(0, Math.min(parseFloat(state.salesTaxPct) || 0, 99.99));
 const taxesPct = Math.max(0, Math.min(parseFloat(state.taxesPct) || 0, 99.99));
 const totalDeductions = (profitPct + salesTaxPct + taxesPct) / 100;
-const margin = profitPct / 100;
 const price = numPots > 0 && totalDeductions < 1 && costTotalPot > 0 ? costTotalPot / (1 - totalDeductions) : 0;
 const taxValueCalc = price > 0 ? price * (salesTaxPct / 100) : 0;
 const impostosValueCalc = price > 0 ? price * (taxesPct / 100) : 0;
@@ -2997,7 +2996,6 @@ function recRow(item, idx) {
 const tr = document.createElement("tr");
 const inv = state.inventory[item.invIndex];
 const productName = inv ? (inv.name || "Produto " + (item.invIndex + 1)) : "Produto";
-const invUnit = String(inv ? inv.unit : "").trim().toLowerCase();
 
 tr.innerHTML =
 "<td><div class='product-display'><span class='product-name editable-name' data-inv-index='" + item.invIndex + "' title='Clique para editar o nome'>" + escapeHtml(productName) + "</span><span class='warn-badge' aria-hidden='true'>⚠️</span></div></td>" +
